@@ -1,0 +1,28 @@
+1 VERSIONINFO
+FILEVERSION 4,1,0,0
+PRODUCTVERSION 4,1,0,0
+FILEOS 0x4
+FILETYPE 0x1
+{
+BLOCK "StringFileInfo"
+{
+	BLOCK "00000000"
+	{
+		VALUE "CompanyName", "ViaThinkSoft\0"
+		VALUE "FileDescription", "(De)Coder Secure-Move-Extension\0"
+		VALUE "FileVersion", "1.0.0.0\0"
+		VALUE "InternalName", "DC4 SecureMoveExt\0"
+		VALUE "LegalCopyright", "© Copyright 2001 - 2007 ViaThinkSoft\0"
+		VALUE "OriginalFilename", "SecureMoveExt.dll\0"
+		VALUE "ProductName", "(De)Coder\0"
+		VALUE "ProductVersion", "4.1.0.0\0"
+		VALUE "Projektleiter", "Daniel Marschall - www.daniel-marschall.de\0"
+		VALUE "Webseite", "www.viathinksoft.de\0"
+	}
+}
+
+BLOCK "VarFileInfo"
+{
+	VALUE "Translation", 0x0000 0x0000
+}
+}

@@ -1,0 +1,24 @@
+body
+{
+  background:#FFFFFF;
+  font-family:Arial;
+  font-size:15;
+}
+
+a
+{
+  color:#008000;
+}
+
+.ueberschrift
+{
+  color:#0000DD;
+  font-weight:bold;
+  font-size:23;
+}
+
+.titel
+{
+  color:#FF0000;
+  font-size:26;
+}

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">Default.Personality</Option>
+			<Option Name="ProjectType"></Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{00261C37-1D74-466D-B1FF-6EDFDFBEAF93}</Option>
+		</Option>
+	</PersonalityInfo>
+	<Default.Personality>  <Projects>
+      <Projects Name="Activator.exe">Quelltext\Activator.bdsproj</Projects>
+      <Projects Name="Coder.exe">Quelltext\Coder.bdsproj</Projects>
+      <Projects Name="SecureMoveExt.dll">Quelltext\SecureMoveExt.bdsproj</Projects>
+      <Projects Name="ShlErase.dll">Quelltext\ShlErase.bdsproj</Projects>
+      <Projects Name="ShlExt.dll">Quelltext\ShlExt.bdsproj</Projects>
+      <Projects Name="Targets">Activator.exe Coder.exe SecureMoveExt.dll ShlErase.dll ShlExt.dll</Projects>
+    </Projects>
+    <Dependencies/>
+  </Default.Personality>
+</BorlandProject>

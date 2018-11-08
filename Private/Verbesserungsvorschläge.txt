@@ -1,0 +1,26 @@
+// Trivia
+
+configform: wordwarp + autosize gehen nicht... dann könnte man sich den ### umbruch sparen
+Setup soll auch auf Gastkonten gehen (Clases von HKCU verwenden)
+Verzeichnis wird bei rückentschlüsselung gesperrt?!
+rückentschlüsselung anbieten (für bitfehler?)
+Projektleiter@Versionsinfo ist in deutsch
+gesperrte dateien bei uninstall merken für reboot... (auch andere installer)
+startverzeichnis von "datei öffnen" soll eigene dateien oder desktop sein
+Bei Befehlszeile wird ein Ordner in der Groß/Kleinschreibung gezippt, wie er eingegeben wurde
+
+// Neue Startmenüstruktur
+
+Webseiten
+- ...
+Tools
+- Temp. vernichten
+- Freien speicherplatz vernichten (+ Laufwerks-Kontextmenü)
+- Konfiguration
+DeCoder
+Hilfe
+
+// Fraglich
+
+Bei direkt Öffnen auch veränderbar
+

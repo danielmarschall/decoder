@@ -1,0 +1,84 @@
+(De)Coder 4.1 Betatest
+----------------------
+
+Bericht von Thomas Bretzke (taccon software project)
+
+Nachdem die Installation problemlos ablief, öffne ich (De)Coder über die
+entsprechende Verknüpfung auf dem Desktop. Das Programm startet sofort.
+Danach fühle ich mich für kurze Zeit ein wenig allein gelassen, aber nur,
+bis ich die dezente Information lese, in der mir beschrieben wird, dass ich
+über die Menüleiste eine Datei öffnen kann.
+Das tue ich auch prompt: Eine knapp 500 MB große .zip-Datei wird mein Testob-
+jekt. Das funktioniert ohne Zwischenfälle.
+Mir werden nun einige Informationen über die Datei angezeigt. Darunter 2 Fel-
+der, in die ich ein Passwort eingeben und wiederholen kann. Ich wähle eines
+mit 11 Zeichen, ein Mix aus Zahlen und Buchstaben. Dafür bekomme ich immerhin
+eine Bewertung von 31%. Nachdem ich das Passwort wiederholt habe, und mir die
+Übereinstimmung der beiden Passwörter korrekt ausgegeben wird, will ich die
+Codierung starten. Aber... Wo?
+Mir fällt die Menüleiste nach kurzer Überlegung ins Auge. Ich rufe über "Aktionen"
+den Menüpunkt "Datei verschlüsseln..." auf.
+Einige Zeit höre ich, dass meine Festplatte Geräusche von sich gibt. (De)Coder
+zeigt mir aber leider keinen Status an (Nur "Programm ist bereit" und "0%"). Nach
+einiger Zeit wird mir in der Statusleiste des Programms angezeigt, dass die Datei
+verschlüsselt wird und (in %) wieviel davon bereits erledigt wurde.
+Das Verschlüsseln dauert einen Blick, die Zeit erscheint mir aber als durchaus ge-
+rechtfertigt. Danach wähle ich aus, wo die verschlüsselte Datei gespeichert werden
+soll. Das funkioniert wunderbar.
+
+Nun öffne ich die verschlüsselte Datei. Ich habe den (De)Coder noch geöffnet und
+doppelklicke auf die Datei im Explorer. Das Programm öffnet sich ein zweites Mal.
+"Schade!", denke ich mir, und schließe die alte Instanz des Programms.
+Ich gebe in das Feld das Passwort zum Entschlüsseln ein. Dann geht es, nach kurzer
+Vorbereitungsphase, bei der ich leider wieder ohne Rückmeldung vom Programm aus-
+kommen muss, auch schon mit der Entschlüsslung los.
+Nach passabler Zeit (immerhin: 500 MB) sind die 100% erreicht. Der Status springt
+wieder auf "Programm ist bereit." und "0%". Und dann? Dann passiert erst einmal
+für einige Minuten gar nichts. Zumindest wird mir von (De)Coder nichts ange-
+zeigt. Die Fesplatte ist da allerdings anderer Meinung und scheint Schwerstar-
+beit zu verrichten. Daher warte ich.
+Wie sich nach einiger Zeit zeigt, hat sich das statuslose Warten gelohnt: Ich
+darf nun auswählen, wohin die entschlüsselte Datei gespeichert werden soll. Korrek-
+terweise wird mir auch der ehemalige Dateiname vorgeschlagen. Das Speichern funktio-
+niert dann auch flott und problemlos.
+Als nächstes versuche ich noch einen Ordner zu verschlüsseln. Das funktioniert
+offenbar auf Basis eines Zip-Archivs, das der (De)Coder sofort nach Auswahl des
+Verzeichnisses erstellt. Allerdings "hüpft" der während der Komprimierung ange-
+zeigte Prozentsatz in der Wertigkeit einige Male hin und her. Hier wird vermut-
+lich der Status für einzelne Dateien angezeigt. Nur leider wird das nicht so
+stark deutlich.
+
+Zusammenfassend hat mir die Beta-Version des (De)Coders gut gefallen. Sie verursachte
+bei mir keine schwerwiegenden Fehler und funktioniert ohne Probleme. Positiv aufgefallen
+sind mir die ausgereifte Kontextmenüintegration, die Möglichkeit des Drag&Drop und die
+vielen Optionen.
+Ein paar kleine Schwächen in puncto Benutzerfreundlichkeit sollten noch ausgeglichen 
+werden. Einige Gedanken dazu:
+--> "Willkommen"-Feld mit "Aufgaben" (Funktionen), die man erledigen könnte?
+--> Entweder mehr Hinweise (so wie bei der Anfangsseite) oder Buttons für die
+    Ver- und Entschlüsselung. Die Bedienung rein über das Menü ist für dieses
+	kleine Tool ein wenig gewöhnungsbedürftig.
+--> Bessere Statusanzeigen! Ich möchte gern mehr als eine Prozentzahl sehen. Ein
+	Statusbalken würde schon viel helfen und die Zeit absehbarer darstellen.
+--> Mehr Statusanzeigen: Es gab häufig Situationen, in denen mein Rechner augen-
+	scheinlich viel zu tun hatte, mir aber vom (De)Coder nicht ausgegeben wurde,
+	was gerade passierte. Ungeduldige Benutzer könnten meinen, die Software würde
+	hängen und das Programm per Taskmanager beenden!
+--> Im Konfigurationsdialog anstatt der Buttons CheckBoxes einsetzen! Da kann man
+	dann auch gleich den aktuellen Status der Funktion erfahren.
+--> Dokumentation: Link zu und Nennung von InnoSetup: Bitte umgehend entfernen! Es
+	geht nicht, dass ein Partner von uns für ein Konkurrenzprodukt wirbt.
+
+Stellungnahme von Daniel Marschall zu den Verbesserungsvorschlägen
+
+a) Zur Kenntnis genommen; Buttons werden zusätzlich eingefügt
+b) Leider ist es technisch nicht möglich, eine Statusanzeige für den kompleten ZIP-Status
+   zu machen. Ich werde aber ein Form entwerfen, das einen durchlaufenden XP-Balken zeigt,
+   damit der Benutzer weis, was gearbeitet wird.
+c) CheckBoxes im ConfigForm sind bereits vor Freigabe des Betaberichtes eingebaut worden
+d) InnoSetup-"Werbung": Find ich jetzt ein bißchen arg, aber werde ich machen. Ich kann
+   Cetup so lange nicht nutzen, bis es alle meine Anforderungen ausführen kann. Werde mal
+   schauen. Erwähnen muss ich es aber irgendwo (+ Link), da ich auch den Quellcode komplett offenlege
+   und die Benutzer müssen wissen, welchen Installer sie zum öffnen des Scriptes brauchen.
+e) Es ist erwünscht, dass beim doppelklick einer Datei eine zweite Instanz sich öffnet.
+f) Einige Funktionen werden noch eingebaut.

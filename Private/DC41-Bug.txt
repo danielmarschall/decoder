@@ -1,0 +1,10 @@
+html datei mit übersetzung
+
+zelenka prüfen lassen
+# + fal für securemove-fehler
+# + setup fall für securemoveext-install
+# + handbuch, lizenzvertrag
+
+securemove form besser
+
+zukunftsvision: wildcards mit mehreren eingaben?

@@ -1,0 +1,816 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" href="style.css" type="text/css">
+  <title>(De)Coder 4.1 Hilfe</title>
+</head>
+
+<body>
+
+<font class="titel"><strong>(De)Coder 4.1 Handbuch</strong></font>
+
+<br><br><font size="+1"><b>Achtung!</b> Es handelt sich hierbei um eine Beta-Version. Bitte pr&uuml;fen Sie regelm&auml;&szlig;ig auf Updates, um die finale Version zu erhalten.</font>
+
+<p><a name="i"><font class="ueberschrift">Inhalte</font></a></p>
+
+<ul>
+    <li><a href="#1"><strong>Allgemeines zu (De)Coder 4.1</strong>
+        </a><ol>
+            <li>Neuerungen von (De)Coder 4</li>
+            <li>Allgemeine Hinweise </li>
+            <li>Sicherheitshinweise</li>
+            <li>Instanzen</li>
+            <li>Passwort vergessen, und nun?</li>
+        </ol>
+    </li>
+    <li><a href="#2"><strong>Befehlszeilenanleitung</strong></a><ol>
+            <li>CODER [Dateiname] [...] [/newinstance]</li>
+            <li>CODER [Eingabe] [...] /c [Passwort] [Ausgabe]</li>
+            <li>CODER [Eingabe] [...] /x [Passwort] [Ausgabe]</li>
+            <li>CODER [Eingabe] /e [/notsilent]</li>
+            <li>CODER /clean [silent] [/only=...]</li>
+            <li>CODER /? </li>
+            <li>Errorlevels </li>
+        </ol>
+    </li>
+    <li><a href="#3"><strong>Tempor&auml;re Dateien</strong></a></li>
+    <li><a href="#4"><strong>Versionsgeschichte</strong></a><ul>
+            <li>Version 1.0</li>
+            <li>Version 2.0</li>
+            <li>Version 2.1</li>
+            <li>Version 2.2</li>
+            <li>Version 3.0</li>
+            <li>Version 3.1</li>
+            <li>Version 3.2</li>
+            <li>Version 4.0</li>
+            <li>Version 4.1</li>
+        </ul>
+    </li>
+    <li><a href="#5"><strong>Funktionsweisen</strong></a> </li>
+    <li><a href="#6"><strong>Lizenz</strong></a> </li>
+    <li><a href="#7"><strong>&Uuml;ber dieses Programm</strong></a> </li>
+</ul>
+
+<p><a name="1"><font size="5"><font class="ueberschrift">Allgemeines
+zu (De)Coder 4.1</font></font></a></p>
+
+<p><b>Neuerungen von (De)Coder 4</b></p>
+
+<p>Vielen Dank, dass Sie sich f&uuml;r (De)Coder 4 entschieden
+haben!</p>
+
+<p>Das von Daniel Marschall entwickelte Programm (De)Coder ist
+nun nach sehr langer Pause in Version 4 erschienen. Es gibt
+etliche Neuerungen und nun eine optimale Datensicherheit durch
+den AES-Standard.</p>
+
+<p>Es gibt folgende Neuerungen:</p>
+
+<ul>
+    <li><em>Multilinguale Unterst&uuml;tzung<br>
+        </em>(De)Coder kann &uuml;ber leicht zu bearbeitende
+        INI-Dateien in verschiedene Sprachen &uuml;bersetzt werden, da
+        das Hauptprogramm Sprachneutral entwickelt wurde. Die
+        Sprachen Englisch, Franz&ouml;sisch und Deutsch werden von
+        ViaThinkSoft bereitgestellt. Die meisten Steuerelemente
+        von (De)Coder akzeptieren mehrzeilige Eintr&auml;ge (### Sequenz
+        in der Sprachdatei) und passen sich der L&auml;nge des Eintrages
+        an.</li>
+</ul>
+
+<ul>
+    <li><em>Prozessfortschrittserkennung und Abbruchreaktionen</em><br>
+        (De)Coder zeigt Ihnen bei jeder Aktion (z.B.
+        Verschl&uuml;sselung) den genauen Stand in Prozentangaben an.
+        Somit kann bei gro&szlig;en Dateien eingesch&auml;tzt werden, wie
+        lange der Prozess noch dauert. Desweiteren kann mitten
+        bei einer Aktion das Programm abgebrochen werden. Trotz
+        einer Abbruchreaktion wird (De)Coder versuchen, die
+        tempor&auml;ren Dateien zu vernichten.</li>
+</ul>
+
+<ul>
+    <li><em>Hoher Sicherheitsstandard</em><br>
+        (De)Coder 4 verwendet erstmals moderne und weltweit
+        verwendete Algorithmen. Es wird der
+        symmetrische&nbsp;Block-Cipher-Algorithmus &quot;<a
+        href="http://de.wikipedia.org/wiki/Advanced_Encryption_Standard" target="_blank">Rijndael
+        (AES)</a>&quot; verwendet. Das Passwort des Ciphers wird
+        durch das Benutzerpasswort und einen 128-Bit Seed, der
+        Zufallswerte enth&auml;lt, &uuml;ber den Hash-Algorithmus &quot;<a
+        href="http://de.wikipedia.org/wiki/Sicherer_Hash-Algorithmus" target="_blank">SHA
+        512</a>&quot; mit 512 Bit festgelegt. Somit ist jede
+        Datei verschieden - auch wenn sie immer mit dem selben
+        Kennwort verschl&uuml;sselt wird. Durch diese Methode kann
+        das Benutzerpasswort unm&ouml;glich ermittelt werden. Als
+        Cipher-Modus wird CTS verwendet. Dies ist ein doppelter <a
+        href="http://de.wikipedia.org/wiki/Cipher_Block_Chaining_Mode" target="_blank">CBC</a>.</li>
+</ul>
+
+<ul>
+    <li><em>Korrektheit des Benutzerkennworts wird ermittelt</em><br>
+        Nachdem eine Datei entschl&uuml;sselt wurde, wird anhand
+        eines Datei Hashs (wieder mit SHA 512) ermitelt, ob die
+        Datei korrekt entschl&uuml;sselt wurde - ist dies nicht der
+        Fall, ist oftmals das Benutzerkennwort falsch. </li>
+</ul>
+
+<ul>
+    <li><em>Befehlszeilenunterst&uuml;tzung<br>
+        </em>Sie k&ouml;nnen (De)Coder alle Befehle &uuml;ber die
+        Windows-Konsole geben, die sie auch visuell ausf&uuml;hren
+        k&ouml;nnen. Somit k&ouml;nnen Sie Ver- und Entschl&uuml;sselungen
+        &uuml;ber eine Stapelverarbeitungsdatei ausf&uuml;hren oder
+        (De)Coder in einem anderen Programm durch Aufruf mit
+        Parametern verwenden. (De)Coder arbeitet im Hintergrund
+        und kommt bei dem Befehlszeilenaufruf nicht zum
+        Vorschein.</li>
+</ul>
+
+<ul>
+    <li><em>Drag und Drop-Unterst&uuml;tzung<br>
+        </em>Sie k&ouml;nnen Dateien und Ordner einfach in das
+        (De)Coder fenster schieben, um Sie zu &ouml;ffnen.</li>
+</ul>
+
+<ul>
+    <li><em>Eigener Dateityp (*.dc4) - frei konfigurierbar<br>
+        </em>(De)Coder 4 besitzt ein eigenes Dateiformat, dass
+        die Erweiterung DC4 besitzt. Sowohl verschl&uuml;sselte
+        Ordner als auch verschl&uuml;sselte Dateien werden zu den DC4
+        Dateien, die auf Benutzerwunsch auch (De)Coder 4
+        zugewiesen werden k&ouml;nnen.</li>
+</ul>
+
+<ul>
+    <li><em>Kontextmen&uuml;eintrag f&uuml;r Dateien und Ordner - frei
+        konfigurierbar<br>
+        </em>Auf Benutzerwunsch k&ouml;nnen auch den Dateien und
+        Ordnern ein Kontextmen&uuml;eintrag zugewiesen werden, sodass
+        Sie (De)Coder noch schneller &ouml;ffnen k&ouml;nnen.</li>
+</ul>
+
+<ul>
+    <li><em>Installer / Uninstaller<br>
+        </em>(De)Coder 4 verf&uuml;gt &uuml;ber einen mehrsprachigen
+        Installer sowie Uninstaler, um sich optimal in das System
+        zu integrieren.</li>
+</ul>
+
+<ul>
+    <li><em>Schutz vor Keyloggern<br>
+        </em>Seit Version 4.1 sind die Passwortfelder vor softwarebasierenden
+        Keyloggern gesch&uuml;tzt, die Tastendr&uuml;cke abfangen. Nach jeder
+        Eingabe wird ein wenig Datenm&uuml;ll, der von der L&auml;nge her variiert,
+        gesendet, vom Eingabefeld jedoch ignoriert.</li>
+</ul>
+
+<ul>
+    <li><em>Sicheres L&ouml;schen<br>
+        </em>Seit Version 4.1 bietet (De)Coder die M&ouml;glickeit an, seperate
+        Daten und Ordner vollst&auml;ndig sicher zu l&ouml;schen.</li>
+</ul>
+
+<ul>
+    <li><em>Sicheres Verschieben<br>
+        </em>Seit Version 4.1 k&ouml;nnen Sie Dateien und Ordner sicher verschieben. Dies ist
+        ein Kopierprozess mit anschlie&szlig;ender sicheren L&ouml;schung.</li>
+</ul>
+
+<ul>
+    <li><em>Direktes &Ouml;ffnen<br>
+        </em>Seit Version 4.1 k&ouml;nnen Sie verschl&uuml;sselte Dateien und Ordner direkt
+        &ouml;ffnen, ohne Sie an einen bestimmten Ort abzuspeichern.</li>
+</ul>
+
+<ul>
+    <li><em>H&ouml;chste Sicherheit<br>
+        </em>Seit Version 4.1 l&ouml;scht (De)Coder alle tempor&auml;ren Dateien sowie ZIP-&Uuml;berst&auml;nde
+        durch mehrmaliges &Uuml;berschreiben, um Daten auf dem freien Speicherplatz
+        der Festplatte zu sch&uuml;tzen.</li>
+</ul>
+
+<ul>
+    <li><em>Dateilisten<br>
+        </em>(De)Coder unterst&uuml;tzt seit Version 4.1 das Anlegen und Verwalten von Dateilisten. Dadurch
+        k&ouml;nnen Ordner und Dateien direkt in eine DC4-Datei geschoben werden, ohne dass diese vorher in einen
+        Windows-Ordner verschoben werden m&uuml;ssen.</li>
+</ul>
+
+<p>Information: (De)Coder 4 ist nicht kompatibel mit seinen
+Vorg&auml;ngern. Das bedeutet, dass Dateien, die mit &auml;lteren
+Versionen von (De)Coder verschl&uuml;sselt wurden, nicht mehr
+eingelesen werden k&ouml;nnen. Aufgrund der geringen Sicherheit der
+alten Versionen werden diese auch nicht mehr bei den offiziellen
+Downloadquellen zum Download angeboten. Der Entwicker <a
+href="mailto:info@daniel-marschall.de">Daniel Marschall</a>&nbsp;bietet
+noch Unterst&uuml;tzung f&uuml;r (De)Coder ab Version 3.0. Wenn Sie alte
+Dateien besitzen und die dazugeh&ouml;rige Software nicht mehr haben, k&ouml;nnen Sie
+(De)Coder 3.2 anfordern.</p>
+
+<p>Die Bedienung des Programms d&uuml;rfte ziemlich Eindeutig sein,
+deswegen erl&auml;utere ich die Bedienung hier auch nicht weiter.
+Sollten Sie trotzdem fragen zum Programm haben, k&ouml;nnen Sie mir
+jederzeit per E-Mail fragen stellen.</p>
+
+<p><b>Allgemeine Hinweise</b></p>
+
+<p>Im Allgemeinen sollte jede Datei nach der Verschl&uuml;sselung
+nocheinmal zur Sicherheit entschl&uuml;sselt werden, um
+sicherzustellen, dass alles funktioniert hat. Achten Sie auch auf
+die korrekte Eingabe des Passworts - es wird zwischen Gro&szlig;- und
+Kleinschreibung unterschieden. Deswegen sollte die Feststelltaste
+deaktiviert sein; das Programm warnt Sie jedoch, wenn dies nicht
+der Fall ist. </p>
+
+<p>Obwohl bei der Entwicklung sehr auf das Sparen von Ressourcen
+geachtet wurde, sollte mit Vorsicht vorgegangen werden, wenn
+gr&ouml;&szlig;ere Dateien mit (De)Coder ver- oder entschl&uuml;sselt werden.
+Es kann unter Umst&auml;nden vorkommen, dass das System f&uuml;r l&auml;ngere
+Zeit auslastet oder dass die Vorg&auml;nge aufgrund von zu wenig
+Arbeitsspeicher bzw. zu kleiner Auslagerungsdatei fehlschlagen.
+Besonders hier ist es zu empfehlen, dass die
+R&uuml;ckentschl&uuml;sselung getestet wird.</p>
+
+<p>(De)Coder 4 f&uuml;hrt die Verschl&uuml;sselung bzw.
+Entschl&uuml;sselung sofort nach Klick auf den Haken aus und erstellt
+bei diesem Prozess eine tempor&auml;re Datei. Wenn es zu keinen
+Fehlern kommt (z.B. aufgrund der Eingabe eines falschen
+Passworts) wird der Benutzer aufgefordert, die Zielposition
+anzugeben. Erst danach wird die tempor&auml;re Datei zum Zielort
+verschoben und umbenannt. Bricht der Benutzer die
+Eingabeaufforderung ab oder schl&auml;gt die Ver- bzw.
+Entschl&uuml;sselung fehl, wird die tempor&auml;re Datei sofort wieder
+gel&ouml;scht.</p>
+
+<p>Sie sollten also bei jeder Ver- bzw. Entschl&uuml;sselung genau so
+viel Speicherplatz auf dem Medium, auf dem das tempor&auml;re
+Verzeichnis von Windows liegt, freihalten, wie Quelldatei gro&szlig;
+ist (es wird jedoch etwas mehr empfohlen). Wenn Sie eine 100 MB
+gro&szlig;e Datei verschl&uuml;sseln m&ouml;chten, dann sollten auf dem
+Laufwerk noch 101 MB frei sein - auch wenn Sie die Datei
+anschlie&szlig;end auf ein anderes Laufwerk speichern m&ouml;chten!</p>
+
+<p>(De)Coder 4.1 verwendet ein erweitertes Dateiformat, das von (De)Coder 4.0
+nicht erkannt wird. Version 4.1 toleriert das Dateiformat von Version 4.0 jedoch.</p>
+
+<p><b>Sicherheitshinweise</b></p>
+
+<p>Obwohl (De)Coder 4 eine extrem hohe Sicherheit aufweist,
+bleiben die Quelldateien, die Sie verschl&uuml;sseln, auf der
+Festplatte, wenn Sie diese nicht sicher l&ouml;schen. (De)Coder
+bietet die M&ouml;glichkeit an, Quelldateien sicher zu l&ouml;schen.
+Dabei wird die Datei mehrmals &uuml;berschrieben, bevor sie
+unwiederruflich gel&ouml;scht wird. Durch diese Option bleiben keine
+Reste der Quelldatei mehr auf dem Datentr&auml;ger zur&uuml;ck. Beachten
+Sie jedoch, dass jede Datei, die Sie nicht sicher (durch
+&Uuml;berschreiben) l&ouml;schen, auf dem Datentr&auml;ger
+zur&uuml;ckbleibt, bis sie mit neuen Daten &uuml;berschrieben wird!</p>
+
+<p>(De)Coder bietet die M&ouml;glichkeit, Dateien und Ordner auch
+seperat zu vernichten. Dies hilft jedoch nicht, wenn Sie
+die sensiblen Daten verschoben oder kopiert haben, weil bei diesen
+Vorg&auml;ngen die Quelldaten nur einfach gel&ouml;scht werden. Ebenfalls
+hilft es nicht, Daten &uuml;ber den Windows Papierkorb zu l&ouml;schen.
+(De)Coder bietet keine M&ouml;glichkeit an, z.B. freien Speicherplatz
+auf der Festplatte zu reinigen oder ganze Laufwerke datentechnisch zu vernichten. Benutzen Sie f&uuml;r solche Zwecke
+eine speziell daf&uuml;r vorgesehene Software wie z.B. <a href="http://www.heidi.ie/eraser/" target="_blank">Eraser</a>.
+(De)Coder ist seit Version 4.1 in der Lage, Dateien sicher zu verschieben.</p>
+
+<p>Sie sollten bei der Wahl des Passwortes darauf achten, dass es
+eine geeignete L&auml;nge (empfohlen werden mindestens 10 Zeichen)
+aufweist und aus Buchstaben und Zahlen besteht. Desweiteren
+sollte sowohl Gro&szlig;- als auch Kleinschreibung angewandt werden.
+Es sollten keine W&ouml;rter, die in W&ouml;rterb&uuml;chern
+stehen,&nbsp;verwendet werden. Durch diese Ma&szlig;nahmen verhindern
+Sie einen BruteForce-Angriff.</p>
+
+<p>(De)Coder ist in der Lage, Keylogger, die tastenanschl&auml;ge softwaretechnisch
+abfangen, durch Datenm&uuml;ll zu blocken. Dies gilt jedoch nicht f&uuml;r hardwaretechnische
+(z.B. eingebauten Chip in der Tastatur) oder spezielle Keylogger. Sie sollten Ihr System daher
+z.B. mit einem Virenschutzprogramm &uuml;berpr&uuml;fen lassen. Sie k&ouml;nnen die St&auml;rke des Keyloggerschutzes in der
+Konfiguration &auml;ndern oder deaktivieren. Beachten Sie, dass der PC bei zu vielen
+Keyloggerschutzbytes stark ausgelastet werden kann, wodurch Tastenanschl&auml;ge unter Umst&auml;nden
+nicht registriert werden k&ouml;nnen. Achten Sie daher darauf, bei hoher Keyloggerschutzbyte-Anzahl
+oder bei einem langsamen oder ausgelasteten Computer langsam zu schreiben und achten
+Sie auf die Sternchen, die bei den Anschl&auml;gen erscheinen.</p>
+
+<p>(De)Coder verwendet zur Passwort&uuml;berpr&uuml;fung eine Hash-Pr&uuml;fsumme,
+die zusammengesetzt ist aus der Hash-Pr&uuml;fsumme der Originaldatei sowie des
+Seed und der Originalpasswortes. Es ist unm&ouml;glich, R&uuml;ckschl&uuml;sse
+auf das Originalpasswort oder die Originaldatei zu ziehen.</p>
+
+<p>Bitte beachten Sie, dass (De)Coder den originalen Dateinamen des Ordners
+bzw. der Datei speichert. M&ouml;chten Sie verhindern, dass die DC4-Datei Aufschluss
+&uuml;ber den Dateinamen gibt, sollten Sie die Datei oder den Ordner vorher umbenennen.</p>
+
+</p><b>Instanzen</b></p>
+
+<p>(De)Coder wird versuchen, immer nur eine Instanz (ein Programfenster)
+ge&ouml;ffnet zu halten. Dies gilt jedoch nur f&uuml;r die normale
+Ausf&uuml;hrung mit der Befehlszeile CODER bzw CODER [Dateiname]. Ist (De)Coder
+besch&auml;ftigt, wird eine neue Instanz ge&ouml;ffnet.</p>
+
+<p>Weitere Informationen finden Sie unter den Diagrammen bei <a href="#5">Funktionsweisen</a>.</p>
+
+<p><strong>Passwort vergessen, was nun?</strong></p>
+
+<p>Dann haben Sie ein Problem... Es gibt keine M&ouml;glichkeit, die
+Daten ohne korrektes Passwort wieder zu entschl&uuml;sseln.</p>
+
+<p><a href="#i"><strong>Zur&uuml;ck zum Inhaltsverzeichnis</strong></a></p>
+
+<p><a name="2"><font size="5"><font class="ueberschrift">Befehlszeilenanleitung</font></font></a></p>
+
+<p>Sie k&ouml;nnen (De)Coder auch &uuml;ber die Befehlszeile aufrufen.
+Sie k&ouml;nnen Stapelverarbeitungsdateien (*.bat) erstellen, um
+Prozesse abzuarbeiten. Bitte beachten Sie die korrekte Schreibweise und Reihenfolge der Parameter.</p>
+
+<p><b>CODER [Dateiname] [...] [/newinstance]</b></p>
+
+<p>Ist &quot;Dateiname&quot; eine Datei, dann wird (De)Coder
+gestartet und die Datei ge&ouml;ffnet. Es kann sich um eine
+unverschl&uuml;sselte Datei oder um eine verschl&uuml;sselte Datei bzw.
+einen verschl&uuml;sselten Ordner handeln. </p>
+
+<p>Ist &quot;Dateiname&quot; ein Ordner, dann wird (De)Coder
+gestartet und der Ordner ge&ouml;ffnet.</p>
+
+<p>Sind mehrere Dateien oder Ordner angegeben, wird werden sie
+zu einem Ordner zusammengepackt und mit (De)Coder ge&ouml;ffnet.
+Unter den Dateien k&ouml;nnen auch DC4-Dateien sein, die
+dann jedoch noch einmal verschl&uuml;sselt werden.</p>
+
+<p>Sind keine Dateien oder Ordner angegeben, wird (De)Coder normal
+gestartet.</p>
+
+<p>Ist in der Kommandozeile die Zeichenfolge &quot;/newinstance&quot;
+enthalten, wird eine neue Instanz ge&ouml;ffnet. Dieser Parameter
+wird Programmintern verwendet.</p>
+
+<p>Wildcards sind erlaubt, wenn 1 Eingabe gemacht wurde.</p>
+
+<p>Es entstehen keine ErrorLevels au&szlig;er 0, 10, 11.</p>
+
+<p><b>CODER [Eingabe] [...] /c [Passwort] [Ausgabe]</b><br>
+<b>CODER [Eingabe] [...] /x [Passwort] [Ausgabe]</b></p>
+
+<p>Sicheres L&ouml;schen von Dateien</p>
+
+<ul>
+    <li>Wird ein /c angegeben, so bleiben die Quelldaten
+        erhalten.</li>
+    <li>Bei der Angabe eines /x werden die Quelldaten (bei einem
+        Ordner alle Elemente mit Unterordnern) sicher durch
+        mehrmaliges &Uuml;berschreiben <i>unwiederruflich</i>
+        gel&ouml;scht (sofern kein Fehler aufgetreten ist). Es werden
+        auch schreibgesch&uuml;tzte Dateien gel&ouml;scht.</li>
+</ul>
+
+<p>Automatische Erkennung von Verschl&uuml;sselung und
+Entschl&uuml;sselung</p>
+
+<ul>
+    <li>Ist Eingabe eine verschl&uuml;sselte Datei, wird sie nach
+        Ausgabe entschl&uuml;sselt</li>
+    <li>Ist Eingabe ein verschl&uuml;sselter Ordner, wird er
+        entschl&uuml;sselt mit seinem originalen Namen in Ausgabe
+        erstellt</li>
+    <li>Ist Eingabe eine nicht verschl&uuml;sselte Datei, wird sie
+        nach Ausgabe verschl&uuml;sselt<br>
+        die Eingaben Cipher, Hash und Mode werden dabei zwar
+        ignoriert, trotzdem m&uuml;ssen es g&uuml;ltige Eingaben
+        (Ganzzahlen im g&uuml;ltigen Bereich) sein</li>
+    <li>Ist Eingabe ein Ordner, wird er gepackt und nach Ausgabe
+        verschl&uuml;sselt</li>
+</ul>
+
+<p>Wenn bereits ein Element mit dem Namen vorhanden ist</p>
+
+<ul>
+    <li>Ist bei der Ordnerentschl&uuml;sselung in Ausgabe bereits ein
+        Verzeichnis mit dem originalen Namen vorhanden, wird ein
+        alternativer Name gew&auml;hlt. </li>
+    <li>Ist Ausgabe bei einer Verschl&uuml;sselung bereits vorhanden,
+        wird es &uuml;berschrieben.</li>
+</ul>
+
+<p>Kontrolle der Dateinamenserweiterungen</p>
+
+<ul>
+    <li>Hat Ausgabe bei einer Verschl&uuml;sselung nicht die
+        Erweiterung &quot;.dc4&quot;, wird diese Angabe
+        hinzugef&uuml;gt.</li>
+    <li>Hat Ausgabe bei einer Entschl&uuml;sselung die Erweiterung
+        &quot;.dc4&quot;, wird diese Angabe entfernt.</li>
+</ul>
+
+<p>Anmerkungen</p>
+
+<ul>
+    <li>Wildcards sind erlaubt, wenn 1 Eingabe angegeben wurde</li>
+    <li>Es k&ouml;nnen mehrere Eingabedateien- und Ordner angegeben
+        werden. In diesem Fall wird eine Dateiliste angelegt. Verschl&uuml;sselte
+        DC4-Dateien werden jedoch ebenfalls in das Archiv gepackt und nicht entschl&uuml;sselt.</li>
+    <li>Existiert das Ausgabeverzeichnis nicht, so werden alle
+        Unterverzeichnisse automatisch erstellt.</li>
+    <li>Wenn Sie den Ordner in das selbe Verzeichnis
+        entschl&uuml;sseln m&ouml;chten, so geben Sie als Ausgabe einen
+        Punkt (.) an&nbsp;- eine leere Eingabe f&uuml;r den Parameter
+        &quot;Ausgabe&quot; w&uuml;rde einen Syntaxfehler
+        hervorrufen. </li>
+</ul>
+
+<p>Beispiel f&uuml;r eine Stapelverwaltungsdatei (*.bat)</p>
+
+<p><code>@ ECHO OFF<br>
+CODER &quot;Meine Textdatei.txt&quot; /c &quot;Mein
+Passwort&quot; &quot;Verschluesselt.dc4&quot;<br>
+ECHO %ERRORLEVEL% <br>
+CODER &quot;Verschluesselt.dc4&quot; /c &quot;Mein Passwort&quot;
+&quot;Rueckverschluesselung.txt&quot;<br>
+ECHO %ERRORLEVEL% <br>
+ECHO. <br>
+ECHO Vergleiche Dateien... <br>
+ECHO. <br>
+FC &quot;Meine Textdatei.txt&quot;
+&quot;Rueckverschluesselung.txt&quot;<br>
+PAUSE</code></p>
+
+<p>Es k&ouml;nnen alle ErrorLevels au&szlig;er 8 und 9 zur&uuml;ckgegeben werden.</p>
+
+<p><b>CODER [Eingabe] /e [/notsilent]</b></p>
+
+<p>Vernichtet die Datei oder den Ordner "Eingabe".</p>
+
+<p>Ist /notsilent gesetzt, werden Windows-Meldungen anstatt von ErrorLevels ausgegeben.</p>
+
+<p>Wildcards sind erlaubt.</p>
+
+<p>Es k&ouml;nnen folgende ErrorLevels entstehen: 0 (OK), 3 (Syntaxfehler), 8 (Fehler), 9 (Nicht gefunden), 11.</p>
+
+<p><b>CODER /clean [/silent] [/only=...]</b></p>
+
+<p>Fordert (De)Coder dazu auf, die tempor&auml;ren Dateien manuell zu
+entfernen. Dies wird normalerwei&szlig;e automatisch durchgef&uuml;hrt.
+Der Parameter &quot;/silent&quot; unterdr&uuml;ckt zus&auml;tzlich
+jegliche Ausgabe. Der Parameter &quot;only&quot; wird in der Regel nur
+programmintern benutzt. Dabei werden nur die Dateien einer bestimmten
+Sitzungsnummer gel&ouml;scht.</p>
+
+<p>Ist Silent-Modus aktiviert, entstehen folgende ErrorLevels: 0 (OK), 3 (Syntaxfehler), 8 (Fehler), 11.</p>
+
+<p><b>CODER /?</b></p>
+
+<p>&Ouml;ffnet die (De)Coder-Hilfe (diese hier). </p>
+
+<p>Es entstehen keine ErrorLevels au&szlig;er 0, 3 und 11.</p>
+
+<p><strong>Errorlevels</strong> </p>
+
+<p>(De)Coder arbeitet bei der letzten Variante ausschlie&szlig;lich im
+Hintergrund und gibt keine Meldungen (z.B. Fehler) aus. Um Fehler
+zu Diagnostizieren, werden sogenannte Errorlevels vom Programm
+ausgegeben.</p>
+
+<p>Es existieren folgende Errorlevels:</p>
+
+<p><code>Errorlevel 0 = Kein Fehler<br>
+Errorlevel 1 = DC4 Datei besch&auml;digt <br>
+Errorlevel 2 = Fehler bei Ver-/Entschl&uuml;sselung <br>
+Errorlevel 3 = Falsche Syntax<br>
+Errorlevel 4 = Ausgabeverzeichnis konnte nicht erstellt werden <br>
+Errorlevel 5 = Datei konnte nicht zur Zielposition verschoben
+werden <br>
+Errorlevel 6 = Quelldateien konnten nicht vollst&auml;ndig gel&ouml;scht
+werden. <br>
+Errorlevel 7 = Internes ZIP-Archiv fehlerhaft<br>
+ErrorLevel 8 = Datei oder Ordner konnte nicht oder nur teilweise entfernt werden. (*)<br>
+ErrorLevel 9 = Datei oder Ordner nicht gefunden. (*)<br>
+ErrorLevel 10 = Es existiert bereits eine Instanz. Ein neues Fenster wird ge&ouml;ffnet.<br>
+ErrorLevel 11 = Schwerer Programminterner Fehler (z.B. Language.ini fehlt).</code></p>
+
+<p>* Hinweis: Diese Errorlevels treten nicht bei Wildcards oder Dateisammlungen (mehrere Eingaben) auf.</p>
+
+<p>Die Errorlevels k&ouml;nnen in einer Stapelverwaltungsdatei
+(*.bat) folgenderma&szlig;en abgefragt werden:</p>
+
+<p><code>@ ECHO OFF<br>
+CODER &quot;Mein Verzeichnis&quot; /c &quot;Mein Passwort&quot;
+&quot;Ausgabe.dc4&quot;<br>
+<br>
+IF ERRORLEVEL 11 GOTO F11 <br>
+IF ERRORLEVEL 10 GOTO F10 <br>
+IF ERRORLEVEL 9 GOTO F9 <br>
+IF ERRORLEVEL 8 GOTO F8 <br>
+IF ERRORLEVEL 7 GOTO F7 <br>
+IF ERRORLEVEL 6 GOTO F6 <br>
+IF ERRORLEVEL 5 GOTO F5 <br>
+IF ERRORLEVEL&nbsp;4 GOTO F4 <br>
+IF ERRORLEVEL&nbsp;3 GOTO F3 <br>
+IF ERRORLEVEL&nbsp;2 GOTO F2 <br>
+IF ERRORLEVEL&nbsp;1 GOTO F1 <br>
+IF ERRORLEVEL&nbsp;0 GOTO F0 <br>
+<br>
+:F0 <br>
+ECHO Alles OK, Errorlevel 0 <br>
+GOTO ENDE <br>
+<br>
+:F1 <br>
+ECHO DC4 Datei besch&auml;digt, Errorlevel 1 <br>
+GOTO ENDE <br>
+<br>
+:F2 <br>
+ECHO Fehler bei Ver/Entschl&uuml;sselung, Errorlevel 2 <br>
+GOTO ENDE <br>
+<br>
+:F3 <br>
+ECHO Falsche Syntax oder Datei/Verzeichnis nicht gefunden,
+Errorlevel 3 <br>
+GOTO ENDE <br>
+<br>
+:F4 <br>
+ECHO Ausgabeverzeichnis konnte nicht erstellt werden, Errorlevel
+4 <br>
+GOTO ENDE <br>
+<br>
+:F5 <br>
+ECHO Datei konnte nicht zur Zielposition verschoben werden,
+Errorlevel&nbsp;5 <br>
+GOTO ENDE <br>
+<br>
+:F6 <br>
+ECHO Quelldateien konnten nicht vollst&auml;ndig gel&ouml;scht werden.
+Errorlevel&nbsp;6 <br>
+GOTO ENDE <br>
+<br>
+:F7 <br>
+ECHO Internes ZIP-Archiv fehlerhaft, Errorlevel&nbsp;7 <br>
+GOTO ENDE <br>
+<br>
+:F8 <br>
+ECHO Datei oder Ordner konnte nicht oder nur teilweise entfernt werden, Errorlevel&nbsp;8 <br>
+GOTO ENDE <br>
+<br>
+:F9 <br>
+ECHO Datei oder Ordner nicht gefunden, Errorlevel 9 <br>
+GOTO ENDE <br>
+<br>
+:F10 <br>
+ECHO Es existiert bereits eine zweite Instanz. Ein neues Fenster wurde ge&ouml;ffnet, ErrorLevel 10<br>
+GOTO ENDE <br>
+<br>
+:F11 <br>
+ECHO Schwerer Programminterner Fehler, ErrorLevel 11<br>
+GOTO ENDE <br>
+<br>
+:ENDE <br>
+PAUSE </code></p>
+
+<p>Soll keine Abfrage erfolgen, sonern nur eine einfache Ausgabe,
+kann auch die Variable %ERRORCODE% ausgegeben werden.</p>
+
+<p><code>@ ECHO OFF<br>
+CODER &quot;Mein Verzeichnis&quot; /c &quot;Mein Passwort&quot;
+&quot;Ausgabe.dc4&quot; <br>
+CODER &quot;Ausgabe.dc4&quot; /c &quot;Falsches Passwort&quot;
+&quot;.&quot; <br>
+ECHO Das ErrorLevel ist: <br>
+ECHO %ERRORLEVEL% <br>
+PAUSE</code></p>
+
+<p><a href="#i"><strong>Zur&uuml;ck zum Inhaltsverzeichnis</strong></a></p>
+
+<p><a name="3"><font size="5"><font class="ueberschrift">Tempor&auml;re Dateien</font></font></a></p>
+
+<p>(De)Coder ermittelt das tempor&auml;re Verzeichnis Ihres Systems
+bzw. des aktuell angemeldeten Benutzers. Bei Windows 9x ist dies
+gew&ouml;hnlicherwei&szlig;e &quot;C:\WINDOWS\TEMP&quot;, bei Windows XP
+&quot;C:\Dokumente und Einstellungen\Benutzername\Lokale
+Einstellungen\Temp\&quot;.</p>
+
+<p><u>Das Programm erstellt folgende Dateien:</u></p>
+
+<ul>
+    <li><b>DeCoder_[Sitzungskennung].zip:</b> &Ouml;ffnet man einen Ordner zum
+        Verschl&uuml;sseln, wird er gepackt. Anschlie&szlig;end wird
+        die tempor&auml;re ZIP-Datei ge&ouml;ffnet. Sie wird au&szlig;erdem erstellt,
+        wenn man einen verschl&uuml;sselten Ordner entschl&uuml;sselt oder
+        direkt &ouml;ffnet. Es ist die Datei, die eigentlich in der DC4 enthalten ist.<br><br></li>
+    <li><b>DeCoder_[Sitzungskennung].tmp:</b> Wenn eine Datei ver- oder
+        entschl&uuml;sselt wird, wird sie erst als DeCoder.tmp
+        gespeichert. W&uuml;rde die Ver- oder Entschl&uuml;sselung fehlschlagen,
+        dann w&uuml;rde die Zieldatei unn&ouml;tig &uuml;berschrieben werden.
+        Die tempor&auml;re Datei wird anschlie&szlig;end zur Benutzerwahl
+        umbenannt und verschoben.<br><br></li>
+    <li><b>DeCoder_[Sitzungskennung].cmp:</b> Dateien und Ordner werden zus&auml;tzlich mit ZLib als CMP-Datei komprimiert,
+        bevor sie verschl&uuml;sselt werden. Wenn entschl&uuml;sselt wird, dient die CMP-Datei
+        als Dekompression der TMP-Datei, die anstelle dieser dann zur Zieldatei
+        umbenannt/verschoben wird. Komprimierte ZIP-Dateien werden aber anschlie&szlig;end wieder zur&uuml;ck zu ZIP umbenannt
+        (die gleichnamige Datei wird sicher gel&ouml;scht), damit sie entpackt werden kann.<br><br></li>
+    <li><b>DeCoder_Sensitiv\[Sitzungskennung]\:</b> Hier werden Dateien oder Ordner
+        gespeichert, die direkt ge&ouml;ffnet wurden. Der Ordner DeCoder_Sensitiv
+        wird bei einer Reinigung komplett sicher gel&ouml;scht. Nach beendigung
+        einer Sitzung wird nur der entsprechende Unterordner, der die aktuellen
+        Sitzungsdaten enth&auml;t, gel&ouml;scht.</li>
+</ul>
+
+<p>Da diese Dateien sensible Daten enthalten l&ouml;scht (De)Coder
+diese sofort nach Beendigung des Prozesses und &uuml;berpr&uuml;ft bei
+Beendigung des Progamms nocheinmal, ob die Dateien auch gel&ouml;scht
+wurden und l&ouml;scht diese gegebenenfalls. Vor dem L&ouml;schen dieser
+tempor&auml;ren Dateien werden diese nocheinmal komplett mit Daten
+&uuml;berschrieben, sodass keine R&uuml;ckst&auml;nde auf der Festplatte
+bleiben. Zum L&ouml;schen der Daten wird nach Beendung von (De)Coder
+ein neue Instanz ge&ouml;ffnet, die sich sofort wieder von selbst
+beendet.</p>
+
+<p>Sollte (De)Coder nicht ordnungsgem&auml;&szlig; beendet werden (z.B.
+durch einen Stromausfall oder eine sofortige Beendigung des
+Prozesses &uuml;ber den Taskmanager), bleiben die tempor&auml;ren Dateien erhalten und k&ouml;nnen
+selbst nach normalem L&ouml;schen (z.B. durch Windows) noch eingelesen
+werden. (De)Coder
+legt mehrere tempor&auml;re Dateien an, damit auch mehrere Fenster
+gleichzeitig ge&ouml;ffnet sein und arbeiten k&ouml;nnen. Nach jeder
+Beendung einer (De)Coder-Instanz wird versucht, alle tempor&auml;ren
+Daten der letzten (De)Coder-Instanz zu vernichten. Die restlichen
+ggf. vorhandenen Daten bleiben jedoch erhalten. Erst nach
+einem seperaten L&ouml;schauftrag (siehe Startmen&uuml;; es darf keine
+Instanz ge&ouml;ffnet sein) oder nach einem Systemneustart
+werden alle noch existierenden tempor&auml;ren gel&ouml;scht. Somit kommt es zu keinen
+Sicherheitsl&uuml;cken, wenn (De)Coder einmal durch einen
+Stromausfall oder &Auml;hnliches ausfiel.</p>
+
+<p>Die Windows-Laufwerksbereinigung l&ouml;scht nur tempor&auml;re Dateien,
+die &auml;lter als 1 Woche sind. In dieser Zeit wird (De)Coder mit
+den Reinigungsprozessen beim Systemstart ggf. bestehende Dateien
+gel&ouml;scht haben. Sie k&ouml;nnen jedoch trotzdem vor einer Laufwerksbereinigung
+die (De)Coder-Bereinigung &uuml;ber das Startmen&uuml; ausf&uuml;hren. Sie sollen
+keine Software verwenden, die tempor&auml;re Dateien automatisch entfernt, da
+diese Proramme ggf. tempor&auml;re (De)Coder-Dateien unsicher l&ouml;scht.</p>
+
+<p><a href="#i"><strong>Zur&uuml;ck zum Inhaltsverzeichnis</strong></a></p>
+
+<p><a name="4"><font size="5"><font class="ueberschrift">Versionsgeschichte</font></font></a></p>
+
+<p><strong>Version 1.0<br>
+</strong>Die Dateien werden &uuml;ber ein
+DOS-Programm&nbsp;verschl&uuml;sselt. Es werden nur die
+Buchstaben&nbsp;mit anderen ersetzt. </p>
+
+<p><strong>Version 2.0<br>
+</strong>Es verschl&uuml;sselt als Windowsprogramm. </p>
+
+<p><strong>Version 2.1<br>
+</strong>Es kann eine Zahl von 1 - 255 zum&nbsp;verschl&uuml;sseln
+ausgesucht werden. </p>
+
+<p><strong>Version 2.2<br>
+</strong>Es kann eine Zahl von 1 - 256 zum&nbsp;verschl&uuml;sseln
+ausgesucht werden. </p>
+
+<p><strong>Version 3.0<br>
+</strong>Nun kann auch ein Passwort eingegeben&nbsp;werden. </p>
+
+<p><strong>Version 3.1<br>
+</strong>Nun noch viel schneller beim
+verschl&uuml;sseln/entschl&uuml;sseln. </p>
+
+<p><strong>Version 3.2<br>
+</strong>Die Passworteingabe wird mit Sternchen
+(*)&nbsp;geschrieben. </p>
+
+<p><strong>Version 4.0 (Codename Gizeh)</strong><br>
+Die neue Version verschl&uuml;sselt mit den neusten
+Verschl&uuml;sselungsalgorithmen und ist im Vergleich zu seinen
+Vorg&auml;ngern extrem sicher geworden. Der Sicherheitsstandard AES
+wird eingesetzt und mit einem 512 Bit Hash sowie einem 128 Bit
+Seed erg&auml;nzt.</p>
+
+<p><strong>Version 4.1 (Codename Newfoundland)</strong><br>
+Schlichteres Design, einige Fehler wurden behandelt und die Unterst&uuml;tzung
+f&uuml;r die franz&ouml;sische Sprache hinzugef&uuml;gt. Es gibt
+nun die seperate M&ouml;glichkeit, eine Datei oder einen Ordner
+zu vernichten sowie Objekte sicher zu verschieben. Schutz vor Keyloggern, neues
+Dateiformat, Direkt-&Ouml;ffnen-Funktion, Wildcard-Unterst&uuml;tzung uvw.</p>
+
+<p><a href="#i"><strong>Zur&uuml;ck zum Inhaltsverzeichnis</strong></a></p>
+
+<p><a name="5"><font size="5"><font class="ueberschrift">Funktionsweisen</font></font></a></p>
+
+<ul>
+  <li><a href="funktionsweise_1.gif" target="_blank">Funktionsweise der Verschl&uuml;sselung von (De)Coder 4.1</a></li>
+  <li><a href="funktionsweise_2.gif" target="_blank">Funktionsweise der Entschl&uuml;sselung von (De)Coder 4.1</a></li>
+  <li><a href="funktionsweise_3.gif" target="_blank">Funktionsweise der Instanzenverwaltung von (De)Coder 4.1</a></li>
+  <li><a href="http://www.viathinksoft.de/info/decoder/dc4-spec.txt" target="_blank">DC4-Dateienaufbau</a> (Internetlink, in Englisch)</li>
+</ul>
+
+<p><a href="#i"><strong>Zur&uuml;ck zum Inhaltsverzeichnis</strong></a></p>
+
+<p><a name="6"><font size="5"><font class="ueberschrift">Lizenz</font></font></a></p>
+
+<code>LIZENZVEREINBARUNG F&Uuml;R (DE)CODER 4.1 VON DANIEL MARSCHALL<br>
+<br>
+(1) DEKLARATION DER SOFTWARE<br>
+<br>
+1.1 Die Software, die Sie installieren m&ouml;chten, ist sowohl als "Freeware" als auch "OpenSource" deklariert, d.h. sie ist kostenlos und der Quelltext steht f&uuml;r jeden zur Verf&uuml;gung.<br>
+<br>
+(2) WEITERGABEBEDINGUNGEN <br>
+<br>
+2.1 Sie sind berechtigt, die Software kostenlos zu kopieren und weiterzugeben sowie mithilfe des Quelltextes die Software f&uuml;r eigene Zwecke zu ver&auml;ndern.<br>
+<br>
+2.2 Nicht erlaubt ist es, eine ver&auml;nderte Version dieser Software ohne Erlaubnis des Autors freizugeben oder zu ver&ouml;ffentlichen.<br>
+<br>
+2.3 Ebenfalls ist es nicht gestattet, die Software zu verkaufen. F&uuml;r kommerzielle Nutzung sollte eine Erlaubnis des Autors eingeholt werden. Die Software darf nach Erlaubnis auf kommerziell vertriebene Datentr&auml;ger z.B. von Zeitschriften oder anderen Produkten kopiert bzw. beigelegt werden.<br>
+<br>
+(3) HAFTUNGSAUSSCHLUSS<br>
+<br>
+3.1 Der Autor dieser Software haftet nicht f&uuml;r Sch&auml;den, die durch diese verursacht wurden. Des Weiteren haftet er nicht f&uuml;r Datenverluste, die durch ein versehentliches Vernichten von Dateien durch (De)Coder entstehen k&ouml;nnen. Vergisst der Benutzer das korrekte Passwort f&uuml;r eine von ihm verschl&uuml;sselte Datei, so ist diese nicht wiederherzustellen. In diesem Fall haftet der Autor ebenfalls f&uuml;r keine Datenverluste.<br>
+<br>
+3.2 Das Programm wurde gr&uuml;ndlich getestet, aber trotzdem wird keine Haftung f&uuml;r Fehlfunktionen &uuml;bernommen. Die Funktionsweise ist durch den offengelegten Quelltext frei ersichtlich und transparent. Das Produkt-Release wurde negativ auf Viren gepr&uuml;ft, trotzdem kann keine Garantie &uuml;bernommen werden, dass das Setup-Package nach der Ver&ouml;ffentlichung bzw. nach dem Download z.B. durch einen Virus ver&auml;ndert oder infiziert wurde.<br>
+<br>
+3.3 Der Autor kann keine Haftung f&uuml;r Fehlfunktionen von Komponenten &uuml;bernehmen, die von (De)Coder genutzt werden. Die verwendeten Komponenten liegen dem Quelltext bei.<br>
+<br>
+3.4 Der Autor ist nicht verpflichtet, die Kompatibilit&auml;t zu alten Versionen beizubehalten oder veraltete Programmversionen f&uuml;r die Benutzer bereitzustellen.<br>
+<br>
+(4) ANMERKUNGEN<br>
+<br>
+4.1 Der Quelltext kann von <a href="http://www.viathinksoft.de/" target="_blank">www.viathinksoft.de</a> bezogen werden.<br>
+<br>
+4.2 Das Urheberrecht liegt bei Daniel Marschall. Alle Rechte sind vorbehalten.<br>
+<br>
+4.3 Durch die Installation der Software akzeptieren Sie die Vereinbarung und deren Bedingungen.<br>
+<br>
+4.4 Bitte beachten Sie die Bedingungen und Gesetze bez&uuml;glich Kryptografie in Ihrem Land.<br>
+<br>
+ENDE DER VEREINBARUNG</code>
+
+<p><a href="#i"><strong>Zur&uuml;ck zum Inhaltsverzeichnis</strong></a></p>
+
+<p><a name="7"><font size="5"><font class="ueberschrift">&Uuml;ber dieses Programm</font></font></a></p>
+
+<p><strong>(De)Coder, Version 4.1</strong><br>
+Projektleiter: Daniel Marschall<br>
+Webseite: <a href="http://www.daniel-marschall.de/">www.daniel-marschall.de</a><br>
+E-Mail: <a href="mailto:info@daniel-marschall.de?subject=(De)Coder 4.1">info@daniel-marschall.de</a></p>
+
+<p>&copy; Copyright 2001 - 2007 <a href="http://www.viathinksoft.de/" target="_blank">ViaThinkSoft</a>.
+Alle Rechte vorbehalten!</p>
+
+<p>Dieses Programm wurde mit <a href="http://www.borland.de/" target="_blank">Borland&reg;</a>&nbsp;<a
+href="http://www.turboexplorer.de/" target="_blank">Turbo&trade; Delphi&reg; f&uuml;r Win32&reg; Explorer</a>
+erstellt und basiert auf dem <a
+href="http://dec.michael-puff.de/" target="_blank"><b>Delphi Encryption
+Compendium</b></a>, Version 5.1c von <a
+href="mailto:HaReddmann@t-online.de">Hagen Reddmann</a>.<br>
+Diese Software beinhaltet Verschl&uuml;sselungsalgorithmen (Cipher)
+sowie Pr&uuml;fsummen-Algorithmen (Hash), die Urheberrechtlich
+gesch&uuml;tzt sind.</p>
+
+<p>Die <a href="http://www.viathinksoft.de/keytransmitter/" target="_blank">sichere Schl&uuml;ssel&uuml;bertragung</a> sowie das Updatesystem von ViaThinkSoft sind zus&auml;tzliche
+Leistungen, die unabh&auml;ngig von (De)Coder sind. Die Quelltext f&uuml;r diese Dienste sind derzeit
+nicht frei.</p>
+
+<p>Es wurden folgende VCLs bzw. Units verwendet:</p>
+
+<ul>
+  <li>Ordner VCL_KAZIP<br>
+  <a href="http://kadao.dir.bg/" target="_blank">KaZIP</a> 2.0 von <a href="mailto:kirila@abv.bg">Kiril Antonov</a> (abge&auml;ndert)<br>
+  <a href="http://delphi.icm.edu.pl/authors/a0002263.htm" target="_blank">BZip</a> 1.03 von <a href="mailto:efmera@yahoo.com">Edison Mera Menéndez</a><br><br></li>
+
+  <li>Ordner VCL_DRAGDROP:<br>
+  <a href="http://www.angusj.com/delphi/" target="_blank">Drag and Drop Component Suite</a> 4.0 von <a href="mailto:angusj@myrealbox.com">Angus Johnson</a> und <a href="mailto:anders@melander.dk">Anders Melander</a><br><br></li>
+
+  <li>Ordner VCL_DEC:<br>
+  <a href="http://dec.michael-puff.de/" target="_blank">Delphi Encryption Compendium</a> 5.1c von <a href="mailto:HaReddmann@t-online.de">Hagen Reddmann</a><br><br></li>
+
+  <!-- <li>Ordner VCL_XPMENU:<br>
+  <a href="http://www.shagrouni.com/english/software/xpmenu.html" target="_blank">TXPMenu</a> 3.1 von <a href="mailto:khaled@shagrouni.com">Khaled Shagrouni</a><br><br></li> -->
+
+  <li>Ordner INCLUDES:<br>
+  <a href="http://assarbad.net/de/stuff/!import/nico.old/" target="_blank">OneInst.pas</a> von <a href="mailto:oliver@assarbad.net">Assarbad</a> (abge&auml;ndert)<br>
+  <a href="http://www.delphipraxis.net/topic1153_base64+mime+endecoding.html" target="_blank">Base64.pas</a> von <a href="mailto:delphi3000@wischnewski.tv">Daniel Wischnewski</a><br><br></li>
+</ul>
+
+<p>Das Urheberrecht dieser Komponenten liegt bei den jeweiligen
+Autoren. Weitere Informationen entnehmen Sie bitte den Quelltexthinweisen, die dem Quelltext beiliegt.</p>
+
+<p>Systemmindestanforderungen:</p>
+
+<ul>
+  <li><a href="http://www.microsoft.de/" target="_blank">Microsoft&reg;</a> Windows&trade; 95 oder h&ouml;her</li>
+  <li>Kompatibel mit <a href="http://www.microsoft.de/" target="_blank">Microsoft&reg;</a> Windows&trade; Vista&trade;</li>
+  <li>Borland&reg; Delphi&reg; 2005 Personal Edition oder h&ouml;her f&uuml;r Quelltext</li>
+</ul>
+
+<p>Der Quelltext zu (De)Coder 4.1 ist bei ViaThinkSoft
+erh&auml;ltlich (siehe <a
+href="http://www.viathinksoft.de/index.php?page=projektanzeige&amp;seite=projekt-18" target="_blank">Projektseite</a>).
+</p>
+
+<p><a href="#i"><strong>Zur&uuml;ck zum Inhaltsverzeichnis</strong></a></p>
+
+</body>
+
+</html>

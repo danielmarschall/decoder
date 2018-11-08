@@ -1,0 +1,18 @@
+
+DISCLAIMER FOR VIATHINKSOFT (DE)CODER
+
+Deutsch
+
+Die Benutzung unserer Software geschieht auf eigene Gefahr! Insbesondere bei der Verschlüsselung führt z.B. eine beschädigte Datei oder ein versehentlich falsch eingegebenes oder vergessenes Passwort zum unwiderruflichen Verlust Ihrer Daten. ViaThinkSoft haftet nicht für Programmfehler und/oder verlorene Daten. Führen Sie stets ein Backup der Originaldateien durch, bevor Sie (De)Coder nutzen.
+Bitte installieren Sie die Software nicht, wenn Sie mit den Bedingungen nicht einverstanden sind.
+Bitte beachten Sie des Weiteren, dass aufgrund einer technischen Limitation des ZIP-Dateiformats die Gesamtgröße auf 4 GB beschränkt ist.
+Um Datenverlust zu vermeiden, verschlüsseln Sie bitte nicht mehr als 1 GB an Daten.
+Diese Beta-Version prüft die Dateigröße nicht!
+
+English
+
+Use this software at your own risk! Especially when encrypting files, a damaged file, a forgotten password or a mistyped password will lead to an irreversible loss of your data. ViaThinkSoft is not liable for any program bugs or data loss. Please always backup your unencrypted data before using (De)Coder.
+Do not install the software if you do not agree with these conditions.
+Please note that the ZIP file format can only handle archives of 4 GB size.
+To avoid data loss, please only encrypt 1 GB in total.
+In this beta version, the file size will not be checked!

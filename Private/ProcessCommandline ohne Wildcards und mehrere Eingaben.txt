@@ -1,0 +1,213 @@
+{ Allgemeine Funktion zum Verarbeiten der Kommandozeilenparameter }
+// ursprünglich von OneInst
+procedure TMainForm.ProcessCommandline(lpData: Pointer);
+var
+  arbeitsverzeichnis: string;
+  i: integer;
+begin
+  ParamZeile := ParamBlobToStr(lpData);
+
+  // Anwendung dient nur als Hilfeaufruf
+
+  if GebeLinieaus(ParamZeile, 1) = '/?' then
+  begin
+    m_help.Click;
+    close;
+    exit;
+  end;
+
+  // Anwendung dient nur als Cleaner
+
+  if paramzeile_firstposition('/clean') <> -1 then
+  begin
+    // 10 Sekunden warten, bis ggf. die temporären Dateien freigegeben wurden
+    if (lowercase(GebeLinieaus(ParamZeile, 2)) = '/silent') then Schlafen(10000);
+    DeleteTempFiles;
+    close;
+    exit;
+  end;
+
+  // Verarbeitung der Befehlszeile
+
+  if (ZaehleLinien(ParamZeile) > 1) then
+  begin
+    if (paramzeile_firstposition('/c') <> -1) and (paramzeile_firstposition('/x') <> -1) then
+    begin
+      if ZaehleLinien(ParamZeile) <> 4 then
+      begin
+        errorlevel := 3; // Falsche Syntax
+      end
+      else if not fileexists(GebeLinieaus(ParamZeile, 1)) and not directoryexists(GebeLinieaus(ParamZeile, 1)) then
+      begin
+        errorlevel := 9; // Datei oder Ordner nicht gefunden.
+      end
+      else
+      begin
+        if fileexists(GebeLinieaus(ParamZeile, 1)) then
+        begin
+          GetDir(0, arbeitsverzeichnis);
+          ausgabegesetzt := arbeitsverzeichnis+'\'+GebeLinieaus(ParamZeile, 4);
+          openfile(GebeLinieaus(ParamZeile, 1), '', true);
+
+          if mode = tcDecrypted then
+          begin
+            // Datei verschlüsseln
+            if lowercase(extractfileext(ausgabegesetzt)) <> lowercase(ExtDC4) then
+              ausgabegesetzt := ausgabegesetzt + ExtDC4; // Ausgabe muss .dc4 haben!
+            edt_passwort.Text := GebeLinieaus(ParamZeile, 3);
+            edt_passwort2.Text := GebeLinieaus(ParamZeile, 3);
+            try
+              m_encrypt.Click;
+            except
+              // Falls ein Fehler auftreten sollte, soll der Ablauf hier nicht stehen
+              // bleiben, deswegen der Try-Except-Block.
+              errorlevel := 2; // Fehler bei Ver/Entschlüsselung
+            end;
+          end;
+
+          if mode = tcEncrypted then
+          begin
+            // Datei oder Ordner entschlüsseln
+            if lowercase(extractfileext(ausgabegesetzt)) = lowercase(ExtDC4) then
+              ausgabegesetzt := copy(ausgabegesetzt, 0, length(ausgabegesetzt)-length(ExtDC4)); // Ausgabe darf nicht .dc4 haben!
+            edt_passwort.Text := GebeLinieaus(ParamZeile, 3);
+            try
+              m_decrypt.Click;
+            except
+              // Falls ein Fehler auftreten sollte, soll der Ablauf hier nicht stehen
+              // bleiben, deswegen der Try-Except-Block.
+              errorlevel := 2; // Fehler bei Ver/Entschlüsselung
+            end;
+          end;
+        end
+        else if directoryexists(GebeLinieaus(ParamZeile, 1)) then
+        begin
+          // Ordner verschlüsseln
+          openfolder(GebeLinieaus(ParamZeile, 1));
+          edt_passwort.Text := GebeLinieaus(ParamZeile, 3);
+          edt_passwort2.Text := GebeLinieaus(ParamZeile, 3);
+          ausgabegesetzt := GebeLinieaus(ParamZeile, 4);
+          if lowercase(extractfileext(ausgabegesetzt)) <> lowercase(ExtDC4) then
+          ausgabegesetzt := ausgabegesetzt + ExtDC4; // Ausgabe muss .dc4 haben!
+          try
+            m_encrypt.Click;
+          except
+            // Falls ein Fehler auftreten sollte, soll der Ablauf hier nicht stehen
+            // bleiben, deswegen der Try-Except-Block.
+            errorlevel := 2; // Fehler bei Ver/Entschlüsselung
+          end;
+        end;
+      end;
+      close;
+    end
+    else if (lowercase(GebeLinieaus(ParamZeile, 2)) = '/e') then
+    begin
+      if (ZaehleLinien(ParamZeile) = 2) or ((ZaehleLinien(ParamZeile) = 3) and (GebeLinieaus(ParamZeile, 3) = '/notsilent')) then
+      begin
+        if directoryexists(GebeLinieaus(ParamZeile, 1)) then
+        begin
+          dc_deletedir(GebeLinieaus(ParamZeile, 1));
+          if directoryexists(GebeLinieaus(ParamZeile, 1)) then
+          begin
+            if (GebeLinieaus(ParamZeile, 3) = '/notsilent') then
+              Application.MessageBox(pchar(GetLangEntry('delerror')), pchar(GetLangEntry('error')), MB_OK + MB_ICONERROR)
+            else
+              errorlevel := 8; // Datei oder Ordner konnte nicht oder nur teilweise entfernt werden.
+          end
+          else if (GebeLinieaus(ParamZeile, 3) = '/notsilent') then
+            Application.MessageBox(pchar(GetLangEntry('delok')), pchar(GetLangEntry('information')), MB_OK + MB_ICONINFORMATION)
+        end
+        else if fileexists(GebeLinieaus(ParamZeile, 1)) then
+        begin
+          dc_deletefile(GebeLinieaus(ParamZeile, 1));
+          if fileexists(GebeLinieaus(ParamZeile, 1)) then
+          begin
+            if (GebeLinieaus(ParamZeile, 3) = '/notsilent') then
+              Application.MessageBox(pchar(GetLangEntry('delerror')), pchar(GetLangEntry('error')), MB_OK + MB_ICONERROR)
+            else
+              errorlevel := 8; // Datei oder Ordner konnte nicht oder nur teilweise entfernt werden.
+          end
+          else if (GebeLinieaus(ParamZeile, 3) = '/notsilent') then
+            Application.MessageBox(pchar(GetLangEntry('delok')), pchar(GetLangEntry('information')), MB_OK + MB_ICONINFORMATION)
+        end
+        else
+        begin
+          if (GebeLinieaus(ParamZeile, 3) = '/notsilent') then
+            Application.MessageBox(pchar(GetLangEntry('fileorfoldernotfound')), pchar(GetLangEntry('error')), MB_OK + MB_ICONERROR)
+          else
+            errorlevel := 9; // Datei oder Ordner nicht gefunden.
+        end;
+      end
+      else
+      begin
+        errorlevel := 3; // Falsche Syntax
+      end;
+      close;
+    end
+    else
+    begin
+      show;
+
+      steuerelementesperren(true);
+      zeige_wartenform(true);
+      try
+
+      try
+        kazip.close;
+      except
+
+      end;
+
+      if fileexists(GetTempDir+TempPre+mainform.temp_unique_number+TempExtZip) then deletefile(GetTempDir+TempPre+mainform.temp_unique_number+TempExtZip);
+      CreateZipFile(GetTempDir+TempPre+mainform.temp_unique_number+TempExtZip);
+      for i := 1 to ZaehleLinien(ParamZeile) do
+      begin
+        addtozip(GebeLinieaus(ParamZeile, i), GetTempDir+TempPre+mainform.temp_unique_number+TempExtZip)
+      end;
+
+      openfile(GetTempDir+TempPre+mainform.temp_unique_number+TempExtZip, GetLangEntry('dateiensammlung'), true);
+
+      finally
+      steuerelementesperren(false);
+      zeige_wartenform(false);
+      end;
+
+      application.Restore;
+      application.BringToFront;
+    end;
+  end
+  else
+  begin
+    show;
+
+    if fileexists(GebeLinieaus(ParamZeile, 1)) then
+    begin
+      steuerelementesperren(true);
+      zeige_wartenform(true);
+      try
+        openfile(GebeLinieaus(ParamZeile, 1), '', false);
+      finally
+        steuerelementesperren(false);
+        zeige_wartenform(false);
+      end;
+    end
+    else if directoryexists(GebeLinieaus(ParamZeile, 1)) then
+    begin
+      steuerelementesperren(true);
+      zeige_wartenform(true);
+      try
+        openfolder(GebeLinieaus(ParamZeile, 1));
+      finally
+        steuerelementesperren(false);
+        zeige_wartenform(false);
+      end;
+    end
+    else
+    begin
+      application.Restore;
+      application.BringToFront;
+    end;
+
+  end;
+
+end;

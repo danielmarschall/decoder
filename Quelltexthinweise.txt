@@ -1,0 +1,47 @@
+*******************************************************************
+** QUELLTEXTHINWEISE		(De)Coder 4.1 / CN: Newfoundland **
+*******************************************************************
+
+COPYRIGHTHINWEISE
+=================
+
+Teilweise wurden Codestellen oder Funktionen übernommen. Der Urheber oder
+die Quelle ist jeweils im Quelltext angegeben.
+
+Es wurden folgende VCLs bzw. Units verwendet (Links im Handbuch enthalten):
+
+- Ordner VCL_KAZIP
+  KaZIP 2.0 von Kiril Antonov (abgeändert)
+  BZip 1.03 von Edison Mera Menéndez
+
+- Ordner VCL_DRAGDROP:
+  Drag and Drop Component Suite 4.0 von Angus Johnson und Anders Melander
+
+- Ordner VCL_DEC:
+  Delphi Encryption Compendium 5.1c von Hagen Reddmann
+
+- Ordner INCLUDES:
+  OneInst.pas von Assarbad (abgeändert)
+  Base64.pas von Daniel Wischnewski
+
+Damit der Quelltext ohne Probleme geöffnet werden kann, wurden die VCLs bzw.
+Units dem Quelltext beigelegt. VCLs werden über den Code erstellt und
+freigegeben, nicht auf das Formular gelegt, um den Quelltext auch mit mit Turbo
+Delphi Explorer verwenden zu können. Das Urheberrecht dieser Komponenten liegt
+bei den jeweiligen Autoren. Teilweise wurden einige kleine Änderungen vorgenommen,
+um Compilermeldungen oder -warnungen zu entfernen oder die Funktion für (De)Coder
+zu spezifizieren; diese sind im Quelltext vermerkt.
+
+SONSTIGE HINWEISE
+=================
+
+- Der Quelltext ist für Borland Turbo Delphi Explorer optimiert.
+  Es wurde versucht, kompatibel zu älteren Delphi-Versionen
+  zu sein.
+
+- Um das Setupscript Setup.iss zu compilieren benötigen Sie InnoSetup,
+  das von http://www.jrsoftware.org/isinfo.php bezogen werden kann
+
+- Bitte bedenken Sie, dass eine veränderte Version von (De)Coder
+  nicht ohne Erlaubnis weitergegeben werden darf (siehe Lizenzvertrag
+  unter Setup\License\German.txt)!

@@ -1,0 +1,74 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{32976f92-0add-45c8-aa18-5ae5c4912a66}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Projects Include="Quelltext\Activator.dproj" />
+    <Projects Include="Quelltext\Coder.dproj" />
+    <Projects Include="Quelltext\SecureMoveExt.dproj" />
+    <Projects Include="Quelltext\ShlErase.dproj" />
+    <Projects Include="Quelltext\ShlExt.dproj" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Default.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+  <BorlandProject xmlns=""> <Default.Personality> </Default.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Target Name="Activator">
+    <MSBuild Projects="Quelltext\Activator.dproj" Targets="" />
+  </Target>
+  <Target Name="Activator:Clean">
+    <MSBuild Projects="Quelltext\Activator.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="Activator:Make">
+    <MSBuild Projects="Quelltext\Activator.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Coder">
+    <MSBuild Projects="Quelltext\Coder.dproj" Targets="" />
+  </Target>
+  <Target Name="Coder:Clean">
+    <MSBuild Projects="Quelltext\Coder.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="Coder:Make">
+    <MSBuild Projects="Quelltext\Coder.dproj" Targets="Make" />
+  </Target>
+  <Target Name="SecureMoveExt">
+    <MSBuild Projects="Quelltext\SecureMoveExt.dproj" Targets="" />
+  </Target>
+  <Target Name="SecureMoveExt:Clean">
+    <MSBuild Projects="Quelltext\SecureMoveExt.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="SecureMoveExt:Make">
+    <MSBuild Projects="Quelltext\SecureMoveExt.dproj" Targets="Make" />
+  </Target>
+  <Target Name="ShlErase">
+    <MSBuild Projects="Quelltext\ShlErase.dproj" Targets="" />
+  </Target>
+  <Target Name="ShlErase:Clean">
+    <MSBuild Projects="Quelltext\ShlErase.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="ShlErase:Make">
+    <MSBuild Projects="Quelltext\ShlErase.dproj" Targets="Make" />
+  </Target>
+  <Target Name="ShlExt">
+    <MSBuild Projects="Quelltext\ShlExt.dproj" Targets="" />
+  </Target>
+  <Target Name="ShlExt:Clean">
+    <MSBuild Projects="Quelltext\ShlExt.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="ShlExt:Make">
+    <MSBuild Projects="Quelltext\ShlExt.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="Activator;Coder;SecureMoveExt;ShlErase;ShlExt" />
+  </Target>
+  <Target Name="Clean">
+    <CallTarget Targets="Activator:Clean;Coder:Clean;SecureMoveExt:Clean;ShlErase:Clean;ShlExt:Clean" />
+  </Target>
+  <Target Name="Make">
+    <CallTarget Targets="Activator:Make;Coder:Make;SecureMoveExt:Make;ShlErase:Make;ShlExt:Make" />
+  </Target>
+  <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
+</Project>
