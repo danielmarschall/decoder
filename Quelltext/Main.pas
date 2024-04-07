@@ -7,7 +7,7 @@ uses
   DECHash, DECCipher, registry, KAZip, shlobj, StdCtrls, math,
   shellapi, Buttons, ComCtrls, ExtCtrls, inifiles, DragDropFile, DragDrop,
   ImgList, base64, ZLib, wininet, OneInst, DCConst, Dialogs,
-  Menus{, XPMenu};
+  Menus, System.ImageList{, XPMenu};
 
 type
   TCase = (tcUnknown, tcEncrypted, tcDecrypted);
@@ -302,7 +302,7 @@ begin
   while GetTickCount-nStart < nDelay do
   begin
     Application.ProcessMessages;
-    Sleep(0);
+    Sleep(10);
   end;
 end;
 
@@ -592,10 +592,10 @@ end;
 // http://www.swissdelphicenter.ch/torry/showcode.php?id=144
 function GetTempDir: string;
 var
-  Buffer: array[0..MAX_PATH] of Char;
+  tempFolder: array[0..MAX_PATH] of Char;
 begin
-  GetTempPath(SizeOf(Buffer) - 1, Buffer);
-  Result := StrPas(Buffer);
+  GetTempPath(MAX_PATH, @tempFolder);
+  result := StrPas(tempFolder);
 end;
 
 // http://www.delphipraxis.net/post50248.html
@@ -623,7 +623,7 @@ end;
 
   function Differency: Extended; 
   var 
-    S: String; 
+    S: AnsiString;
     L,I: Integer; 
   begin 
     Result := 0.0; 
@@ -639,7 +639,7 @@ end;
   const 
     Table = '^1234567890ß´qwertzuiopü+asdfghjklöä#<yxcvbnm,.-°!"§$%&/()=?`QWERTZUIOPÜ*ASDFGHJKLÖÄ''>YXCVBNM;:_'; 
   var 
-    S: String; 
+    S: AnsiString;
     L,I,J: Integer; 
   begin 
     Result := 0.0; 
@@ -650,7 +650,7 @@ end;
     for I := 1 to L do 
     begin
       J := Pos(S[I], Table);
-      if J > 0 then S[I] := Char(J); 
+      if J > 0 then S[I] := AnsiChar(J);
     end; 
     for I := 2 to L do 
       Byte(S[I-1]) := Byte(S[I-1]) - Byte(S[I]);

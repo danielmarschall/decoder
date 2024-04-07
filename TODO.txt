@@ -1,0 +1,9 @@
+
+1. Make it Unicode and Win11 compatible.
+
+2. Avoid 4GB+ ZIP compression to avoid data loss
+
+3. Check where we have stopped development in 2007. Are there unfinished things? Anything we should change? Anything we should remove?
+   Was there a "secure recycle bin delete" in the works? Do we really need so much shell extension crap?
+
+4. FormClose does a lot of access violations (especially while "/clean"). Something is not good with the code!

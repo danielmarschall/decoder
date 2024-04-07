@@ -113,8 +113,8 @@ type
 ////////////////////////////////////////////////////////////////////////////////
   TFixedStreamAdapter = class(TStreamAdapter, IStream)
   public
-    function CopyTo(stm: IStream; cb: Largeint; out cbRead: Largeint;
-      out cbWritten: Largeint): HResult; override; stdcall;
+    function CopyTo(stm: IStream; cb: LargeUInt; out cbRead: LargeUInt;
+      out cbWritten: LargeUInt): HResult; override; stdcall;
   end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -959,14 +959,14 @@ end;
 //		TFixedStreamAdapter
 //
 ////////////////////////////////////////////////////////////////////////////////
-function TFixedStreamAdapter.CopyTo(stm: IStream; cb: Largeint; out cbRead: Largeint;
-  out cbWritten: Largeint): HResult;
+function TFixedStreamAdapter.CopyTo(stm: IStream; cb: LargeUInt; out cbRead: LargeUInt;
+  out cbWritten: LargeUInt): HResult;
 const
   MaxBufSize = 1024 * 1024;  // 1mb
 var
   Buffer: Pointer;
-  BufSize, BurstReadSize, BurstWriteSize: Integer;
-  BytesRead, BytesWritten, BurstWritten: LongInt;
+  BufSize, BurstReadSize, BurstWriteSize: FixedUInt;
+  BytesRead, BytesWritten, BurstWritten: FixedUInt;
 begin
   Result := S_OK;
   BytesRead := 0;
@@ -1069,8 +1069,8 @@ function TCustomSimpleClipboardFormat.DoGetDataSized(ADataObject: IDataObject;
 var
   Buffer: pointer;
   Stream: IStream;
-  Remaining: longInt;
-  Chunk: longInt;
+  Remaining: FixedUInt;
+  Chunk: FixedUInt;
   pChunk: PChar;
 begin
   if (Size > 0) then
@@ -1133,8 +1133,8 @@ function TCustomSimpleClipboardFormat.ReadDataInto(ADataObject: IDataObject;
 var
   Stream: IStream;
   p: pointer;
-  Remaining: longInt;
-  Chunk: longInt;
+  Remaining: FixedUInt;
+  Chunk: FixedUInt;
 begin
   Result := (Buffer <> nil) and (Size > 0);
   if (Result) then
@@ -1773,8 +1773,8 @@ var
   Name: string;
   MemStream: TMemoryStream;
   StatStg: TStatStg;
-  Size: longInt;
-  Remaining: longInt;
+  Size: FixedUInt;
+  Remaining: FixedUInt;
   pChunk: PChar;
 begin
   Result := False;

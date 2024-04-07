@@ -75,7 +75,7 @@ interface
 {$ENDIF} 
 
 
-uses SysUtils; 
+uses AnsiStrings, SysUtils;
 
   // codiert einen String in die zugehörige Base64-Darstellung 
   function Base64Encode(const InText: AnsiString): AnsiString; overload; 
@@ -112,15 +112,15 @@ implementation
 
 const 
   cBase64Codec: array[0..63] of AnsiChar = 
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'; 
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   Base64Filler = '='; 
 
-function Base64Encode(const InText: string): string; overload; 
-begin 
-  Base64Encode(InText, Result); 
-end; 
+function Base64Encode(const InText: AnsiString): AnsiString; overload;
+begin
+  Base64Encode(InText, Result);
+end;
 
-function Base64Decode(const InText: string): string; overload; 
+function Base64Decode(const InText: AnsiString): AnsiString; overload;
 begin 
   Base64Decode(InText, Result); 
 end; 
@@ -498,7 +498,7 @@ begin
   // calculate size for destination 
   OutSize := CalcEncodedSize(InSize); 
   // reserve memory 
-  OutText := StrAlloc(Succ(OutSize)); 
+  OutText := AnsiStrAlloc(Succ(OutSize));
   OutText[OutSize] := #0; 
   // encode ! 
   Base64Encode(InText, InSize, OutText); 
@@ -532,7 +532,7 @@ begin
   // calculate size for destination 
   OutSize := CalcDecodedSize(InText, InSize); 
   // reserve memory 
-  OutText := StrAlloc(Succ(OutSize)); 
+  OutText := AnsiStrAlloc(Succ(OutSize));
   OutText[OutSize] := #0; 
   // encode ! 
   {$IFDEF SpeedDecode} 

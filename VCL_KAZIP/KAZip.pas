@@ -149,6 +149,8 @@ type
     function   GetCentralEntrySize: Cardinal;
     procedure  SetComment(const Value: String);
     procedure  SetFileName(const Value: String);
+    function   GetFileName: String;
+    function   GetFileComment: String;
   protected
     { Protected declarations }
   public
@@ -163,8 +165,8 @@ type
     procedure   SaveToStream(Stream: TStream);
     Function    Test:Boolean;
 
-    Property    FileName          : String               Read FCentralDirectoryFile.FileName                     Write SetFileName;
-    Property    Comment           : String               Read FCentralDirectoryFile.FileComment                  Write SetComment;
+    Property    FileName          : String               Read GetFileName                                        Write SetFileName;
+    Property    Comment           : String               Read GetFileComment                                     Write SetComment;
     Property    SizeUncompressed  : Cardinal             Read FCentralDirectoryFile.UncompressedSize;
     Property    SizeCompressed    : Cardinal             Read FCentralDirectoryFile.CompressedSize;
     Property    Date              : TDateTime            Read FDate;
@@ -674,6 +676,16 @@ begin
      End;
   if SizeCompressed > 0 Then
      Result := Result + Stream.Write(BA.CompressedData[1],SizeCompressed);
+end;
+
+function TKAZipEntriesEntry.GetFileComment: String;
+begin
+  result := string(FCentralDirectoryFile.FileComment);
+end;
+
+function TKAZipEntriesEntry.GetFileName: String;
+begin
+  result := string(FCentralDirectoryFile.FileName);
 end;
 
 function TKAZipEntriesEntry.GetCompressedData: String;

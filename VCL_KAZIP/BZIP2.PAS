@@ -142,10 +142,10 @@ type
 
 implementation
 
-{$L blocks~1.obj} //blocksort
+{$L blocksort.obj}
 {$L huffman.obj}
 {$L compress.obj}
-{$L decomp~1.obj} //decompress
+{$L decompress.obj}
 {$L bzlib.obj}
 { $L crctable.obj}
 { $L randtable.obj}

@@ -113,7 +113,7 @@ implementation
 
 resourcestring
   sClassNotRegistered = 'Class %s not registered';
-  sWrongIdentity      = 'Another class "%s" with same identity as "%s" are allready registered.';
+  sWrongIdentity      = 'Another class "%s" with same identity as "%s" are already registered.';
   
 var
   FClasses: TList = nil;
@@ -233,7 +233,7 @@ end;
 
 class function TDECObject.Identity: LongWord;
 var
-  Signature: String;
+  Signature: AnsiString;
 begin
   Signature := StringOfChar(#$5A, 256 - Length(Classname)) + AnsiUpperCase(ClassName);
   Result := CRC32(IdentityBase, Signature[1], Length(Signature));
@@ -735,13 +735,13 @@ end;
 {$ENDIF}
 
 {$IFDEF VER_D3H}
-procedure ModuleUnload(Instance: Integer);
+procedure ModuleUnload(Instance: NativeInt);
 var // automaticaly deregistration/releasing
   I: Integer;
 begin
   if IsObject(FClasses, TList) then
     for I := FClasses.Count -1 downto 0 do
-      if Integer(FindClassHInstance(TClass(FClasses[I]))) = Instance then
+      if NativeInt(FindClassHInstance(TClass(FClasses[I]))) = Instance then
         FClasses.Delete(I);
 end;
 
