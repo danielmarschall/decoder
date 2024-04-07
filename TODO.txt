@@ -1,6 +1,8 @@
 
 1. Make it Unicode and Win11 compatible.
 
+	New DEC required? https://github.com/MHumm/DelphiEncryptionCompendium
+
 2. Avoid 4GB+ ZIP compression to avoid data loss
 
 3. Check where we have stopped development in 2007. Are there unfinished things? Anything we should change? Anything we should remove?

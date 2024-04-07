@@ -695,7 +695,7 @@ begin
       for J := 0 to DigestSize -1 do
         R := R xor Digest[J];
 
-      Result[I +1] := Char(R);
+      Result[I +1] := AnsiChar(R);
     end;
   finally
     Free;

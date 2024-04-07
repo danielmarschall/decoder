@@ -27,7 +27,7 @@ interface
 uses Windows, SysUtils, Classes, CRC;
 
 type
-  Binary         = String;  // LongString with Binary Contens
+  Binary         = AnsiString;  // LongString with Binary Contents
 {$IFNDEF VER_D4H}
   LongWord       = type Integer;
 {$ENDIF}
@@ -371,7 +371,7 @@ end;
 
 procedure ProtectBinary(var Value: Binary);
 begin
-  UniqueString(String(Value));
+  UniqueString(AnsiString(Value));
   ProtectBuffer(Pointer(Value)^, Length(Value));
   Value := '';
 end;
