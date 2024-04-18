@@ -5,24 +5,29 @@
 AppName=(De)Coder
 AppVerName=(De)Coder 4.1 Public Beta 4b
 AppVersion=4.1.0.0
-AppCopyright=© Copyright 2001 - 2007 ViaThinkSoft.
+AppCopyright=© Copyright 2001 - 2007 ViaThinkSoft
 AppPublisher=ViaThinkSoft
-AppPublisherURL=http://www.viathinksoft.de/
-AppSupportURL=http://www.daniel-marschall.de/
-AppUpdatesURL=http://www.viathinksoft.de/
-DefaultDirName={pf}\(De)Coder
+AppPublisherURL=https://www.viathinksoft.de/
+AppSupportURL=https://www.daniel-marschall.de/
+AppUpdatesURL=https://www.viathinksoft.de/
+DefaultDirName={autopf}\(De)Coder
 DefaultGroupName=(De)Coder
 UninstallDisplayIcon={app}\Coder.exe
 VersionInfoCompany=ViaThinkSoft
-VersionInfoCopyright=© Copyright 2001 - 2007 ViaThinkSoft.
+VersionInfoCopyright=© Copyright 2001 - 2007 ViaThinkSoft
 VersionInfoDescription=(De)Coder 4.1 Setup
 VersionInfoTextVersion=1.0.0.0
 VersionInfoVersion=4.1.0.0
 WizardImageFile=Images\Large.bmp
 WizardSmallImageFile=Images\Small.bmp
-Compression=lzma
-OutputBaseFilename=Setup
+OutputDir=.
+OutputBaseFilename=DeCoder_Setup
 SetupIconFile=Icon.ico
+; Configure Sign Tool in InnoSetup at "Tools => Configure Sign Tools" (adjust the path to your SVN repository location)
+; Name    = sign_single   
+; Command = "C:\SVN\...\sign_single.bat" $f
+SignTool=sign_single
+SignedUninstaller=yes
 
 [Languages]
 Name: de; MessagesFile: "compiler:Languages\German.isl"; LicenseFile: "License\German.txt"
@@ -31,12 +36,12 @@ Name: fr; MessagesFile: "compiler:Languages\French.isl"; LicenseFile: "License\F
 
 [Files]
 ; Allgemein
-Source: "..\Quelltext\Coder.exe"; DestDir: "{app}"; Flags: restartreplace ignoreversion
-Source: "..\Quelltext\Activator.exe"; DestDir: "{app}"; Flags: restartreplace ignoreversion
+Source: "..\Quelltext\Coder.exe"; DestDir: "{app}"; Flags: restartreplace ignoreversion signonce
+Source: "..\Quelltext\Activator.exe"; DestDir: "{app}"; Flags: restartreplace ignoreversion signonce
 Source: "..\Quelltext\style.css"; DestDir: "{app}"; Flags: restartreplace
-Source: "..\Quelltext\ShlExt.dll"; DestDir: "{app}"; Flags: restartreplace ignoreversion
-Source: "..\Quelltext\ShlErase.dll"; DestDir: "{app}"; Flags: restartreplace ignoreversion
-Source: "..\Quelltext\SecureMoveExt.dll"; DestDir: "{app}"; Flags: restartreplace ignoreversion
+Source: "..\Quelltext\ShlExt.dll"; DestDir: "{app}"; Flags: restartreplace ignoreversion signonce
+Source: "..\Quelltext\ShlErase.dll"; DestDir: "{app}"; Flags: restartreplace ignoreversion signonce
+Source: "..\Quelltext\SecureMoveExt.dll"; DestDir: "{app}"; Flags: restartreplace ignoreversion signonce
 ; Deutsch
 Source: "..\Quelltext\Help.html"; DestDir: "{app}"; Flags: isreadme; DestName: "Help.html"; Languages: de
 Source: "..\Quelltext\funktionsweise_1.gif"; DestDir: "{app}"; DestName: "funktionsweise_1.gif"; Languages: de
@@ -70,10 +75,10 @@ fr.dateienvernichten=Effacez les dossiers tempoary
 fr.hilfe=L'aide pour %1
 fr.webseiten=Web (en allemand)
 
-[Folders]
-Name: "{group}\Webseiten"; Languages: de
-Name: "{group}\Websites (German)"; Languages: en
-Name: "{group}\Web (en allemand)"; Languages: fr
+;[Folders]
+;Name: "{group}\Webseiten"; Languages: de
+;Name: "{group}\Websites (German)"; Languages: en
+;Name: "{group}\Web (en allemand)"; Languages: fr
 
 [Icons]
 ; Allgemein
@@ -83,17 +88,17 @@ Name: "{group}\{cm:UninstallProgram,(De)Coder}"; Filename: "{uninstallexe}"
 Name: "{group}\{cm:dateienvernichten}"; Filename: "{app}\Coder.exe"; Parameters: "/clean"; IconFilename: "{app}\Coder.exe"; IconIndex: "2"
 Name: "{group}\{cm:hilfe,(De)Coder}"; Filename: "{app}\Coder.exe"; Parameters: "/?"; IconFilename: "{app}\Coder.exe"; IconIndex: "3"
 ; Deutsch
-Name: "{group}\{cm:webseiten}\Daniel Marschalls Webportal"; Filename: "http://www.daniel-marschall.de/"; Languages: de
-Name: "{group}\{cm:webseiten}\ViaThinkSoft"; Filename: "http://www.viathinksoft.de/"; Languages: de
-Name: "{group}\{cm:webseiten}\Projektseite auf ViaThinkSoft"; Filename: "http://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18"; Languages: de
+;Name: "{group}\{cm:webseiten}\Daniel Marschalls Webportal"; Filename: "https://www.daniel-marschall.de/"; Languages: de
+;Name: "{group}\{cm:webseiten}\ViaThinkSoft"; Filename: "https://www.viathinksoft.de/"; Languages: de
+;Name: "{group}\{cm:webseiten}\Projektseite auf ViaThinkSoft"; Filename: "https://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18"; Languages: de
 ; Englisch
-Name: "{group}\{cm:webseiten}\Daniel Marschalls web portal"; Filename: "http://www.daniel-marschall.de/"; Languages: en
-Name: "{group}\{cm:webseiten}\ViaThinkSoft"; Filename: "http://www.viathinksoft.de/"; Languages: en
-Name: "{group}\{cm:webseiten}\Projectpage on ViaThinkSoft"; Filename: "http://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18"; Languages: en
+;Name: "{group}\{cm:webseiten}\Daniel Marschalls web portal"; Filename: "https://www.daniel-marschall.de/"; Languages: en
+;Name: "{group}\{cm:webseiten}\ViaThinkSoft"; Filename: "https://www.viathinksoft.de/"; Languages: en
+;Name: "{group}\{cm:webseiten}\Projectpage on ViaThinkSoft"; Filename: "https://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18"; Languages: en
 ; Französisch
-Name: "{group}\{cm:webseiten}\Daniel Marschalls portail de Web"; Filename: "http://www.daniel-marschall.de/"; Languages: fr
-Name: "{group}\{cm:webseiten}\ViaThinkSoft"; Filename: "http://www.viathinksoft.de/"; Languages: fr
-Name: "{group}\{cm:webseiten}\Page de projet dans ViaThinkSoft"; Filename: "http://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18"; Languages: fr
+;Name: "{group}\{cm:webseiten}\Daniel Marschalls portail de Web"; Filename: "https://www.daniel-marschall.de/"; Languages: fr
+;Name: "{group}\{cm:webseiten}\ViaThinkSoft"; Filename: "https://www.viathinksoft.de/"; Languages: fr
+;Name: "{group}\{cm:webseiten}\Page de projet dans ViaThinkSoft"; Filename: "https://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18"; Languages: fr
 
 [Tasks]
 ; Allgemein
