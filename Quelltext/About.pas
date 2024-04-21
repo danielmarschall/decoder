@@ -69,7 +69,7 @@ end;
 
 procedure TAboutForm.lbl_urlClick(Sender: TObject);
 begin
-  shellexecute(application.Handle, 'open', 'http://www.viathinksoft.de/', '', '', sw_normal);
+  shellexecute(application.Handle, 'open', 'https://www.viathinksoft.de/', '', '', sw_normal);
 end;
 
 procedure TAboutForm.btn_closeClick(Sender: TObject);
