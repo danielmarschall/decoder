@@ -332,12 +332,12 @@ end;
 
 procedure TMainForm.m_web_dm_click(Sender: TObject);
 begin
-  shellexecute(application.Handle, 'open', 'http://www.daniel-marschall.de/', '', '', sw_normal);
+  shellexecute(application.Handle, 'open', 'https://www.daniel-marschall.de/', '', '', sw_normal);
 end;
 
 procedure TMainForm.m_web_project_click(Sender: TObject);
 begin
-  shellexecute(application.Handle, 'open', 'http://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18', '', '', sw_normal);
+  shellexecute(application.Handle, 'open', 'https://www.viathinksoft.de/index.php?page=projektanzeige&seite=projekt-18', '', '', sw_normal);
 end;
 
 procedure TMainForm.Decompress(InputFileName, OutputFileName: string);
@@ -2100,7 +2100,7 @@ end;
 
 procedure TMainForm.m_web_vts_click(Sender: TObject);
 begin
-  shellexecute(application.Handle, 'open', 'http://www.viathinksoft.de/', '', '', sw_normal);
+  shellexecute(application.Handle, 'open', 'https://www.viathinksoft.de/', '', '', sw_normal);
 end;
 
 procedure TMainForm.mm_actions_execute(Sender: TObject);
@@ -2120,12 +2120,12 @@ end;
 
 procedure TMainForm.m_web_infopages_click(Sender: TObject);
 begin
-  shellexecute(application.Handle, 'open', 'http://www.viathinksoft.de/info/decoder/', '', '', sw_normal);
+  shellexecute(application.Handle, 'open', 'https://www.viathinksoft.de/info/decoder/', '', '', sw_normal);
 end;
 
 procedure TMainForm.m_web_forum_click(Sender: TObject);
 begin
-  shellexecute(application.Handle, 'open', 'http://www.viathinksoft.de/devboard/viewforum.php?f=32', '', '', sw_normal);
+  shellexecute(application.Handle, 'open', 'https://www.viathinksoft.de/devboard/viewforum.php?f=32', '', '', sw_normal);
 end;
 
 procedure TMainForm.m_help_execute(Sender: TObject);
@@ -2676,7 +2676,7 @@ begin
   ttimer(self).tag := 2;
   tmp_progressdurchlauf.Enabled := true;
 
-  temp := GetHTML('http://www.viathinksoft.de/update/?id='+updateid);
+  temp := GetHTML('https://www.viathinksoft.de/update/?id='+updateid);
   if copy(temp, 0, 7) = 'Status:' then
   begin
     tmp_progressdurchlauf.Enabled := false;
@@ -2687,14 +2687,14 @@ begin
   end
   else
   begin
-    if GetHTML('http://www.viathinksoft.de/update/?id='+updateid) <> DC4Ver then
+    if GetHTML('https://www.viathinksoft.de/update/?id='+updateid) <> DC4Ver then
     begin
       tmp_progressdurchlauf.Enabled := false;
       zeige_wartenform(false);
       steuerelementesperren(false);
 
       if Application.MessageBox(pchar(MainForm.GetLangEntry('update_yes')), pchar(MainForm.GetLangEntry('information')), MB_YESNO + MB_ICONASTERISK) = ID_YES then
-        shellexecute(application.handle, 'open', pchar('http://www.viathinksoft.de/update/?id=@'+updateid), '', '', sw_normal);
+        shellexecute(application.handle, 'open', pchar('https://www.viathinksoft.de/update/?id=@'+updateid), '', '', sw_normal);
     end
     else
     begin
@@ -3328,7 +3328,7 @@ end;
 
 procedure TMainForm.m_web_keytransmitter_click(Sender: TObject);
 begin
-  shellexecute(application.Handle, 'open', 'http://www.viathinksoft.de/keytransmitter/', '', '', sw_normal);
+  shellexecute(application.Handle, 'open', 'https://www.viathinksoft.de/keytransmitter/', '', '', sw_normal);
 end;
 
 { Allgemeine Funktion zum Verarbeiten der Kommandozeilenparameter }
