@@ -83,7 +83,7 @@ fr.webseiten=Web (en allemand)
 [Icons]
 ; Allgemein
 Name: "{group}\(De)Coder"; Filename: "{app}\Coder.exe"
-;Name: "{userdesktop}\(De)Coder"; Filename: "{app}\Coder.exe"; Tasks: "desktopicon"
+;Name: "{autodesktop}\(De)Coder"; Filename: "{app}\Coder.exe"; Tasks: "desktopicon"
 Name: "{group}\{cm:UninstallProgram,(De)Coder}"; Filename: "{uninstallexe}"
 Name: "{group}\{cm:dateienvernichten}"; Filename: "{app}\Coder.exe"; Parameters: "/clean"; IconFilename: "{app}\Coder.exe"; IconIndex: "2"
 Name: "{group}\{cm:hilfe,(De)Coder}"; Filename: "{app}\Coder.exe"; Parameters: "/?"; IconFilename: "{app}\Coder.exe"; IconIndex: "3"
