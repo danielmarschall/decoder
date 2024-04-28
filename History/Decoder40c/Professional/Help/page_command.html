@@ -1,0 +1,62 @@
+<html>
+
+<body>
+
+<font color="#0000FF" size="+2">Befehlszeilenanleitung</font><br><br>
+
+<b>CODER</b><br><br>
+
+(De)Coder wird gestartet<br><br>
+
+<b>CODER [Dateiname]</b><br><br>
+
+Ist "Dateiname" eine Datei, dann wird (De)Coder gestartet und die Datei geöffnet.
+Es kann sich um eine unverschlüsselte Datei oder um eine
+verschlüsselte Datei bzw. einen verschlüsselten Ordner handeln.<br><br>
+
+Ist "Dateiname" ein Ordner, dann wird (De)Coder gestartet und der Ordner geöffnet.<br><br>
+
+<b>CODER [Eingabe] /c [Cipher] [Hash] [Mode] [Passwort] [Ausgabe]</b><br><br>
+
+Automatische Erkennung von Verschlüsselung und Entschlüsselung
+
+<ul>
+  <li>Ist Eingabe eine verschlüsselte Datei, wird sie nach Ausgabe entschlüsselt</li>
+  <li>Ist Eingabe ein verschlüsselter Ordner, wird er entschlüsselt mit seinem originalen Namen in Ausgabe erstellt</li>
+  <li>Ist Eingabe eine nicht verschlüsselte Datei, wird sie nach Ausgabe verschlüsselt<br>die Eingaben Cipher, Hash und Mode werden dabei zwar ignoriert, trotzdem müssen es gültige Eingaben (Ganzzahlen im gültigen Bereich) sein</li>
+  <li>Ist Eingabe ein Ordner, wird er gepackt und nach Ausgabe verschlüsselt</li>
+</ul>
+
+Wenn bereits ein Element mit dem Namen vorhanden ist
+
+<ul>
+  <li>Ist bei der Ordnerentschlüsselung in Ausgabe bereits ein Verzeichnis mit dem originalen Namen vorhanden, wird ein alternativer Name gewählt.</li>
+  <li>Ist Ausgabe bei einer Verschlüsselung bereits vorhanden, wird es überschrieben.</li>
+</ul>
+
+Kontrolle der Dateinamenserweiterungen
+
+<ul>
+  <li>Hat Ausgabe bei einer Verschlüsselung nicht die Erweiterung ".dc4", wird diese Angabe hinzugefügt.</li>
+  <li>Hat Ausgabe bei einer Entschlüsselung die Erweiterung ".dc4", wird diese Angabe entfernt.</li>
+</ul>
+
+Anmerkungen
+
+<ul>
+  <li>Cipher muss eine Ganzzahl zwischen 0 und 29 sein (welche Zahl für welchen Wert steht, können sie an den Listboxen im Programm ablesen)</li>
+  <li>Hash muss eine Ganzzahl zwischen 0 und 24 sein (welche Zahl für welchen Wert steht, können sie an den Listboxen im Programm ablesen)</li>
+  <li>Mode muss eine Ganzzahl zwischen 0 und 8 sein (welche Zahl für welchen Wert steht, können sie an den Listboxen im Programm ablesen)</li>
+  <li>Ausgabe muss bei Ordnerentschlüsselung ein existierendes Verzeichnis sein</li>
+  <li>Ausgabe muss bei Dateiverschlüsselung bzw -entschlüsselung in einem existierenden Verzeichnis sein</li>
+</ul>
+
+Beispiel<br><br>
+
+<code>CODER "Meine Textdatei.txt" /c 6 8 1 "Mein Passwort" "Verschluesselt.dc4"<br>
+CODER "Verschluesselt.dc4" /c 0 0 0 "Mein Passwort" "Rueckverschluesselung.txt"</code>
+
+
+</body>
+
+</html>

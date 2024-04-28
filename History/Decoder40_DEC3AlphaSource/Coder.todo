@@ -1,0 +1,4 @@
+{TODO : Maus auf Button klick, wegziehen -> Aufleucht}
+{TODO : Verhindern, dass man bei SaveDlg einen anderen Typ als *.dc4 wählt!!!}
+{TODO : Soll Inital Dir (Eigene Dateien) bei jedem klick auf "Öffnen" gesetzt werden?}
+{TODO : Open/SaveDlg Cascading Fehler in Debug-Runtime?}{TODO : WaitTmr1 unnötig!!!}{TODO : Wenn kein Passwort eingegeben, dann auch Enc/Dec-Buttons nicht aktiviert?}{TODO : siehe kommentare im quelltext}{TODO : Dateien auch vor verändern schützen, wenn sie von decoder geöffnet sind...}{TODO : Unnötige uses einträge? was macht die exe so fett?}{TODO : Repeat: HTMLLbl --> ElLbl}{TODO : Mit Language File und Ini File}{TODO : Icon aus Registry rausfiltern?}

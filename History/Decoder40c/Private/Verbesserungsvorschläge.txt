@@ -1,0 +1,12 @@
+icons haben weiße ränder bei classic-design
+gesperrte dateien bei uninstall merken für reboot... (auch andere installer)
+startverzeichnis von "datei öffnen" soll eigene dateien oder desktop sein
+rückentschlüsselung anbieten (für bitfehler?)
+Projektleiter@Versionsinfo ist in deutsch
+Bei Laufwerksverschlüsseung: Eingabename ist "Unbekannt"
+Bei Befehlszeile wird ein Ordner in der Groß/Kleinschreibung gezippt, wie er eingegeben wurde
+Verzeichnis wird bei rückentschlüsselung gesperrt?!
+Setup soll auch auf Gastkonten gehen (Clases von HKCU verwenden)
+Wenn man mehrere Dateien auf coder.exe zieht, könnten sich mehrere Fenster öffnen
+intelligente angaben in B, KB, MB, GB?
+try...except bei zip.open? (für was?)

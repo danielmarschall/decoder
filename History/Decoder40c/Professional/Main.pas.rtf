@@ -1,0 +1,487 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1031{\fonttbl{\f0\fswiss\fcharset0 Arial;}}
+{\colortbl ;\red255\green0\blue0;}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\f0\fs20 unit Main;\par
+\par
+(...)\par
+\par
+type\par
+  (...)\par
+\par
+  TMainForm = class(TForm)\par
+    (...)\par
+\b     grp_exp: TGroupBox;\par
+    cbx_exp_cipher: TComboBox;\par
+    cbx_exp_hash: TComboBox;\par
+    cbx_exp_mode: TComboBox;\par
+    btn_exp_std1: TSpeedButton;\par
+    btn_exp_rec1: TSpeedButton;\par
+    btn_exp_std2: TSpeedButton;\par
+    btn_exp_rec2: TSpeedButton;\par
+    btn_exp_std3: TSpeedButton;\par
+    btn_exp_rec3: TSpeedButton;\par
+    lbl_exp_label1: TLabel;\par
+    lbl_exp_label2: TLabel;\par
+    lbl_exp_label3: TLabel;\b0\par
+    (...)\par
+\b     procedure btn_exp_recstd_click(Sender: TObject);\par
+\b0     (...)\par
+  public\par
+    (...)\par
+  private\par
+    (...)\par
+  end;\par
+\par
+(...)\par
+\par
+const\par
+  (...)\par
+\b   Std_Cipher = 7;\par
+  Std_Hash = 4;\par
+  Std_Mode = 0;\b0\par
+  \b dc_version = $00;\b0\par
+\par
+(...)\par
+\par
+\b procedure DateiUeberschreiben(Filename: string);\par
+var\par
+  S: TStream;\par
+begin\par
+  S := TFileStream.Create(Filename, fmOpenWrite);\par
+  try\par
+    ProtectStream(S);\par
+  finally\par
+    S.Free;\par
+  end;\par
+end;\par
+\par
+procedure dc_deletefile(filename: string);\par
+begin\par
+  if fileexists(filename) then\par
+  begin\par
+    if configform.chk_tempsecure.Checked then\par
+      DateiUeberschreiben(filename);\par
+    deletefile(filename);\par
+  end;\par
+end;\b0\par
+\par
+(...)\par
+\par
+  procedure EncodeFile(const AFileName, AOutput: String; const APassword: Binary;\par
+                       ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;\par
+                       AHash: TDECHashClass = nil);\par
+  (...)\par
+  begin\par
+  (...)\par
+              WriteByte(mainform.flag);\par
+              WriteByte(dc_version);\par
+              if mainform.ersatzname <> '' then\par
+                WriteRaw(ExtractFileName(mainform.ersatzname)+'?')\par
+              else\par
+                WriteRaw(ExtractFileName(AFileName)+'?');\par
+\b               WriteLong(Identity);\par
+              WriteByte(Byte(Mode));\par
+              WriteLong(AHash.Identity);\par
+\b0               Write\b Binary\b0 (Seed);\par
+              P := TProgress.Create;\par
+              try\par
+                EncodeStream(Source, tempstream, Source.Size, P);\par
+              except\par
+                // Kann auftreten, wenn das Programm beim verschl\'fcsseln geschlossen wird\par
+                exit;\par
+              end;\par
+\b               if (Mode <> cmECBx) then\b0\par
+                WriteRaw(CalcMAC); \b // CalcMAC funktioniert nicht bei ECBx\par
+              WriteRaw(CalcMAC);\b0\par
+              source.Position := 0;\par
+              WriteRaw(ahash.CalcStream(source, source.size));\par
+  (...)\par
+  end;\par
+\par
+  procedure DecodeFile(const AFileName, AOutput: String; const APassword: Binary);\par
+  (...)\par
+  begin\par
+  (...)\par
+            with \b CipherByIdentity(ReadLong)\b0 .Create do\par
+            try\par
+              Mode := \b TCipherMode(ReadByte)\b0 ;\par
+              ahash := \b HashByIdentity(ReadLong)\b0 ;\par
+              Init(ahash.KDFx(APassword, \b ReadBinary\b0 , Context.KeySize));\par
+              P := TProgress.Create;\par
+              try\par
+\b                 if (Mode <> cmECBx) then\par
+                begin\par
+                  // CalcMAC funktioniert nicht bei ECBx\par
+\b0                   try\par
+                    DecodeStream(Source, tempstream, source.size-source.\b Position-context.buffersize-\b0 ahash.DigestSize , P);\par
+                  except\par
+                    // Kann auftreten, wenn das Programm beim verschl\'fcsseln geschlossen wird\par
+                    exit;\par
+                  end;\par
+\b                   if ReadRaw(context.buffersize) <> CalcMAC then\par
+                    raise EDECException.Create(GetLangEntry('macerror'));\par
+                end\par
+                else\par
+                begin\par
+                  try\par
+                    DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize );\par
+                  except\par
+                    exit;\par
+                  end;\par
+                end;\par
+\b0                 mainform.tempstream.position := 0;\par
+                if readraw(ahash.DigestSize) <> ahash.CalcStream(mainform.tempstream, mainform.tempstream.size) then\par
+                  raise EDECException.Create(mainform.GetLangEntry('hasherror'));\par
+              except\par
+                // Kann auftreten, wenn das Programm beim verschl\'fcsseln geschlossen wird\par
+                exit;\par
+              end;\par
+  (...)\par
+  end;\par
+\par
+(...)\par
+\par
+procedure TMainForm.FensterInit();\par
+begin\par
+  grp_dec.Visible := mode = tcDecrypted;\par
+  btn_dec.visible := mode = tcDecrypted;\par
+\b   if mode = tcEncrypted then\par
+    grp_exp.Visible := configform.chk_expertmode.Checked\par
+  else\par
+    grp_exp.Visible := false;\b0\par
+  grp_enc.Visible := mode = tcEncrypted;\par
+  btn_enc.visible := mode = tcEncrypted;\par
+\par
+  if mode = tcEncrypted then\par
+  begin\par
+\b     if configform.chk_expertmode.Checked then\par
+    begin\par
+      top := top + ((ClientHeight - (formanfangsgroesse + grp_enc.Height + grp_exp.Height + 8+2)) div 2);\par
+      ClientHeight := formanfangsgroesse + grp_enc.Height + grp_exp.Height + 8*2;\par
+      grp_enc.Top := grp_exp.Top + grp_exp.Height + 8;\par
+    end\par
+    else\par
+    begin\b0\par
+      top := top + ((ClientHeight - (formanfangsgroesse + grp_enc.Height + 8)) div 2);\par
+      ClientHeight := formanfangsgroesse + grp_enc.Height + 8;\par
+      \b grp_enc.Top := grp_exp.Top;\b0\par
+\b     end;\b0\par
+    btn_enc.Top := grp_enc.Top + grp_enc.Height - btn_enc.Height;\par
+  end;\par
+\par
+  if mode = tcDecrypted then\par
+  begin\par
+    top := top + ((ClientHeight - (formanfangsgroesse + grp_dec.Height + 8)) div 2);\par
+    ClientHeight := formanfangsgroesse + grp_dec.Height + 8;\par
+    btn_dec.Top := grp_dec.Top + grp_dec.Height - btn_dec.Height;\par
+  end;\par
+\par
+  if top < 0 then top := 0;\par
+  if top > screen.Height then top := screen.Height - GetSystemMetrics(SM_CYCAPTION);\par
+end;\par
+\par
+(...)\par
+\par
+procedure TMainForm.OpenFile(fil: string; alternativer_name: string = '');\par
+var\par
+  C, H: string;\par
+  M: byte;\par
+(...)\par
+begin\par
+(...)\par
+  vle.Strings.Clear;\par
+\par
+\b   btn_exp_rec1.Click;\par
+  btn_exp_rec2.Click;\par
+  btn_exp_rec3.Click;\b0\par
+  edt_enc_password.Text := '';\par
+  (...)\par
+  try\par
+    try\par
+      if extractfileext(fil) = '.dc4' then\par
+      begin\par
+        (...)\par
+        if (T = '') then T := GetLangEntry('unknown');\par
+        vle.InsertRow(GetLangEntry('filetype'), T, true);\par
+\par
+\b         cipher := CipherByIdentity(ReadLong);\par
+        C := cipher.classname;\par
+        C := copy(C, 9, length(C)-8);\par
+        vle.InsertRow(GetLangEntry('cipher'), C, true);\b0\par
+\par
+\b         M := ReadByte;\par
+        vle.InsertRow(GetLangEntry('mode'), cbx_exp_mode.Items.strings[M], true);\par
+\par
+        hash := HashByIdentity(ReadLong);\par
+        H := hash.classname;\par
+        H := copy(H, 7, length(H)-6);\par
+        vle.InsertRow(GetLangEntry('hash'), H, true);\par
+\par
+\b0         vle.InsertRow(GetLangEntry('seed'), HexAnsicht(\b ReadBinary\b0 ), true);\par
+\par
+\b         if M = byte(cmECBx) then\par
+        begin\par
+          // CalcMAC wird von cmECBx nicht unterst\'fctzt\par
+          if F = $00 then\par
+            vle.InsertRow(GetLangEntry('filesize'), FloatToStrF((source.size - hash.DigestSize)-source.Position,ffNumber,14,0) + ' Byte', true);\par
+\par
+          if F = $01 then\par
+            vle.InsertRow(GetLangEntry('zipsize'), FloatToStrF((source.size - hash.DigestSize)-source.Position,ffNumber,14,0) + ' Byte', true);\par
+\par
+          source.Position := source.size - hash.digestsize;\par
+          vle.InsertRow(GetLangEntry('calcmac'), GetLangEntry('cmacnotsupported'), true);\par
+          vle.InsertRow(GetLangEntry('filehash'), HexAnsicht(readraw(hash.DigestSize)), true);\par
+        end\par
+        else\par
+        begin\b0\par
+          if F = $00 then\par
+            vle.InsertRow(GetLangEntry('filesize'), FloatToStrF((source.size - \b cipher.context.BufferSize - \b0 hash.DigestSize)-source.Position,ffNumber,14,0) + ' '+GetLangEntry('byte'), true);\par
+\par
+          if F = $01 then\par
+            vle.InsertRow(GetLangEntry('zipsize'), FloatToStrF((source.size - \b cipher.context.BufferSize - \b0 hash.DigestSize)-source.Position,ffNumber,14,0) + ' '+GetLangEntry('byte'), true);\par
+\par
+          source.Position := source.size - cipher.context.BufferSize - hash.DigestSize;\par
+          vle.InsertRow(GetLangEntry('calcmac'), HexAnsicht(readraw(cipher.context.BufferSize)), true);\par
+          vle.InsertRow(GetLangEntry('filehash'), HexAnsicht(readraw(hash.DigestSize)), true);\par
+\b         end;\b0\par
+        (...)\par
+      end\par
+      else\par
+      begin\par
+        (...)\par
+\par
+        ersatzname := alternativer_name;\par
+\par
+\b         btn_exp_recstd_click(btn_exp_rec1);\par
+        btn_exp_recstd_click(btn_exp_rec2);\par
+        btn_exp_recstd_click(btn_exp_rec3);\b0\par
+\par
+        vle.InsertRow(GetLangEntry('status'), GetLangEntry('unencrypted'), true);\par
+\par
+        (...)\par
+\par
+      end;\par
+    (...)\par
+    end;\par
+  (...)\par
+  end;\par
+end;\par
+\par
+(...)\par
+\par
+procedure TMainForm.FormCreate(Sender: TObject);\par
+\b var\par
+\b0   (...)\b\par
+  zahl_cipher, zahl_hash, zahl_mode, code_cipher, code_hash, code_mode: integer;\par
+\b0 begin\par
+\b   SetDefaultCipherClass(TCipher_Rijndael);\par
+  SetDefaultHashClass(THash_SHA512);\par
+\par
+  RegisterDECClasses([TCipher_Blowfish, TCipher_Twofish, TCipher_IDEA,\par
+    TCipher_Cast256, TCipher_Mars, TCipher_RC4, TCipher_RC6, TCipher_Rijndael,\par
+    TCipher_Square, TCipher_SCOP, TCipher_Sapphire, TCipher_1DES, TCipher_2DES,\par
+    TCipher_3DES, TCipher_2DDES, TCipher_3DDES, TCipher_3TDES, TCipher_3Way,\par
+    TCipher_Cast128, TCipher_Gost, TCipher_Misty, TCipher_NewDES, TCipher_Q128,\par
+    TCipher_RC2, TCipher_RC5, TCipher_SAFER, TCipher_Shark, TCipher_Skipjack,\par
+    TCipher_TEA, TCipher_TEAN]);\par
+\par
+  RegisterDECClasses([THash_MD2, THash_MD4, THash_MD5, THash_SHA, THash_SHA1,\par
+    THash_SHA256, THash_SHA384, THash_SHA512, THash_Sapphire, THash_Panama,\par
+    THash_Tiger, THash_RipeMD128, THash_RipeMD160, THash_RipeMD256,\par
+    THash_RipeMD320, THash_Haval128, THash_Haval160, THash_Haval192,\par
+    THash_Haval224, THash_Haval256, THash_Whirlpool, THash_Whirlpool1,\par
+    THash_Square, THash_Snefru128, THash_Snefru256]);\b0\par
+\par
+  IdentityBase := $59178954;\par
+\par
+  (...)\par
+\par
+\b   btn_exp_std1.Glyph.LoadFromResourceName(hInstance, 'FAVORITE');\par
+  btn_exp_std2.Glyph.LoadFromResourceName(hInstance, 'FAVORITE');\par
+  btn_exp_std3.Glyph.LoadFromResourceName(hInstance, 'FAVORITE');\par
+  btn_exp_rec1.Glyph.LoadFromResourceName(hInstance, 'STANDARD');\par
+  btn_exp_rec2.Glyph.LoadFromResourceName(hInstance, 'STANDARD');\par
+  btn_exp_rec3.Glyph.LoadFromResourceName(hInstance, 'STANDARD');\par
+\b0\par
+  (...)\par
+\par
+\b   lbl_exp_label1.caption := GetLangEntry('cipheralg');\par
+  lbl_exp_label2.caption := GetLangEntry('hashalg');\par
+  lbl_exp_label3.caption := GetLangEntry('ciphermode');\par
+  btn_exp_rec1.hint := GetLangEntry('favorite');\par
+  btn_exp_rec2.hint := GetLangEntry('favorite');\par
+  btn_exp_rec3.hint := GetLangEntry('favorite');\par
+  btn_exp_std1.hint := GetLangEntry('standard');\par
+  btn_exp_std2.hint := GetLangEntry('standard');\par
+  btn_exp_std3.hint := GetLangEntry('standard');\par
+  grp_exp.Caption := GetLangEntry('expert');\par
+\b0\par
+  (...)\par
+\par
+  if (paramcount > 1) then\par
+  begin\par
+    if (paramstr(2) <> '/c') and (paramstr(2) <> '/x') then\par
+      showmessage(GetLangEntry('onlyonefileparam'))\par
+    else\par
+    begin\par
+\b       val(paramstr(3), zahl_cipher, code_cipher);\par
+      val(paramstr(4), zahl_hash, code_hash);\par
+      val(paramstr(5), zahl_mode, code_mode);\b0\par
+\par
+      i\b f (fileexists(paramstr(1))) and (code_cipher = 0) and (zahl_cipher <= cbx_exp_cipher.items.count) and (code_hash = 0) and (zahl_hash <= cbx_exp_hash.items.count) and (code_mode = 0) and (zahl_mode <= cbx_exp_mode.items.count) and (paramcount = 7) then\b0\par
+      begin\par
+        GetDir(0, arbeitsverzeichnis);\par
+        openfile(paramstr(1));\par
+        ausgabegesetzt := arbeitsverzeichnis+'\\'+paramstr(\b 7\b0 );\par
+\par
+        if mode = tcEncrypted then\par
+        begin\par
+          // Datei verschl\'fcsseln\par
+          if extractfileext(ausgabegesetzt) <> '.dc4' then\par
+            ausgabegesetzt := ausgabegesetzt + '.dc4'; // Ausgabe muss .dc4 haben!\par
+          \b cbx_exp_cipher.ItemIndex := zahl_cipher;\par
+          cbx_exp_hash.ItemIndex := zahl_hash;\par
+          cbx_exp_mode.ItemIndex := zahl_mode;\b0\par
+          edt_enc_password.Text := paramstr(\b 6\b0 );\par
+          edt_enc_password2.Text := paramstr\b (6\b0 );\par
+          try\par
+            btn_enc.click;\par
+          except\par
+            // Falls ein Fehler auftreten sollte, soll der Ablauf hier nicht stehen\par
+            // bleiben, deswegen der Try-Except-Block.\par
+            errorlevel := 2; // Fehler bei Ver/Entschl\'fcsselung\par
+          end;\par
+        end;\par
+\par
+        if mode = tcDecrypted then\par
+        begin\par
+          // Datei oder Ordner entschl\'fcsseln\par
+          if extractfileext(ausgabegesetzt) = '.dc4' then\par
+            ausgabegesetzt := copy(ausgabegesetzt, 0, length(ausgabegesetzt)-length('.dc4')); // Ausgabe darf nicht .dc4 haben!\par
+          edt_dec_password.Text := paramstr(\b 6\b0 );\par
+          try\par
+            btn_dec.click;\par
+          except\par
+            // Falls ein Fehler auftreten sollte, soll der Ablauf hier nicht stehen\par
+            // bleiben, deswegen der Try-Except-Block.\par
+            errorlevel := 2; // Fehler bei Ver/Entschl\'fcsselung\par
+          end;\par
+        end;\par
+      end\par
+      else \b if (directoryexists(paramstr(1))) and (code_cipher = 0) and (zahl_cipher <= cbx_exp_cipher.items.count) and (code_hash = 0) and (zahl_hash <= cbx_exp_hash.items.count) and (code_mode = 0) and (zahl_mode <= cbx_exp_mode.items.count) and (paramcount = 7) then\b0\par
+      begin\par
+        // Ordner verschl\'fcsseln\par
+        openfolder(paramstr(1));\par
+        \b cbx_exp_cipher.ItemIndex := zahl_cipher;\par
+        cbx_exp_hash.ItemIndex := zahl_hash;\par
+        cbx_exp_mode.ItemIndex := zahl_mode;\b0\par
+        edt_enc_password.Text := paramstr(\b 6\b0 );\par
+        edt_enc_password2.Text := paramstr\b (6\b0 );\par
+        ausgabegesetzt := paramstr(\b 7\b0 );\par
+        if extractfileext(ausgabegesetzt) <> '.dc4' then\par
+          ausgabegesetzt := ausgabegesetzt + '.dc4'; // Ausgabe muss .dc4 haben!\par
+        try\par
+          btn_enc.click;\par
+        except\par
+          // Falls ein Fehler auftreten sollte, soll der Ablauf hier nicht stehen\par
+          // bleiben, deswegen der Try-Except-Block.\par
+          errorlevel := 2; // Fehler bei Ver/Entschl\'fcsselung\par
+        end;\par
+      end\par
+      else\par
+        errorlevel := 3; // Falsche Syntax oder Datei/Verzeichnis nicht gefunden\par
+      close;\par
+    end;\par
+  end\par
+  else\par
+  begin\par
+    show;\par
+\par
+    if fileexists(ParamStr(1)) then\par
+      openfile(ParamStr(1));\par
+\par
+    if directoryexists(ParamStr(1)) then\par
+      openfolder(ParamStr(1));\par
+  end;\par
+end;\par
+\par
+(...)\par
+\par
+\b procedure TMainForm.btn_exp_recstd_click(Sender: TObject);\par
+var\par
+  Reg: TRegistry;\par
+begin\par
+  Reg := TRegistry.Create;\par
+  try\par
+    Reg.RootKey := HKEY_CURRENT_USER;\par
+    Reg.OpenKey('\\Software\\ViaThinkSoft\\(De)Coder 4.0', true);\par
+    if sender = btn_exp_std1 then Reg.WriteInteger('Cipher', cbx_exp_cipher.ItemIndex);\par
+    if sender = btn_exp_std2 then Reg.WriteInteger('Hash', cbx_exp_hash.ItemIndex);\par
+    if sender = btn_exp_std3 then Reg.WriteInteger('Mode', cbx_exp_mode.ItemIndex);\par
+    if sender = btn_exp_rec1 then\par
+    begin\par
+      if not Reg.ValueExists('Cipher') then\par
+        Reg.WriteInteger('Cipher', Std_Cipher);\par
+      cbx_exp_cipher.ItemIndex := Reg.ReadInteger('Cipher');\par
+    end;\par
+    if sender = btn_exp_rec2 then\par
+    begin\par
+      if not Reg.ValueExists('Hash') then\par
+        Reg.WriteInteger('Hash', Std_Hash);\par
+      cbx_exp_hash.ItemIndex := Reg.ReadInteger('Hash');\par
+    end;\par
+    if sender = btn_exp_rec3 then\par
+    begin\par
+      if not Reg.ValueExists('Mode') then\par
+        Reg.WriteInteger('Mode', Std_Mode);\par
+      cbx_exp_mode.ItemIndex := Reg.ReadInteger('Mode');\par
+    end;\par
+    Reg.CloseKey();\par
+  finally\par
+    Reg.Free;\par
+  end;\par
+end;\par
+\b0\par
+(...)\par
+\par
+procedure TMainForm.btn_enc_click(Sender: TObject);\par
+var\par
+  (...)\par
+begin\par
+  (...)\par
+  temp := GetTempDir+'DeCoder.tmp';\par
+  try\par
+    \b EncodeFile(fileopen, temp, edt_enc_password.text, CipherByName('TCipher_'+cbx_exp_cipher.Items.Strings[cbx_exp_cipher.ItemIndex]), TCipherMode(cbx_exp_mode.ItemIndex), HashByName('THash_'+cbx_exp_hash.Items.Strings[cbx_exp_hash.ItemIndex]));\par
+\b0   except\par
+    // Kann auftreten, wenn das Programm beim verschl\'fcsseln geschlossen wird\par
+    on EDECException do raise;\par
+  end;\par
+  (...)\par
+end;\par
+\par
+(...)\par
+\par
+procedure TMainForm.steuerelementesperren(sperren: boolean);\par
+begin\par
+  (...)\par
+\b   grp_exp.Enabled := not sperren;\par
+    lbl_enc_label1.enabled := not sperren;\par
+    lbl_enc_label2.enabled := not sperren;\par
+    lbl_exp_label3.enabled := not sperren;\par
+    cbx_exp_cipher.enabled := not sperren;\par
+    cbx_exp_hash.enabled := not sperren;\par
+    cbx_exp_mode.enabled := not sperren;\par
+    btn_exp_rec1.enabled := not sperren;\par
+    btn_exp_rec2.enabled := not sperren;\par
+    btn_exp_rec3.enabled := not sperren;\par
+    btn_exp_std1.enabled := not sperren;\par
+    btn_exp_std2.enabled := not sperren;\par
+    btn_exp_std3.enabled := not sperren;\b0\par
+  (...)\par
+end;\cf1\b\par
+\cf0\par
+\b0 (...)\par
+\par
+end.\par
+\cf1\b\par
+}
+ 

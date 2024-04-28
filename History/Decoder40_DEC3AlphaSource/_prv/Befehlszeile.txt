@@ -1,0 +1,10 @@
+CODER <Funktion> <Eingabedatei> <Zieldatei> <Nullfunktion>
+
+<Funktion>
+  -enc
+  -dec
+
+<Nullfunktion>
+  -0	Alles wird angezeigt
+  -1	Nichts, auﬂer Fehler werden angezeigt
+  -2	Nichts wird angezeigt

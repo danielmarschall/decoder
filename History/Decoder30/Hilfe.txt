@@ -1,0 +1,95 @@
+(De)Coder V3.0
+==============
+
+Der (De)Coder verschlüsselt Ihre Daten und kann sie
+anschließend wieder entschlüsseln. Die Bedienung ist
+sehr einfach. Sie können ein Passwort in beliebiger
+Länge eingeben und anschließend alles wieder mit dem
+selben Passwort entschlüsseln. Die Dateien sind von
+keinem Hacker mehr zu lesen bzw. zu benutzen. Sie
+können eine Anwendung verschlüsseln, Texte, Bilder,
+Videos, HTML-Seiten u.s.w. Das gute an dem (De)Coder
+ist, dass das Programm automatisch erkennt, ob die
+Datei eine verschlüsselt ist. Die Verschlüsselungs und
+Entschlüsselungsfunktion ist also zusammengefasst
+worden.
+
+Bedienung:
+----------
+
+Datei öffnen:
+	Öffnet eine zu verschlüsselnte Datei.
+
+Datei schließen:
+	Schließt die Datei wieder.
+
+Beenden:
+	Beendet das Programm.
+
+Verschlüsseln / Entschlüsseln:
+	Verschlüsselt die Datei und fordert dazu auf,
+	die Zieldatei auszuwählen. Wenn die Datei
+	bereits verschlüsselt ist, wird sie wieder
+	entschlüsselt.
+
+Verschlüsselungspasswort:
+	Ein Textfeld, indem Sie Ihr geheimes Passwort
+	eintragen müssen.
+
+Geschichte:
+-----------
+
+Version 1.0:
+	Die Dateien werden über ein DOS-Programm
+	verschlüsselt. Es werden nur die Buchstaben
+	mit anderen ersetzt!
+
+Version 2.0:
+	Es verschlüsselt als Windowsprogramm.
+
+Version 2.1:
+	Es kann eine Zahl von 1 - 255 zum
+	verschlüsseln ausgesucht werden.
+
+Version 2.2:
+	Es kann eine Zahl von 1 - 256 zum
+	verschlüsseln ausgesucht werden.
+
+Version 3.0:
+	Nun kann auch ein Passwort eingegeben
+	werden!
+
+Systemanforderungen:
+--------------------
+
+Pentium 1 Prozessor mit 133 MHz >
+Windows 95 >
+32 MB RAM >
+
+Probleme:
+---------
+
+In dieser Version kann es zu keinen Problemen
+bei der verschlüsselung kommen.
+
+Folgendes könnte aber die Verschlüsselung
+verhindern:
+
+*	Systemanforderungen nicht erfüllt
+*	Nicht genügend Arbeitsspeicher
+*	Nicht genügend Festplattenspeicher
+*	Kein Passwort eingegeben
+*	Geöffnete Datei wurde vor dem
+	verschlüsseln gelöscht...
+
+Der Programmierer:
+------------------
+
+Dieses Programm wurde am 30. Januar 2002 von
+Daniel Marschall programmiert. Der Programmierer
+haftet nicht für sein Programm. Das Programm darf
+vervielfältigt werden, solange es unverändert
+bleibt! Das Programm ist Freeware!!!
+
+Homepage:	http://www.d-m-home.de
+E-Mail:		daniel.marschall@d-m-home.de

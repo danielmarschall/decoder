@@ -1,0 +1,13 @@
+Die verschiedenen Einstellungsmöglichkeiten
+
+(De)Coder 4.0 verfügt über 30 verschiedene Verschlüsselungsalgorithmen (Cipher), 9 verschiedene Cipher-Modi und 26 verschiedenen Prüfsummenalgorithmen (Hash), die für jede Verschlüsselung beliebig ausgewählt werden können. Die Einstellungen werden in die verschlüsselten Dateien geschrieben, sodass bei der Entschlüsselung automatisch die richtigen Algorithmen verwendet werden. 
+
+In (De)Coder 4.0 werden folgende Einstellungen verwendet: 
+
+Cipher-Algorithmus: Rijndael 
+Hash-Algorithmus: SHA1 
+Cipher-Modus: CTSx 
+
+Sie können die Standardeinstellung durch das Anklicken des Sternsymboles neben den Steuerfeldern für die einzelnen Einstellungen ändern. 
+
+Sobald eine neue Datei geöffnet oder das Symbol neben den Stern geklickt wird wechseln die Einstellungen zurück zu den (ggf. vorher festgelegten) Standardeinstellungen zurück. 

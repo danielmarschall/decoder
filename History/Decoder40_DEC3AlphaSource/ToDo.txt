@@ -1,0 +1,8 @@
+ToDo DeCoder 4.0
+----------------
+
+- Verschlüsselung möglich machen
+- Design mit Farbtransformationen (RGB <> HSV)
+- Nach verschlüsselten Dateien auf dem Computer suchen
+- Befehlszeilenfunktion (Erst in 4.1)
+- QuickStart als Tray-Icon

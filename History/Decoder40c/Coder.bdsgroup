@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+  <PersonalityInfo>
+    <Option>
+      <Option Name="Personality">Default.Personality</Option>
+      <Option Name="ProjectType"></Option>
+      <Option Name="Version">1.0</Option>
+      <Option Name="GUID">{00261C37-1D74-466D-B1FF-6EDFDFBEAF93}</Option>
+    </Option>
+  </PersonalityInfo>
+  <Default.Personality>
+    
+    <Projects>
+      <Projects Name="Coder.exe">Coder.bdsproj</Projects>
+      <Projects Name="ShlExt.dll">ShlExt.bdsproj</Projects>
+      <Projects Name="Targets">Coder.exe ShlExt.dll</Projects>
+    </Projects>
+    <Dependencies/>
+  </Default.Personality>
+</BorlandProject>

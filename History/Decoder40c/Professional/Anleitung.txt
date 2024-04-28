@@ -1,0 +1,11 @@
+- (De)Coder 4.0 von beschränkter Fassung in erweiterte Fassung migrieren -
+
+Das hat zur Folge, dass (De)Coder nur noch DC4-Dateien der Version $00 annehmen kann.
+Dies ist das universelle Dateiformat, dass alle Cipher/Hash/Modes der DEC-Version annehmen
+kann. Warnung: Einige Algorithmen liegen eventuell unter Patentschutz.
+
+Anmerkungen:
+* Reguläre DC4-Dateien der Version $01 können nicht mehr eingelesen werden.
+* Der Cipher "Shark" scheint in Version DEC 5.1c fehlerschaft zu sein.
+* Textstellen können durch unterschiedliche Versionen nicht mit den vorgegebenen Angaben übereinstimmen
+* Die Befehlszeilenstruktur wird verändert (siehe Help\page_command.html).
