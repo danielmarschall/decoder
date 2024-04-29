@@ -90,7 +90,7 @@ var
   Source: TStream;
 
   type
-    TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled);
+    TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
 
   procedure Read(var Value; Size: Integer);
   begin
@@ -126,11 +126,12 @@ var
   end;
 
 const
-  DC4_ID_BASES: array[0..3] of Int64 = (
+  DC4_ID_BASES: array[0..4] of Int64 = (
     $84485225, // Hagen Reddmann Example (no .dc4 files)
     $59178954, // (De)Coder 4.0 (identities not used)
     $84671842, // (De)Coder 4.1 beta
-    $19387612  // (De)Coder 4.1 final/cancelled
+    $19387612, // (De)Coder 4.1 final/cancelled
+    $1259d82a  // (De)Coder 5.0 WIP
   );
 var
   ch: RawByteString;
@@ -147,6 +148,8 @@ var
   ahash: TDECHash;
   Key: TBytes;
   FileNameUserPasswordEncrypted: boolean;
+  FilenamePassword: RawByteString;
+  KdfVersion: byte;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -156,7 +159,7 @@ begin
     // TODO: Make a version 4 file format, based on version 2 (not 3!)
     //       - Add IV
     //       - Add Filler
-    //       - Add version of KDF (KDFx, KDF1, KDF2, KDF3)
+    //  (OK) - Add version of KDF (KDFx, KDF1, KDF2, KDF3)
     //       - encrypt-then-hmac instead of hash of original data. Add hmac key
     //       - No file terminus, or a human readable magic sequence (OID)?
     //       - Instead of identify base, use class names human readable?
@@ -176,6 +179,7 @@ begin
     // 01 = (De)Coder 4.0
     // 02 = (De)Coder 4.1 Beta
     // 03 = (De)Coder 4.1 Final Cancelled (never released)
+    // 04 = (De)Coder 5.0 WorkInProgress
     V := TDcFormatVersion(ReadByte); // if too big, it will automatically be set to 0
     if V = fvUnknown then raise Exception.Create('DC Invalid version');
 
@@ -245,6 +249,13 @@ begin
     else
       AHash := DEC51_HashById(idBase, ReadLong).Create;
 
+    // 7.5 KDF version (only version 4+)
+    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3
+    if V = fvDc50Wip then
+      KdfVersion := ReadByte
+    else
+      KdfVersion := 0; // KDFx
+
     // 8. Seed
     if V = fvDc40 then
       Seed := ReadRaw(16)
@@ -262,7 +273,16 @@ begin
     *)
     ahash.Init;
     try
-      Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize);
+      if KDFVersion = 0 then
+        Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = 1 then
+        Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = 2 then
+        Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = 3 then
+        Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else
+        raise Exception.Create('Invalid KDF version');
     finally
       ahash.Done;
     end;
@@ -279,9 +299,19 @@ begin
       ahash.Init;
       try
         if FileNameUserPasswordEncrypted then
-          Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+          FilenamePassword := APassword
         else
-          Key := TDECHashExtended(ahash).KDFx(BytesOf(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C), BytesOf(Seed), Cipher.Context.KeySize);
+          FilenamePassword := RawByteString(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C);
+        if KDFVersion = 0 then
+          Key := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = 1 then
+          Key := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = 2 then
+          Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = 3 then
+          Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else
+          Assert(False);
       finally
         ahash.Done;
       end;
