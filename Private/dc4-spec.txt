@@ -1,0 +1,488 @@
+=============================
+DC4 FILE FORMAT SPECIFICATION
+=============================
+
+Type:		Encrypted file
+Contents:	Binary information
+Used by:	ViaThinkSoft (De)Coder 4.0
+		ViaThinkSoft (De)Coder 4.1
+Author:		Daniel Marschall
+
+
+CONTENTS
+========
+
+[1.0]	Sample file-format by Hagen Reddmann
+	[1.1] Sample file-format, part 1
+	[1.2] Sample file-format, part 2
+	[1.3] Sample file-format, part 3
+
+[2.0]	DC4 Standard 1 used by (De)Coder 4.0
+	[2.1] DC4 Standard 1, part 1
+	[2.2] DC4 Standard 1, part 2
+	[2.3] DC4 Standard 1, part 3
+
+[3.0]	DC4 Standard 2 used by (De)Coder 4.1 Beta
+	[3.1] DC4 Standard 2, part 1
+	[3.2] DC4 Standard 2, part 2
+	[3.3] DC4 Standard 2, part 3
+	[3.4] DC4 Standard 2, part 4
+	[3.5] DC4 Standard 2, part 5
+
+[4.0]	DC4 Standard 3 used by (De)Coder 4.1
+	[4.1] DC4 Standard 3, part 1
+	[4.2] DC4 Standard 3, part 2
+	[4.3] DC4 Standard 3, part 3
+	[4.4] DC4 Standard 3, part 4
+	[4.5] DC4 Standard 3, part 5
+
+[APP A]	Available cipher algorithms of DEC 5.1c
+
+[APP B]	Available cipher modes of DEC 5.1c
+
+[APP C]	Available hash algorithms of DEC 5.1c
+
+[APP D]	Comments
+	* Links to websites
+	* CTSx and KDfx
+	* Revision and contact information
+
+
+[1.0] SAMPLE FILE-FORMAT BY HAGEN REDDMANN
+==========================================
+
+This file format is NOT used by (De)Coder.
+It is only the guideline of the DC4-Format.
+Hagen Reddmann posted the demo-algorithm in this topic:
+http://www.delphipraxis.net/topic79794,0,asc,0.html (in German)
+
+Default Idendity-Base is 84485225h.
+
+[1.1] Sample file-format, part 1
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Long	4		Cipher idendity (see appendix A)
+
+				Default cipher configuration
+				Algorithm:	RIJNDAEL (AES)
+
+04h	Byte	1		Cipher mode (see appendix B)
+
+				Default mode:	CTS
+
+05h	Long	4		Hash-Idendity (see appendix C)
+
+				Default hash configuration
+				Algorithm:	SHA1
+
+09h	Byte	1		Size of seed
+
+				Default value:	16 Byte
+
+0Ah	Binary	0-255		Seed
+
+				Random data
+
+[1.2] Sample file-format, part 2
+
+Offset	Type	Size	Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Long	4		Size of data
+
+04h	Binary	0-4,294,967,296	With DEC 5.1c encrypted data
+
+				Password = Hash->KDfx(User-Password, Seed)
+
+[1.3] Sample file-format, part 3
+
+Offset	Type	Size	Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Byte	1		Size of CalcMAC
+
+01h	Binary	0-255		CalcMAC
+
+				Size dependend on cipher algorithm and cipher mode.
+				The algorithms of DEC give out CalcMAC with the length 16-64.
+
+
+[2.0] DC4 STANDARD 1 USED BY (DE)CODER 4.0
+==========================================
+
+This file format is used by (De)Coder 4.0
+The Idendity-Base of this file format is 59178954h.
+
+[2.1] DC4 Standard 1, part 1
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Byte	1		Idendity flag
+
+				00h: Uncompressed file - Default in (De)Coder 4.0
+				01h: Folder compressed with ZIP - Default in (De)Coder 4.0
+
+01h	Byte	1		Version flag
+
+				Value: 01h
+
+02h	String	var		Original file name
+
+[2.2] DC4 Standard 1, part 2
+
+Offset	Type	Size	Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Byte	1		Terminus
+
+				Value: 1Fh ("?")
+
+01h	Binary	16		Seed
+
+				Random data
+				Default size:	16 byte (10h)
+
+11h	Binary	var		With DEC 5.1c encrypted data
+
+				Password = Hash->KDfx(User-Password, Seed)
+
+				Default cipher configuration
+				Algorithm:	RIJNDAEL (AES)
+				Mode:		CTS
+
+[2.3] DC4 Standard 1, part 3
+
+Offset	Type	Size	Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Binary	var		Checksum of the original file
+
+				Default hash configuration
+				Algorithm:	SHA 512
+
+				Size dependend on hash algorithm.
+				The algorithms of DEC give out a hash with the length 16-64.
+
+
+[3.0] DC4 STANDARD 2 USED BY (DE)CODER 4.1 BETA
+===============================================
+
+This file format is used by (De)Coder 4.1 Public Beta 1 through (De)Coder 4.1 Public Beta 4b.
+
+[3.1] DC4 Standard 2, part 1
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Byte	1		Idendity flag
+
+				00h: Uncompressed file
+				01h: Folder compressed with ZIP
+				02h: ZLib-compressed file - Default in (De)Coder 4.1
+				03h: ZLib-compressed folder, packed ZIP - Default in (De)Coder 4.1
+
+01h	Byte	1		Version flag
+
+				Value: 02h
+
+02h	Binary	var		Original file name in BASE64 (binary)
+
+[3.2] DC4 Standard 2, part 2
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Byte	1		Terminus
+
+				Value: 1Fh ("?")
+
+01h	Long	4		Idendity-Base
+
+				Default Idendity-Base: 84671842h
+
+05h	Long	4		Cipher idendity (see appendix A)
+
+				Idendity of the cipher in DEC 5.1c
+
+				Default cipher configuration
+				Algorithm:	RIJNDAEL (AES)
+
+09h	Byte	1		Cipher mode (see appendix B)
+
+				Cipher mode in DEC 5.1c
+				Default mode:	CTS
+
+0Ah	Long	4		Hash idendity (see appendix C)
+
+				Idendity of the hash in DEC 5.1c
+
+				Default hash configuration
+				Algorithm:	SHA 512
+
+0Eh	Byte	1		Size of seed
+
+				Default value:	32 byte
+
+0Fh	Binary	0-255		Seed
+
+				Random data
+
+[3.3] DC4 Standard 2, part 3
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Binary	var		With DEC 5.1c encrypted data, encrypted with password
+
+				Password = Hash->KDfx(User-Password, Seed)
+
+[3.4] DC4 Standard 2, part 4
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Binary	var		Secured checksum of the original file
+
+				= Hash(Hash(Original File) & Seed & User-Password)
+
+				Size dependend on hash algorithm.
+				The algorithms of DEC give out a hash with the length 16-64.
+
+
+[3.5] DC4 Standard 2, part 5
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Binary	16		DC4-Terminus
+
+				Value: "RENURVJNSU5VUw==" (BASE64: "DCTERMINUS")
+
+
+[4.0] DC4 STANDARD 3 USED BY (DE)CODER 4.1
+==========================================
+
+This file format is used by the final version of (De)Coder 4.1.
+
+[4.1] DC4 Standard 3, part 1
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Byte	1		Idendity flag
+
+				00h: Uncompressed file
+				01h: Folder compressed with ZIP
+				02h: ZLib-compressed file - Default in (De)Coder 4.1
+				03h: ZLib-compressed folder, packed ZIP - Default in (De)Coder 4.1
+
+01h	Byte	1		Version flag
+
+				Value: 03h
+
+02h	Byte	1		Filename encrypted with User-Password?
+
+				00h: No
+				01h: Yes
+
+03h	Long	4		Size of the following crypted filename
+
+08h	Binary	0-4,294,967,296	Original file name, not-nullterminated WideString
+				Encrypted with DEC 5.1c
+
+				If offset 02h of this part has the value 00h:
+				Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
+
+				If offset 02h of this part has the value 00h:
+				Encryption-Password = Hash->KDfx(User-Password, Seed)
+
+[4.2] DC4 Standard 3, part 2
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Long	4		Idendity-Base
+
+				Default Idendity-Base: 19387612h
+
+04h	Long	4		Cipher idendity
+
+				Idendity of the cipher in DEC 5.1c (see appendix A)
+
+				Default cipher configuration
+				Algorithm:	RIJNDAEL (AES)
+
+08h	Byte	1		Cipher mode (see appendix B)
+
+				Cipher mode in DEC 5.1c
+				Default mode:	CTS
+
+09h	Long	4		Hash idendity (see appendix C)
+
+				Idendity of the hash in DEC 5.1c
+
+				Default hash configuration
+				Algorithm:	SHA 512
+
+0Dh	Byte	1		Size of seed
+
+				Default value:	32 byte (20h)
+
+0Eh	Binary	0-255		Seed
+
+				Random data
+
+[4.3] DC4 Standard 3, part 3
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Binary	var		With DEC 5.1c encrypted data
+
+				Encryption-Password = Hash->KDfx(User-Password, Seed)
+
+				The final version of (De)Coder 4.1 can also use a 2-factor-method.
+				The "special-checksum" of a file can be used as the user password.
+				The formula is:
+
+				User-Password = Hash(File-Contents)
+
+				Combined formula:
+
+				Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
+
+[4.3] DC4 Standard 3, part 4
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Binary	var		Secured checksum of the original file
+
+				= Hash(Hash(Original File) & Seed & Hash(Seed & Hash(Seed & User-Password)))
+
+				Size dependend on hash algorithm.
+				The algorithms of DEC give out a hash with the length 16-64.
+
+[4.4] DC4 Standard 3, part 5
+
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+
+00h	Binary	8		DC4-Terminus
+
+				Value: 63h F3h DFh 89h B7h 27h 20h EAh
+
+
+[APPENDIX A] AVAILABLE CIPHER ALGORITHMS OF DEC 5.1C
+====================================================
+
+Class-Name		Keysize	Blocksize	Buffersize	Usersize	Usersave	Comments
+-----------------------------------------------------------------------------------------------------------------------------
+TCipher_Blowfish	  56	 8		 8		4168		No		-
+TCipher_Twofish		  32	16		16		4256		No		-
+TCipher_IDEA		  16	 8		 8		 208		No		-
+TCipher_Cast256		  32	16		16		 384		No		-
+TCipher_Mars		  56	16		16		 160		No		-
+TCipher_RC4		 256	 1		16		 258		Yes		-
+TCipher_RC6		 256	16		16		 272		No		-
+TCipher_Rijndael	  32	16		16		 480		No		Used by (De)Coder 4.0 and 4.1
+TCipher_Square		  16	16		16		 288		No		-
+TCipher_SCOP		  48	 4		32		1548		Yes		-
+TCipher_Sapphire	1024	 1		32		1044		Yes		-
+TCipher_1DES		   8	 8		 8		 256		No		-
+TCipher_2DES		  16	 8		 8		 512		No		-
+TCipher_3DES		  24	 8		 8		 768		No		-
+TCipher_2DDES		  16	16		16		 512		No		-
+TCipher_3DDES		  24	16		16		 768		No		-
+TCipher_3TDES		  24	24		24		 768		No		-
+TCipher_3Way		  12	12		12		 120		No		-
+TCipher_Cast128		  16	 8		 8		 128		No		-
+TCipher_Gost		  32	 8		 8		  32		No		-
+TCipher_Misty		  16	 8		 8		 128		No		-
+TCipher_NewDES		  15	 8		 8		 120		Yes		-
+TCipher_Q128		  16	16		16		 256		No		-
+TCipher_RC2		 128	 8		 8		 128		No		-
+TCipher_RC5		 256	 8		 8		 136		No		-
+TCipher_SAFER		  16	 8		 8		 768		No		-
+TCipher_Shark		  16	 8		 8		 112		No		Not working in DEC 5.1c
+TCipher_Skipjack	  10	 8		 8		2560		No		-
+TCipher_TEA		  16	 8		 8		  32		No		-
+TCipher_TEAN		  16	 8		 8		  32		No		-
+
+
+[APPENDIX B] AVAILABLE CIPHER MODES OF DEC 5.1C
+===============================================
+
+Value	Name	Description								Comments
+-----------------------------------------------------------------------------------------------------------------------------
+00h	CTSx	double CBC, with CFS8 padding of truncated final block			Used by (De)Coder 4.0 and 4.1
+01h	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block	-
+02h	CFB8	8bit Cipher Feedback mode						-
+03h	CFBx	CFB on Blocksize of Cipher						-
+04h	OFB8	8bit Output Feedback mode						-
+05h	OFBx	OFB on Blocksize bytes							-
+06h	CFS8	8Bit CFS, double CFB							-
+07h	CFSx	CFS on Blocksize bytes							-
+08h	ECBx	Electronic Code Book							CalcMAC not possible
+
+
+[APPENDIX C] AVAILABLE HASH ALGORITHMS OF DEC 5.1C
+==================================================
+
+Class-Name		Digestsize	Blocksize	Comments
+-----------------------------------------------------------------------------------------------------------------------------
+THash_MD2		16		 16		-
+THash_MD4		16		 64		-	
+THash_MD5		16		 64		-
+THash_SHA		20		 64		-
+THash_SHA1		20		 64		-
+THash_SHA256		32		 64		-
+THash_SHA384		48		128		-
+THash_SHA512		64		128		Used by (De)Coder 4.0 and 4.1
+THash_Sapphire		64		  1		-
+THash_Panama		32		 32		-
+THash_Tiger		24		 64		-
+THash_RipeMD128		16		 64		-
+THash_RipeMD160		20		 64		-
+THash_RipeMD256		32		 64		-
+THash_RipeMD320		40		 64		-
+THash_Haval128		16		128		-
+THash_Haval160		20		128		-
+THash_Haval192		24		128		-
+THash_Haval224		28		128		-
+THash_Haval256		32		128		-
+THash_Whirlpool		64		 64		-
+THash_Whirlpool1	64		 64		-
+THash_Square		16		 16		-
+THash_Snefru128		16		 48		-
+THash_Snefru256		32		 32		-
+
+
+== [APPENDIX D] COMMENTS ==
+
+* Links to websites
+
+  Source code and program "(De)Coder" downloadable at
+  http://www.viathinksoft.de/info/decoder/ (in German)
+
+  Other informations about the file extension:
+  http://www.fileinfo.net/extension/dc4
+  http://www.sharpened.net/helpcenter/file_extension.php?dc4
+
+  Delphi Encryption Compendium (DEC) downloadable at
+  http://dec.michael-puff.de/ (in German)
+
+* CTSx and KDfx
+
+  CTSx and KDfx are some of the special DEC methods.
+  Please look at the DEC source code for further
+  informations.
+
+* Revision and contact information
+
+  Revision: August 28, 2007
+  Daniel Marschall
+  info@daniel-marschall.de
