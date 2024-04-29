@@ -25,22 +25,6 @@ uses
 
 {$R *.dfm}
 
-function SwapLong(Value: LongWord): LongWord;
-{$IFDEF UseASM}
-  {$IFDEF 486GE}
-    {$DEFINE SwapLong_asm}
-  {$ENDIF}
-{$ENDIF}
-{$IFDEF SwapLong_asm}
-asm
-       BSWAP  EAX
-end;
-{$ELSE}
-begin
-  Result := Value shl 24 or Value shr 24 or Value shl 8 and $00FF0000 or Value shr 8 and $0000FF00;
-end;
-{$ENDIF}
-
 procedure OnProgressProc(Size, Pos: Int64; State: TDECProgressState);
 begin
   FormMain.ProgressBar1.Min := 0;
@@ -51,9 +35,6 @@ begin
   else
     FormMain.ProgressBar1.Position := Pos;
 end;
-
-type
-  TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled);
 
 function DEC51_Identity(IdentityBase: Int64; ClassName: string): Int64;
 var
@@ -104,11 +85,12 @@ begin
   raise Exception.CreateFmt('Cipher ID %d with base %d not found', [Identity, IdentityBase]);
 end;
 
-procedure DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString);
+procedure DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString);
 var
   Source: TStream;
-  OrigName: RawByteString;
-  ahash: TDECHash;
+
+  type
+    TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled);
 
   procedure Read(var Value; Size: Integer);
   begin
@@ -123,7 +105,7 @@ var
   function ReadLong: LongWord;
   begin
     Read(Result, SizeOf(Result));
-    Result := SwapLong(Result);
+    Result := Result shl 24 or Result shr 24 or Result shl 8 and $00FF0000 or Result shr 8 and $0000FF00;
   end;
 
   function ReadBinary: RawByteString;
@@ -154,7 +136,6 @@ var
   ch: RawByteString;
   F: byte;
   V: TDcFormatVersion;
-  tmp: Long;
   Cipher: TDECCipher;
   Seed: RawByteString;
   tempstream: TFileStream;
@@ -162,21 +143,27 @@ var
   HashResult2: RawByteString;
   idBase: Int64;
   FileTerminus: RawByteString;
+  OrigName: RawByteString;
+  ahash: TDECHash;
+  Key: TBytes;
+  FileNameUserPasswordEncrypted: boolean;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+  tempstream := nil;
+  cipher := nil;
+  ahash := nil;
   try
     // TODO: Make a version 4 file format, based on version 2 (not 3!)
-    //       - Add a human readable magic checksum?
-    //       - Add IV (enable it with the flags field)
-    //       - hmac key
-    //       - encrypt-then-hmac
-    //       - No file terminus
-    //       - Filler
+    //       - Add IV
+    //       - Add Filler
+    //       - Add version of KDF (KDFx, KDF1, KDF2, KDF3)
+    //       - encrypt-then-hmac instead of hash of original data. Add hmac key
+    //       - No file terminus, or a human readable magic sequence (OID)?
     //       - Instead of identify base, use class names human readable?
 
     // 1. Flags
     // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
-    // Bit 1:    [Ver2+] Additionally ZLip compressed (1) or not ZLib compressed (0)?
+    // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
     // Bit 2:    Reserved
     // Bit 3:    Reserved
     // Bit 4:    Reserved
@@ -208,6 +195,7 @@ begin
     // Ver2: Base64 encoded filename, terminated with "?"
     // Ver3: Encrypted filename
     OrigName := '';
+    FileNameUserPasswordEncrypted := false;
     if (V = fvDc40) or (V = fvDc41Beta) then
     begin
       ch := ReadRaw(1);
@@ -223,13 +211,12 @@ begin
     end
     else if V = fvDc41FinalCancelled then
     begin
-      ReadByte; // Filename encrypted with user-password? (00=No, 01=Yes)
-      tmp := ReadLong; // Size of the encrypted filename
-      ReadRaw(tmp); // Filename encrypted with DEC 5.1c
-                    // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
-                    // if not encrypted with user-password, otherwise:
-                    // Encryption-Password = Hash->KDfx(User-Password, Seed)
-      OrigName := '(Not implemented)'; // TODO
+      FileNameUserPasswordEncrypted := ReadByte = $01; // Filename encrypted with user-password? (00=No, 01=Yes)
+      // Filename encrypted with DEC 5.1c
+      // Encryption-Password = Hash->KDfx(User-Password, Seed)
+      // if not encrypted with user-password, otherwise:
+      // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
+      OrigName := ReadRaw(ReadLong); // will be decrypted below (after we initialized hash/cipher)
     end
     else
       Assert(False);
@@ -274,37 +261,65 @@ begin
       What I don't understand: How should the program know if the user password or the "hash" password is used??
     *)
     ahash.Init;
-    Cipher.Init(TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize), nil, $FF);
-    ahash.Done;
-    TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
-    Cipher.Done;
-    Cipher.Free;
+    try
+      Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize);
+    finally
+      ahash.Done;
+    end;
+    Cipher.Init(Key, nil, $FF);
+    try
+      TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
+    finally
+      Cipher.Done;
+    end;
+
+    // Decrypt filename (version 3 only)
+    if V = fvDc41FinalCancelled then
+    begin
+      ahash.Init;
+      try
+        if FileNameUserPasswordEncrypted then
+          Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else
+          Key := TDECHashExtended(ahash).KDFx(BytesOf(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C), BytesOf(Seed), Cipher.Context.KeySize);
+      finally
+        ahash.Done;
+      end;
+      Cipher.Init(Key, nil, $FF);
+      try
+        OrigName := TDECFormattedCipher(Cipher).DecodeStringToString(OrigName);
+      finally
+        Cipher.Done;
+      end;
+    end;
 
     // 10. Checksum
     tempstream.position := 0;
     ahash.Init;
-    TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
-    if V = fvDc40 then
-    begin
-      HashResult2 := Convert(HashResult);
-    end
-    else if V = fvDc41Beta then
-    begin
-      HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
-    end
-    else if V = fvDc41FinalCancelled then
-    begin
-      HashResult2 := TDECHashExtended(ahash).CalcString(
-        Convert(HashResult) + Seed +
-            TDECHashExtended(ahash).CalcString(
-              Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
-            , TFormat_Copy)
-      , TFormat_Copy);
-    end
-    else
-      Assert(False);
-    ahash.Done;
-    ahash.Free;
+    try
+      TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
+      if V = fvDc40 then
+      begin
+        HashResult2 := Convert(HashResult);
+      end
+      else if V = fvDc41Beta then
+      begin
+        HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
+      end
+      else if V = fvDc41FinalCancelled then
+      begin
+        HashResult2 := TDECHashExtended(ahash).CalcString(
+          Convert(HashResult) + Seed +
+              TDECHashExtended(ahash).CalcString(
+                Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
+              , TFormat_Copy)
+        , TFormat_Copy);
+      end
+      else
+        Assert(False);
+    finally
+      ahash.Done;
+    end;
     if readraw(ahash.DigestSize) <> HashResult2 then
       raise Exception.Create('Hash mismatch');
 
@@ -312,13 +327,15 @@ begin
     if (FileTerminus <> '') and (ReadRaw(Length(FileTerminus)) <> FileTerminus) then
       raise Exception.Create('File terminus wrong');
 
-    tempstream.Free;
   finally
-    FreeAndNil(Source);
+    if Assigned(Source) then FreeAndNil(Source);
+    if Assigned(tempstream) then FreeAndNil(tempstream);
+    if Assigned(Cipher) then FreeAndNil(Cipher);
+    if Assigned(ahash) then FreeAndNil(ahash);
   end;
 end;
 
-procedure Decompress(InputFileName, OutputFileName: string);
+procedure DeCoder4X_Decompress(InputFileName, OutputFileName: string);
 var
   Buf: array[0..4095] of Byte;
   Count: Integer;
@@ -341,21 +358,21 @@ begin
             CompressOutputStream.Write(Buf[0], Count);
         end;
       finally
-        DecompressionStream.Free;
+        FreeAndNil(DecompressionStream);
       end;
     finally
-      CompressOutputStream.Free;
+      FreeAndNil(CompressOutputStream);
     end;
   finally
-    CompressInputStream.Free;
+    FreeAndNil(CompressInputStream);
   end;
 end;
 
 procedure TFormMain.Button1Click(Sender: TObject);
 begin
-  DecodeFile('c:\CORA2012\schloss.dc4', 'c:\CORA2012\schloss.dec', 'test');
-  Decompress('c:\CORA2012\schloss.dec', 'c:\CORA2012\schloss_decoded.bmp');
-  DeleteFile('c:\CORA2012\schloss.dec');
+  DeCoder4X_DecodeFile('schloss.dc4', 'schloss.tmp', 'test');
+  DeCoder4X_Decompress('schloss.tmp', 'schloss_decoded.bmp');
+  DeleteFile('schloss.tmp');
   ShowMessage('ok');
 end;
 
