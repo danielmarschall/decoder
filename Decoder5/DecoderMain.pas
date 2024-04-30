@@ -96,7 +96,10 @@ begin
 end;
 
 type
+  // https://github.com/MHumm/DelphiEncryptionCompendium/issues/62
   TDECHashExtendedAuthentication = class helper for TDECHashAuthentication
+    class function HMACFile(const Key: TBytes; const FileName: string;
+      const OnProgress:TDECProgressEvent = nil): TBytes;
     class function HMACStream(const Key: TBytes; const Stream: TStream; Size: Int64;
       const OnProgress:TDECProgressEvent): TBytes;
   end;
@@ -230,6 +233,7 @@ var
   IsCompressed: boolean;
   IsFolder: boolean;
   ATempFileName: string;
+  KdfIterations: Long;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -369,18 +373,11 @@ begin
       HashClass := DEC51_HashById(idBase, ReadLong);
     AHash := HashClass.Create;
 
-    // 7.5 KDF version (only version 4+)
-    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3
-    if V = fvDc50Wip then
-      KdfVersion := ReadByte
-    else
-      KdfVersion := 0; // KDFx
-
-    // 7.7 IV (only version 4+)
+    // 7.5 IV (only version 4+)
     if V = fvDc50Wip then
       IV := BytesOf(ReadRaw(ReadByte));
 
-    // 7.8 Last-Block-Filler (only version 4+)
+    // 7.6 Last-Block-Filler (only version 4+)
     if V = fvDc50Wip then
       Filler := ReadByte
     else
@@ -391,6 +388,18 @@ begin
       Seed := ReadRaw(16)
     else
       Seed := ReadRaw(ReadByte);
+
+    // 8.5 KDF version (only version 4+)
+    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3, 4=PBKDF2
+    // For PBKDF2, a DWORD with the iterations follows
+    if V = fvDc50Wip then
+      KdfVersion := ReadByte
+    else
+      KdfVersion := 0; // KDFx
+    if KDFVersion = 4 then
+      KdfIterations := ReadLong
+    else
+      KdfIterations := 0;
 
     // 9. Encrypted data
     (* TODO:
@@ -410,6 +419,8 @@ begin
       Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
     else if KDFVersion = 3 then
       Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = 4 then
+      Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
     else
       raise Exception.Create('Invalid KDF version');
 
@@ -448,6 +459,8 @@ begin
         Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
       else if KDFVersion = 3 then
         Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = 4 then
+        Key := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
       else
         Assert(False);
       Cipher.Init(Key, IV, Filler);
@@ -595,7 +608,7 @@ begin
       raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
     end;
 
-    IsCompressed := IsCompressedFileType(AFileName);
+    IsCompressed := not IsCompressedFileType(AFileName);
     if IsCompressed then
     begin
       ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
@@ -659,17 +672,12 @@ begin
     WriteLong(DEC51_Identity(idBase, HashClass.ClassName));
     AHash := HashClass.Create;
 
-    // 7.5 KDF version (only version 4+)
-    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3
-    KdfVersion := 0; // KDFx
-    WriteByte(KdfVersion);
-
-    // 7.7 IV (only version 4+)
+    // 7.5 IV (only version 4+)
     WriteByte(16);
     IV := RandomBytes(16);
     WriteRaw(Convert(IV));
 
-    // 7.8 Last-Block-Filler (only version 4+)
+    // 7.6 Last-Block-Filler (only version 4+)
     Filler := $FF;
     WriteByte(Filler);
 
@@ -677,6 +685,11 @@ begin
     WriteByte(32);
     Seed := Convert(RandomBytes(32));
     WriteRaw(Seed);
+
+    // 8.5 KDF version (only version 4+)
+    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3
+    KdfVersion := 0; // KDFx
+    WriteByte(KdfVersion);
 
     // 9. Encrypted data
     if KDFVersion = 0 then
@@ -736,6 +749,19 @@ begin
 end;
 
 { TDECHashExtendedAuthentication }
+
+class function TDECHashExtendedAuthentication.HMACFile(const Key: TBytes;
+  const FileName: string; const OnProgress: TDECProgressEvent): TBytes;
+var
+  fs: TFileStream;
+begin
+  fs := TFileStream.Create(FileName, fmOpenRead);
+  try
+    HMACStream(Key, fs, fs.Size, OnProgress);
+  finally
+    FreeAndNil(fs);
+  end;
+end;
 
 class function TDECHashExtendedAuthentication.HMACStream(const Key: TBytes;
   const Stream: TStream; Size: Int64;
