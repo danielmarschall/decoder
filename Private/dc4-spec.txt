@@ -20,6 +20,8 @@ CONTENTS
 
 [4.0]	DC4 Standard 3 used by (De)Coder 4.1 Final/Cancelled
 
+[5.0]	DC4 Standard 3 used by (De)Coder 5.0
+
 [APP A]	Available cipher algorithms of DEC 5.1c
 
 [APP B]	Available cipher modes of DEC 5.1c
@@ -195,15 +197,15 @@ Offset	Type	Size		Content/Description
 					0xAF27025E	TCipher_TEA
 					0xC0664FF4	TCipher_TEAN
 	Byte	1		DEC 5.1c Cipher mode (see appendix B)
-					0x00h	CTSx	double CBC, with CFS8 padding of truncated final block (default)
-					0x01h	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
-					0x02h	CFB8	8bit Cipher Feedback mode
-					0x03h	CFBx	CFB on Blocksize of Cipher
-					0x04h	OFB8	8bit Output Feedback mode
-					0x05h	OFBx	OFB on Blocksize bytes
-					0x06h	CFS8	8Bit CFS, double CFB
-					0x07h	CFSx	CFS on Blocksize bytes
-					0x08h	ECBx	Electronic Code Book
+					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default)
+					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
+					0x02	CFB8	8bit Cipher Feedback mode
+					0x03	CFBx	CFB on Blocksize of Cipher
+					0x04	OFB8	8bit Output Feedback mode
+					0x05	OFBx	OFB on Blocksize bytes
+					0x06	CFS8	8Bit CFS, double CFB
+					0x07	CFSx	CFS on Blocksize bytes
+					0x08	ECBx	Electronic Code Book
 	Long	4		DEC 5.1c Hash idendity. If the default identitiy base 0x84671842 is used, then the identities are:
 					0x7D9CAE8C	THash_MD2
 					0x94FF0BB9	THash_MD4
@@ -238,7 +240,7 @@ Offset	Type	Size		Content/Description
 					= Hash(Hash(Original Data) & Seed & User-Password)
 					Size dependend on hash algorithm.
 					The algorithms of DEC give out a hash with the length 16-64.
-00h	Binary	16		DC4-Terminus; Hardcoded value: "RENURVJNSU5VUw==" (BASE64: "DCTERMINUS")
+	Binary	16		DC4-Terminus; Hardcoded value: "RENURVJNSU5VUw==" (BASE64: "DCTERMINUS")
 ---------------------------------------------------------------------------------------------------
 
 
@@ -261,7 +263,7 @@ Offset	Type	Size		Content/Description
 					01h: Yes
 03h	Long	4		Size of the encrypted filename that follows
 07h	Binary	0-2^32-1	Original file name, not null-terminated WideString
-				Encrypted with DEC 5.1c
+				Encrypted with DEC 5.1c (cipher/hash see below)
 				If offset 02h of this part has the value 00h:
 					Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
 				If offset 02h of this part has the value 01h:
@@ -298,17 +300,17 @@ Offset	Type	Size		Content/Description
 					0x6A4680A1	TCipher_Skipjack
 					0xB9753E35	TCipher_TEA
 					0xD634739F	TCipher_TEAN
-08h	Byte	1		DEC 5.1c Cipher mode (see appendix B)
-					0x00h	CTSx	double CBC, with CFS8 padding of truncated final block (default)
-					0x01h	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
-					0x02h	CFB8	8bit Cipher Feedback mode
-					0x03h	CFBx	CFB on Blocksize of Cipher
-					0x04h	OFB8	8bit Output Feedback mode
-					0x05h	OFBx	OFB on Blocksize bytes
-					0x06h	CFS8	8Bit CFS, double CFB
-					0x07h	CFSx	CFS on Blocksize bytes
-					0x08h	ECBx	Electronic Code Book
-09h	Long	4		DEC 5.1c Hash idendity. If the default identitiy base 0x84671842 is used, then the identities are:
+	Byte	1		DEC 5.1c Cipher mode (see appendix B)
+					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default)
+					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
+					0x02	CFB8	8bit Cipher Feedback mode
+					0x03	CFBx	CFB on Blocksize of Cipher
+					0x04	OFB8	8bit Output Feedback mode
+					0x05	OFBx	OFB on Blocksize bytes
+					0x06	CFS8	8Bit CFS, double CFB
+					0x07	CFSx	CFS on Blocksize bytes
+					0x08	ECBx	Electronic Code Book
+	Long	4		DEC 5.1c Hash idendity. If the default identitiy base 0x84671842 is used, then the identities are:
 					0x6BCE92E7	THash_MD2
 					0x82AD37D2	THash_MD4
 					0xF5AA0744	THash_MD5
@@ -334,21 +336,91 @@ Offset	Type	Size		Content/Description
 					0x2105710D	THash_Square
 					0x5B59FD9D	THash_Snefru128
 					0xF1E6F804	THash_Snefru256
-0Dh	Byte	1		Size of seed; Default value:	32 byte (20h)
-0Eh	Binary	0-255		Seed (Random data)
-00h	Binary	var		With DEC 5.1c encrypted data
+	Byte	1		Size of seed; Default value:	32 byte (20h)
+	Binary	0-255		Seed (Random data)
+	Binary	var		With DEC 5.1c encrypted data
 					Encryption-Password = Hash->KDfx(User-Password, Seed)
-					The final version of (De)Coder 4.1 can also use a 2-factor-method.
-					The "special-checksum" of a file can be used as the user password.
-					The formula is:
-					User-Password = Hash(File-Contents)
-					Combined formula:
-					Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
-00h	Binary	var		Secured checksum of the data before encryption
+					[I don't understand this paragraph anymore. You can probably ignore it.]
+							The final version of (De)Coder 4.1 can also use a 2-factor-method.
+							The "special-checksum" of a file can be used as the user password.
+							The formula is:
+							User-Password = Hash(File-Contents)
+							Combined formula:
+							Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
+					[End]
+	Binary	var		Secured checksum of the data before encryption
 					= Hash(Hash(Original Data) & Seed & Hash(Seed & Hash(Seed & User-Password)))
 					Size dependend on hash algorithm.
 					The algorithms of DEC give out a hash with the length 16-64.
-00h	Binary	8		DC4-Terminus; Hardcoded value: 63 F3 DF 89 B7 27 20 EA
+	Binary	8		DC4-Terminus; Hardcoded value: 63 F3 DF 89 B7 27 20 EA
+---------------------------------------------------------------------------------------------------
+
+
+[5.0] DC4 STANDARD 4 USED BY (DE)CODER 5.0
+==========================================
+
+This file format was intended to be used by the (De)Coder 5.0. (The file-name extension is still dc4)
+
+---------------------------------------------------------------------------------------------------
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+00h	Byte	1		Compress mode flag
+					Bit 0/LSB:  [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
+					Bit 1:      [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)? (default: 1 for regular files, 0 for ZIP folders)
+					Bit 2:      Reserved
+					Bit 3:      Reserved
+					Bit 4:      Reserved
+					Bit 5:      Reserved
+					Bit 6:      Reserved
+					Bit 7/MSB:  Reserved
+01h	Byte	1		Version flag; Hardcoded value: 04h
+02h	Binary	27		Magic Sequence; Hardcoded value: "1.3.6.1.4.1.37476.2.2.1.4.4"
+1Dh	Byte	1		Filename encrypted with User-Password?
+					00h: No
+					01h: Yes
+1Eh	Long	4		Size of the encrypted filename that follows
+22h	Binary	0-2^32-1	Original file name, not null-terminated WideString
+				Encrypted with DEC 6.0 (cipher/hash see below)
+				If offset 02h of this part has the value 00h:
+					Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
+				If offset 02h of this part has the value 01h:
+					Encryption-Password = Hash->KDfx(User-Password, Seed)
+				// TODO: There should be a HMAC too???
+	Long	4		DEC 5.1c Idendity-Base; Default Idendity-Base: 0x1259D82A
+	Long	4		DEC 5.1c Cipher idendity. If the default identitiy base 0x1259D82A is used, then the identities are:
+					(TODO: DEC 6.0 ciphers)
+	Byte	1		DEC 5.1c Cipher mode (see appendix B)
+					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default, proprietary to DEC)
+					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
+					0x02	CFB8	8bit Cipher Feedback mode
+					0x03	CFBx	CFB on Blocksize of Cipher
+					0x04	OFB8	8bit Output Feedback mode
+					0x05	OFBx	OFB on Blocksize bytes
+					0x06	CFS8	8Bit CFS, double CFB
+					0x07	CFSx	CFS on Blocksize bytes
+					0x08	ECBx	Electronic Code Book
+					0x09	GCM	Galois Counter Mode
+					0x0A	CTS3	double CBC, with less secure padding of truncated final block
+	Long	4		DEC 5.1c Hash idendity. If the default identitiy base 0x1259D82A is used, then the identities are:
+					(TODO: DEC 6.0 hashes)
+	Byte	1		KDF version
+					0x00	KDFx (default, proprietary to DEC)
+					0x01	KDF1
+					0x02	KDF2
+					0x03	KDF3
+	Long	4		HMAC Key Size (default: 32)
+	Binary	var		HMAC Key (Random data)
+	Long	4		IV Size (default: 32)
+	Binary	var		IV (Random Data)
+	Byte	1		Filler byte of last block (default: 0xFF)
+	Byte	1		Size of seed; Default value:	32 byte (20h)
+	Binary	0-255		Seed (Random data)
+	Binary	var		With DEC 5.1c encrypted data
+					Encryption-Password = Hash->KDfx(User-Password, Seed)
+	Binary	var		HMAC checksum (Encrypt-then-HMAC)
+					= HMAC(HMacKey, EncryptedContents)
+					Size dependend on hash algorithm.
+					The algorithms of DEC give out a hash with the length 16-64.
 ---------------------------------------------------------------------------------------------------
 
 

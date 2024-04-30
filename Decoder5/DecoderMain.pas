@@ -149,7 +149,7 @@ var
   HashResult: TBytes;
   HashResult2: RawByteString;
   idBase: Int64;
-  FileTerminus: RawByteString;
+  MagicSeq, FileTerminus: RawByteString;
   OrigName: RawByteString;
   ahash: TDECHash;
   Key: TBytes;
@@ -157,6 +157,8 @@ var
   FilenamePassword: RawByteString;
   KdfVersion: byte;
   HMacKey: RawByteString;
+  IV: TBytes;
+  Filler: Byte;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -164,11 +166,12 @@ begin
   ahash := nil;
   try
     // TODO: Make a version 4 file format, based on version 2 (not 3!)
-    //       - Add IV
-    //       - Add Filler
+    //  (OK) - Add IV
+    //  (OK) - Add Filler
     //  (OK) - Add version of KDF (KDFx, KDF1, KDF2, KDF3)
     //  (OK) - encrypt-then-hmac instead of hash of original data. Add hmac key
-    //       - No file terminus, or a human readable magic sequence (OID)?
+    //  (OK) - No file terminus, or a human readable magic sequence (OID)?
+    //       - HMAC for file name encryption?
 
     // 1. Flags
     // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
@@ -187,18 +190,36 @@ begin
     // 03 = (De)Coder 4.1 Final Cancelled (never released)
     // 04 = (De)Coder 5.0 WorkInProgress
     V := TDcFormatVersion(ReadByte); // if too big, it will automatically be set to 0
-    if V = fvUnknown then raise Exception.Create('DC Invalid version');
+    if V = fvUnknown then raise Exception.Create('DC Unsupported version');
 
     // We need this later
     if V = fvDc40 then
-      FileTerminus := ''
+    begin
+      MagicSeq := '';
+      FileTerminus := '';
+    end
     else if V = fvDc41Beta then
-      FileTerminus := 'RENURVJNSU5VUw==' // (BASE64: "DCTERMINUS")
+    begin
+      MagicSeq := '';
+      FileTerminus := 'RENURVJNSU5VUw=='; // (BASE64: "DCTERMINUS")
+    end
     else if V = fvDc41FinalCancelled then
-      FileTerminus := RawByteString(#$63#$F3#$DF#$89#$B7#$27#$20#$EA)
+    begin
+      MagicSeq := '';
+      FileTerminus := RawByteString(#$63#$F3#$DF#$89#$B7#$27#$20#$EA);
+    end
     else
-      Assert(False);
+    begin
+      MagicSeq := '1.3.6.1.4.1.37476.2.2.1.4.' + IntToStr(Ord(V));
+      FileTerminus := '';
+    end;
     tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+
+    if MagicSeq <> '' then
+    begin
+      if ReadRaw(Length(MagicSeq)) <> MagicSeq then
+        raise Exception.Create('Invalid magic sequence');
+    end;
 
     // 3. Filename
     // Ver1: Clear text filename, terminated with "?"
@@ -219,7 +240,7 @@ begin
         OrigName := Convert(DecodeBase64(OrigName));
       end;
     end
-    else if V = fvDc41FinalCancelled then
+    else if (V = fvDc41FinalCancelled) or (V = fvDc50Wip) then
     begin
       FileNameUserPasswordEncrypted := ReadByte = $01; // Filename encrypted with user-password? (00=No, 01=Yes)
       // Filename encrypted with DEC 5.1c
@@ -227,6 +248,7 @@ begin
       // if not encrypted with user-password, otherwise:
       // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
       OrigName := ReadRaw(ReadLong); // will be decrypted below (after we initialized hash/cipher)
+      // TODO: should there be a HMAC?
     end
     else
       Assert(False);
@@ -266,6 +288,16 @@ begin
     if V = fvDc50Wip then
       HMacKey := ReadRaw(ReadLong);
 
+    // 7.7 IV (only version 4+)
+    if V = fvDc50Wip then
+      IV := BytesOf(ReadRaw(ReadLong));
+
+    // 7.8 Last-Block-Filler (only version 4+)
+    if V = fvDc50Wip then
+      Filler := ReadByte
+    else
+      Filler := $FF;
+
     // 8. Seed
     if V = fvDc40 then
       Seed := ReadRaw(16)
@@ -296,7 +328,7 @@ begin
     finally
       ahash.Done;
     end;
-    Cipher.Init(Key, nil, $FF);
+    Cipher.Init(Key, IV, Filler);
     try
       TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
     finally
@@ -325,7 +357,7 @@ begin
       finally
         ahash.Done;
       end;
-      Cipher.Init(Key, nil, $FF);
+      Cipher.Init(Key, IV, Filler);
       try
         OrigName := TDECFormattedCipher(Cipher).DecodeStringToString(OrigName);
       finally
