@@ -127,7 +127,7 @@ Offset	Type	Size		Content/Description
 					00h: Uncompressed file - Default in (De)Coder 4.0
 					01h: Folder compressed with ZIP - Default in (De)Coder 4.0
 01h	Byte	1		Version flag; Hardcoded value: 01h.
-02h	String	var		Original file name
+02h	String	var		Original file name, ANSI encoded
 	Byte	1		Terminus Value: 1Fh ("?")
 	Binary	16		Seed (Random data. Default size: 16 bytes = 0x10
 	Binary	var		DEC 5.1c encrypted data (read until file end minus the size of the checksum)
@@ -156,7 +156,7 @@ Offset	Type	Size		Content/Description
 					02h: ZLib-compressed file - Default in (De)Coder 4.1
 					03h: ZLib-compressed folder, packed ZIP - Default in (De)Coder 4.1
 01h	Byte	1		Version flag; Hardcoded value: 02h
-02h	Binary	var		Original file name in BASE64 (binary)
+02h	Binary	var		Original file name, ANSI encoded, in BASE64 (binary)
 	Byte	1		Terminus Value: 1Fh ("?")
 	Long	4		DEC 5.1c Idendity-Base; Default 0x84671842
 	Long	4		DEC 5.1c Cipher idendity. If the default identitiy base 0x84671842 is used, then the identities are:
@@ -354,7 +354,7 @@ Offset	Type	Size		Content/Description
 [5.0] DC4 STANDARD 4 USED BY (DE)CODER 5.0
 ==========================================
 
-This file format was intended to be used by (De)Coder 5.0. The file-name extension is still dc4, though.
+This file format was intended to be used by (De)Coder 5.0. The file-name extension can be dc4 or dc5.
 
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
@@ -372,7 +372,7 @@ Offset	Type	Size		Content/Description
 02h	Binary	27		Magic Sequence; Hardcoded value: "1.3.6.1.4.1.37476.2.2.1.4"
 					This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
 1Bh	Byte	1		Size of the encrypted filename that follows
-1Ch	Binary	var		Original file name; possible values:
+1Ch	Binary	var		Original file name, UTF-8 Encoded; possible values:
 					- Original name in its entirety (foobar.txt)
 					- Just its extension (*.txt)
 					- Redacted (empty string)
@@ -476,7 +476,7 @@ Offset	Type	Size		Content/Description
 					0x03	KDF3
 	Byte	1		HMAC Key Size (default: 32 = 0x20)
 	Binary	var		HMAC Key (Random data)
-	Byte	1		IV Size (default: 32 = 0x20)
+	Byte	1		IV Size (default: 16 = 0x10)
 	Binary	var		IV (Random Data)
 	Byte	1		Filler byte of last block (default: 0xFF)
 	Byte	1		Size of seed (default 32 = 0x20)

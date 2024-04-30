@@ -26,7 +26,8 @@ implementation
 uses
   System.UITypes, DECCiphers, DECCipherBase, DECHash, DECHashBase,
   DECHashAuthentication, DECUtil, DECCipherFormats, ZLib,
-  EncdDecd, System.NetEncoding, DECCRC, DECBaseClass, Generics.Collections;
+  EncdDecd, System.NetEncoding, DECCRC, DECBaseClass, Generics.Collections,
+  DECRandom;
 
 {$R *.dfm}
 
@@ -44,8 +45,13 @@ end;
 function DEC51_Identity(IdentityBase: Int64; ClassName: string): Int64;
 var
   Signature: AnsiString;
+  cn: string;
 begin
-  Signature := AnsiString(StringOfChar(#$5A, 256 - Length(Classname)) + AnsiUpperCase(ClassName));
+  cn := ClassName;
+  if cn = 'THash_SHA0'{DEC6.0} then cn := 'THash_SHA'{DEC5.1};
+  if cn = 'THash_Whirlpool0'{DEC6.0} then cn := 'THash_Whirlpool'{DEC5.1};
+  if cn = 'TCipher_AES'{DEC6.0} then cn := 'TCipher_Rijndael'{DEC5.1};
+  Signature := AnsiString(StringOfChar(#$5A, 256 - Length(cn)) + AnsiUpperCase(cn));
   Result := CRC32(IdentityBase, Signature[1], Length(Signature));
 end;
 
@@ -53,15 +59,11 @@ function DEC51_HashById(IdentityBase, Identity: Int64): TDECHashClass;
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
-  cn: string;
 begin
   for p in TDECHash.ClassList do
   begin
     c := p.Value;
-    cn := c.ClassName;
-    if cn = 'THash_SHA0'{DEC6.0} then cn := 'THash_SHA'{DEC5.1};
-    if cn = 'THash_Whirlpool0'{DEC6.0} then cn := 'THash_Whirlpool'{DEC5.1};
-    if (c <> nil) and (Identity = DEC51_Identity(IdentityBase, cn)) then
+    if (c <> nil) and (Identity = DEC51_Identity(IdentityBase, c.ClassName)) then
     begin
       result := TDECHashClass(c);
       exit;
@@ -74,14 +76,11 @@ function DEC51_CipherById(IdentityBase, Identity: Int64): TDECCipherClass;
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
-  cn: string;
 begin
   for p in TDECCipher.ClassList do
   begin
     c := p.Value;
-    cn := c.ClassName;
-    if cn = 'TCipher_AES'{DEC6.0} then cn := 'TCipher_Rijndael'{DEC5.1};
-    if (c <> nil) and (Identity = DEC51_Identity(IdentityBase, cn)) then
+    if (c <> nil) and (Identity = DEC51_Identity(IdentityBase, c.ClassName)) then
     begin
       result := TDecCipherClass(c);
       exit;
@@ -96,13 +95,21 @@ type
       const OnProgress:TDECProgressEvent): TBytes;
   end;
 
+type
+  TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
+
+const
+  DC4_ID_BASES: array[0..4] of Int64 = (
+    $84485225, // Hagen Reddmann Example (no .dc4 files)
+    $59178954, // (De)Coder 4.0 (identities not used)
+    $84671842, // (De)Coder 4.1 beta
+    $19387612, // (De)Coder 4.1 final/cancelled
+    $1259d82a  // (De)Coder 5.0 WIP
+  );
+
 procedure DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString);
 var
   Source: TStream;
-  HashClass: TDECHashClass;
-
-  type
-    TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
 
   procedure Read(var Value; Size: Integer);
   begin
@@ -120,12 +127,6 @@ var
     Result := Result shl 24 or Result shr 24 or Result shl 8 and $00FF0000 or Result shr 8 and $0000FF00;
   end;
 
-  function ReadBinary: RawByteString;
-  begin
-    SetLength(Result, ReadByte);
-    Read(Result[1], Length(Result));
-  end;
-
   function ReadRaw(leng: integer): RawByteString;
   begin
     SetLength(Result, leng);
@@ -137,14 +138,6 @@ var
     SetString(Result, PAnsiChar(pointer(Bytes)), length(Bytes));
   end;
 
-const
-  DC4_ID_BASES: array[0..4] of Int64 = (
-    $84485225, // Hagen Reddmann Example (no .dc4 files)
-    $59178954, // (De)Coder 4.0 (identities not used)
-    $84671842, // (De)Coder 4.1 beta
-    $19387612, // (De)Coder 4.1 final/cancelled
-    $1259d82a  // (De)Coder 5.0 WIP
-  );
 var
   ch: RawByteString;
   F: byte;
@@ -156,7 +149,7 @@ var
   HashResult2: RawByteString;
   idBase: Int64;
   MagicSeq, FileTerminus: RawByteString;
-  OrigName: RawByteString;
+  OrigName: string;
   ahash: TDECHash;
   Key: TBytes;
   FileNameUserPasswordEncrypted: boolean;
@@ -166,6 +159,8 @@ var
   IV: TBytes;
   Filler: Byte;
   CipherClass: TDECCipherClass;
+  HashClass: TDECHashClass;
+  bakTempStreamPosEncryptedData: Int64;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -213,7 +208,9 @@ begin
       MagicSeq := RawByteString('1.3.6.1.4.1.37476.2.2.1.4');
       FileTerminus := '';
     end;
+
     tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+    tempstream.Size := 0;
 
     // 2.1 Magic Sequence (only version 4)
     if MagicSeq <> '' then
@@ -226,6 +223,7 @@ begin
     // Ver1: Clear text filename, terminated with "?"
     // Ver2: Base64 encoded filename, terminated with "?"
     // Ver3: Encrypted filename
+    // Ver4: Clear text filename, with length byte in front of it
     OrigName := '';
     FileNameUserPasswordEncrypted := false;
     if (V = fvDc40) or (V = fvDc41Beta) then
@@ -233,12 +231,12 @@ begin
       ch := ReadRaw(1);
       while ch <> '?' do
       begin
-        OrigName := OrigName + ch;
+        OrigName := OrigName + string(ch);
         ch := ReadRaw(1);
       end;
       if V = fvDc41Beta then
       begin
-        OrigName := Convert(DecodeBase64(OrigName));
+        OrigName := string(Convert(DecodeBase64(AnsiString(OrigName))));
       end;
     end
     else if V = fvDc41FinalCancelled then
@@ -248,7 +246,8 @@ begin
       // Encryption-Password = Hash->KDfx(User-Password, Seed)
       // if not encrypted with user-password, otherwise:
       // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
-      OrigName := ReadRaw(ReadLong); // will be decrypted below (after we initialized hash/cipher)
+      // TODO: Unsure... will RawByteString correctly casted to WideString (UTF-16), or do we need to do the cast with pointers? (Probably the latter...)
+      OrigName := WideString(ReadRaw(ReadLong*SizeOf(WideChar))); // will be decrypted below (after we initialized hash/cipher)
     end
     else if V = fvDc50Wip then
     begin
@@ -256,7 +255,7 @@ begin
       // - Original name in its entirety (foobar.txt)
       // - Just its extension (*.txt)
       // - Redacted (empty string)
-      OrigName := ReadRaw(ReadByte);
+      OrigName := UTF8ToString(ReadRaw(ReadByte));
     end
     else
       Assert(False);
@@ -327,21 +326,29 @@ begin
                    Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
           What I don't understand: How should the program know if the user password or the "hash" password is used??
     *)
-    ahash.Init;
-    try
-      if KDFVersion = 0 then
-        Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else if KDFVersion = 1 then
-        Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else if KDFVersion = 2 then
-        Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else if KDFVersion = 3 then
-        Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else
-        raise Exception.Create('Invalid KDF version');
-    finally
-      ahash.Done;
+    if KDFVersion = 0 then
+      Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = 1 then
+      Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = 2 then
+      Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = 3 then
+      Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else
+      raise Exception.Create('Invalid KDF version');
+
+    // Verify HMAC before decrypting (the HMAC located below)
+    // TODO: General question: Shouldn't the HMAC key be secret???? IT SHOULD BE A KDF!!!
+    if V = fvDc50Wip then
+    begin
+      bakTempStreamPosEncryptedData := Source.Position;
+      HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(BytesOf(HMacKey), Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
+      Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
+      if ReadRaw(ahash.DigestSize) <> HashResult2 then
+        raise Exception.Create('HMAC mismatch');
+      Source.Position := bakTempStreamPosEncryptedData;
     end;
+
     Cipher.Init(Key, IV, Filler);
     try
       TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
@@ -352,25 +359,20 @@ begin
     // Decrypt filename (version 3 only)
     if V = fvDc41FinalCancelled then
     begin
-      ahash.Init;
-      try
-        if FileNameUserPasswordEncrypted then
-          FilenamePassword := APassword
-        else
-          FilenamePassword := RawByteString(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C);
-        if KDFVersion = 0 then
-          Key := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-        else if KDFVersion = 1 then
-          Key := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-        else if KDFVersion = 2 then
-          Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-        else if KDFVersion = 3 then
-          Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-        else
-          Assert(False);
-      finally
-        ahash.Done;
-      end;
+      if FileNameUserPasswordEncrypted then
+        FilenamePassword := APassword
+      else
+        FilenamePassword := RawByteString(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C);
+      if KDFVersion = 0 then
+        Key := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = 1 then
+        Key := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = 2 then
+        Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = 3 then
+        Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else
+        Assert(False);
       Cipher.Init(Key, IV, Filler);
       try
         OrigName := TDECFormattedCipher(Cipher).DecodeStringToString(OrigName);
@@ -379,10 +381,11 @@ begin
       end;
     end;
 
-    // 10. Checksum (version 1-3 hash, version 4+ hmac)
-    tempstream.position := 0;
-    ahash.Init;
-    try
+    // 10. Checksum (version 1-3 hash on source, version 4+ hmac on ciphertext)
+    // (For version 4, the HMAC was checked above, before encrypting)
+    if V <> fvDc50Wip then
+    begin
+      tempstream.position := 0;
       if V = fvDc40 then
       begin
         TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
@@ -403,17 +406,11 @@ begin
               , TFormat_Copy)
         , TFormat_Copy);
       end
-      else if V = fvDc50Wip then
-      begin
-        HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(BytesOf(HMacKey), tempstream, tempstream.size, OnProgressProc));
-      end
       else
         Assert(False);
-    finally
-      ahash.Done;
+      if ReadRaw(ahash.DigestSize) <> HashResult2 then
+        raise Exception.Create('Hash mismatch');
     end;
-    if readraw(ahash.DigestSize) <> HashResult2 then
-      raise Exception.Create('Hash mismatch');
 
     // 11. Terminus (only version 2 and 3)
     if (FileTerminus <> '') and (ReadRaw(Length(FileTerminus)) <> FileTerminus) then
@@ -460,12 +457,195 @@ begin
   end;
 end;
 
+
+
+
+
+
+
+
+procedure DeCoder4X_EncodeFile_Ver4(const AFileName, AOutput: String; const APassword: RawByteString);
+var
+  tempstream: TStream;
+
+  procedure Write(var Value; Size: Integer);
+  begin
+    tempstream.WriteBuffer(Value, Size);
+  end;
+
+  procedure WriteByte(b: Byte);
+  begin
+    Write(b, SizeOf(b));
+  end;
+
+  procedure WriteLong(lw: LongWord);
+  begin
+    lw := lw shl 24 or lw shr 24 or lw shl 8 and $00FF0000 or lw shr 8 and $0000FF00;
+    Write(lw, SizeOf(lw));
+  end;
+
+  procedure WriteRaw(rb: RawByteString);
+  begin
+    Write(rb[1], Length(rb));
+  end;
+
+  function Convert(const Bytes: TBytes): RawByteString; inline;
+  begin
+    SetString(Result, PAnsiChar(pointer(Bytes)), length(Bytes));
+  end;
+
+var
+  F: byte;
+  Cipher: TDECCipher;
+  Seed: RawByteString;
+  Source: TFileStream;
+  HashResult2: RawByteString;
+  idBase: Int64;
+  OrigName: RawByteString;
+  ahash: TDECHash;
+  Key: TBytes;
+  KdfVersion: byte;
+  HMacKey: RawByteString;
+  IV: TBytes;
+  Filler: Byte;
+  CipherClass: TDECCipherClass;
+  HashClass: TDECHashClass;
+  bakTempStreamPosEncryptedData: Int64;
+  tmp64: Int64;
+begin
+  tempstream := nil;
+  Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+  cipher := nil;
+  ahash := nil;
+  try
+    tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+    tempstream.Size := 0;
+
+    // 1. Flags
+    F := 0;
+    if DirectoryExists(AFileName) then F := F + 1; // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
+    // TODO: ZLib Compress not yet implemented
+    //F := F + 2; // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
+    WriteByte(F);
+    // Bit 2:    Reserved
+    // Bit 3:    Reserved
+    // Bit 4:    Reserved
+    // Bit 5:    Reserved
+    // Bit 6:    Reserved
+    // Bit 7:    Reserved
+
+    // 2. Version
+    // 04 = (De)Coder 5.0 WorkInProgress
+    WriteByte(Ord(fvDc50Wip));
+
+    // 2.1 Magic Sequence (only version 4)
+    // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
+    WriteRaw('1.3.6.1.4.1.37476.2.2.1.4');
+
+    // 3. Filename
+    // Ver4: Clear text filename, with length byte in front of it
+    // Possible values:
+    // - Original name in its entirety (foobar.txt)
+    // - Just its extension (*.txt)
+    // - Redacted (empty string)
+    OrigName := UTF8Encode(ExtractFileName(AFileName));
+    WriteByte(Length(OrigName));
+    WriteRaw(OrigName);
+
+    // 4. IdBase (only version 2+)
+    idBase := DC4_ID_BASES[Ord(fvDc50Wip)];
+    WriteLong(idBase);
+
+    // 5. Cipher identity (only version 2+)
+    CipherClass := TCipher_AES;
+    WriteLong(DEC51_Identity(idBase, CipherClass.ClassName));
+    Cipher := CipherClass.Create;
+
+    // 6. Cipher mode (only version 2+)
+    Cipher.Mode := TCipherMode.cmCTSx;
+    WriteByte(Ord(Cipher.Mode));
+
+    // 7. Hash identity (only version 2+)
+    HashClass := THash_SHA3_512;
+    WriteLong(DEC51_Identity(idBase, HashClass.ClassName));
+    AHash := HashClass.Create;
+
+    // 7.5 KDF version (only version 4+)
+    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3
+    KdfVersion := 0; // KDFx
+    WriteByte(KdfVersion);
+
+    // 7.6 HMAC Key (only version 4+)
+    WriteByte(32);
+    HMacKey := Convert(RandomBytes(32));
+    WriteRaw(HMacKey);
+
+    // 7.7 IV (only version 4+)
+    WriteByte(16);
+    IV := RandomBytes(16);
+    WriteRaw(Convert(IV));
+
+    // 7.8 Last-Block-Filler (only version 4+)
+    Filler := $FF;
+    WriteByte(Filler);
+
+    // 8. Seed
+    WriteByte(32);
+    Seed := Convert(RandomBytes(32));
+    WriteRaw(Seed);
+
+    // 9. Encrypted data
+    if KDFVersion = 0 then
+      Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = 1 then
+      Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = 2 then
+      Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = 3 then
+      Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else
+      raise Exception.Create('Invalid KDF version');
+    Cipher.Init(Key, IV, Filler);
+    try
+      Source.Position := 0;
+      bakTempStreamPosEncryptedData := tempstream.Position;
+      TDECFormattedCipher(Cipher).EncodeStream(Source, tempstream, source.size, OnProgressProc);
+    finally
+      Cipher.Done;
+    end;
+
+    // 10. Checksum (version 1-3 hash on source, version 4+ hmac on ciphertext)
+    tmp64 := tempstream.Position;
+    tempstream.Position := bakTempStreamPosEncryptedData;
+    HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(BytesOf(HMacKey), tempstream, tempstream.size-tempstream.Position, OnProgressProc));
+    tempstream.Position := tmp64;
+    WriteRaw(HashResult2);
+
+  finally
+    if Assigned(Source) then FreeAndNil(Source);
+    if Assigned(tempstream) then FreeAndNil(tempstream);
+    if Assigned(Cipher) then FreeAndNil(Cipher);
+    if Assigned(ahash) then FreeAndNil(ahash);
+  end;
+end;
+
+
+
 procedure TFormMain.Button1Click(Sender: TObject);
 begin
+
   DeCoder4X_DecodeFile('schloss.dc4', 'schloss.tmp', 'test');
   DeCoder4X_Decompress('schloss.tmp', 'schloss_decoded.bmp');
   DeleteFile('schloss.tmp');
   ShowMessage('ok');
+
+  DeCoder4X_EncodeFile_Ver4('schloss_decoded.bmp', 'schloss.dc5', 'test');
+  DeCoder4X_DecodeFile('schloss.dc5', 'schloss_decoded_dc5.bmp', 'test');
+  ShowMessage('ok');
+
+  exit;
+
+
 end;
 
 { TDECHashExtendedAuthentication }
@@ -531,8 +711,8 @@ begin
 
     HashInstance.Init;
     HashInstance.Calc(InnerKeyPad[0], BlockSize);
-    if (Stream.Size - Stream.Position) > 0 then
-      TDECHashExtended(HashInstance).CalcStream(Stream, Stream.Size-Stream.Position, OnProgress, false);
+    if Size > 0 then
+      TDECHashExtended(HashInstance).CalcStream(Stream, Size, OnProgress, false);
     HashInstance.Done;
     Result := HashInstance.DigestAsBytes;
 
