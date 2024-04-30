@@ -42,6 +42,12 @@ begin
     FormMain.ProgressBar1.Position := Pos;
 end;
 
+procedure SecureDeleteFile(AFileName: string);
+begin
+  // TODO: Implement
+  DeleteFile(AFileName);
+end;
+
 function DEC51_Identity(IdentityBase: Int64; ClassName: string): Int64;
 var
   Signature: AnsiString;
@@ -107,6 +113,66 @@ const
     $1259d82a  // (De)Coder 5.0 WIP
   );
 
+  // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
+  DC4_OID = '1.3.6.1.4.1.37476.2.2.1.4';
+
+procedure DeCoder4X_Compress(InputFileName, OutputFileName: string);
+var
+  CompressInputStream: TFileStream;
+  CompressOutputStream: TFileStream;
+  CompressionStream: TCompressionStream;
+begin
+  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead);
+  try
+    CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
+    try
+      CompressionStream:=TCompressionStream.Create(clMax, CompressOutputStream);
+      try
+        CompressionStream.CopyFrom(CompressInputStream, CompressInputStream.Size);
+      finally
+        FreeAndNil(CompressionStream);
+      end;
+    finally
+      FreeAndNil(CompressOutputStream);
+    end;
+  finally
+    FreeAndNil(CompressInputStream);
+  end;
+end;
+
+procedure DeCoder4X_Decompress(InputFileName, OutputFileName: string);
+var
+  Buf: array[0..4095] of Byte;
+  Count: Integer;
+  CompressInputStream: TFileStream;
+  CompressOutputStream: TFileStream;
+  DecompressionStream: TDecompressionStream;
+begin
+  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead);
+  try
+    CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
+    try
+      DecompressionStream := TDecompressionStream.Create(CompressInputStream);
+      try
+        while true do
+        begin
+          Count := DecompressionStream.Read(Buf[0], SizeOf(Buf));
+          if Count = 0 then
+            break
+          else
+            CompressOutputStream.Write(Buf[0], Count);
+        end;
+      finally
+        FreeAndNil(DecompressionStream);
+      end;
+    finally
+      FreeAndNil(CompressOutputStream);
+    end;
+  finally
+    FreeAndNil(CompressInputStream);
+  end;
+end;
+
 procedure DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString);
 var
   Source: TStream;
@@ -155,17 +221,22 @@ var
   FileNameUserPasswordEncrypted: boolean;
   FilenamePassword: RawByteString;
   KdfVersion: byte;
-  HMacKey: RawByteString;
+  HMacKey: TBytes;
   IV: TBytes;
   Filler: Byte;
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
   bakTempStreamPosEncryptedData: Int64;
+  IsCompressed: boolean;
+  IsFolder: boolean;
+  ATempFileName: string;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
   cipher := nil;
   ahash := nil;
+  IsCompressed := false;
+  IsFolder := false;
   try
     // 1. Flags
     // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
@@ -177,6 +248,19 @@ begin
     // Bit 6:    Reserved
     // Bit 7:    Reserved
     F := ReadByte;
+    IsFolder := (F and 1) <> 0;
+    IsCompressed := (F and 2) <> 0;
+
+    if IsCompressed then
+    begin
+      ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
+      tempstream := TFileStream.Create(ATempFileName, fmOpenReadWrite or fmCreate);
+    end
+    else
+    begin
+      tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+    end;
+    tempstream.Size := 0;
 
     // 2. Version
     // 01 = (De)Coder 4.0
@@ -204,13 +288,9 @@ begin
     end
     else
     begin
-      // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
-      MagicSeq := RawByteString('1.3.6.1.4.1.37476.2.2.1.4');
+      MagicSeq := RawByteString(DC4_OID);
       FileTerminus := '';
     end;
-
-    tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
-    tempstream.Size := 0;
 
     // 2.1 Magic Sequence (only version 4)
     if MagicSeq <> '' then
@@ -296,10 +376,6 @@ begin
     else
       KdfVersion := 0; // KDFx
 
-    // 7.6 HMAC Key (only version 4+)
-    if V = fvDc50Wip then
-      HMacKey := ReadRaw(ReadByte);
-
     // 7.7 IV (only version 4+)
     if V = fvDc50Wip then
       IV := BytesOf(ReadRaw(ReadByte));
@@ -337,12 +413,13 @@ begin
     else
       raise Exception.Create('Invalid KDF version');
 
+    HMacKey := Key;
+
     // Verify HMAC before decrypting (the HMAC located below)
-    // TODO: General question: Shouldn't the HMAC key be secret???? IT SHOULD BE A KDF!!!
     if V = fvDc50Wip then
     begin
       bakTempStreamPosEncryptedData := Source.Position;
-      HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(BytesOf(HMacKey), Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
+      HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
       Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
       if ReadRaw(ahash.DigestSize) <> HashResult2 then
         raise Exception.Create('HMAC mismatch');
@@ -416,53 +493,39 @@ begin
     if (FileTerminus <> '') and (ReadRaw(Length(FileTerminus)) <> FileTerminus) then
       raise Exception.Create('File terminus wrong');
 
+    if IsCompressed then
+    begin
+      FreeAndNil(tempstream);
+      DeCoder4X_Decompress(ATempFileName, AOutput);
+    end;
+
+    if IsFolder then
+    begin
+      // TODO: Extract ZIP (ver1-3) or 7zip (ver4) to folder
+      ShowMessage('Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool');
+    end;
+
   finally
     if Assigned(Source) then FreeAndNil(Source);
     if Assigned(tempstream) then FreeAndNil(tempstream);
     if Assigned(Cipher) then FreeAndNil(Cipher);
     if Assigned(ahash) then FreeAndNil(ahash);
-  end;
-end;
-
-procedure DeCoder4X_Decompress(InputFileName, OutputFileName: string);
-var
-  Buf: array[0..4095] of Byte;
-  Count: Integer;
-  CompressInputStream: TFileStream;
-  CompressOutputStream: TFileStream;
-  DecompressionStream: TDecompressionStream;
-begin
-  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead);
-  try
-    CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
-    try
-      DecompressionStream := TDecompressionStream.Create(CompressInputStream);
-      try
-        while true do
-        begin
-          Count := DecompressionStream.Read(Buf[0], SizeOf(Buf));
-          if Count = 0 then
-            break
-          else
-            CompressOutputStream.Write(Buf[0], Count);
-        end;
-      finally
-        FreeAndNil(DecompressionStream);
-      end;
-    finally
-      FreeAndNil(CompressOutputStream);
+    if IsCompressed and (ATempFileName<>'') then
+    begin
+      SecureDeleteFile(ATempFileName);
     end;
-  finally
-    FreeAndNil(CompressInputStream);
   end;
 end;
 
-
-
-
-
-
-
+function IsCompressedFileType(AFileName: string): boolean;
+begin
+  result :=
+    SameText(ExtractFileExt(AFileName), '.zip') or
+    SameText(ExtractFileExt(AFileName), '.mp3') or
+    SameText(ExtractFileExt(AFileName), '.png') or
+    SameText(ExtractFileExt(AFileName), '.jpg') or
+    SameText(ExtractFileExt(AFileName), '.jpeg');
+end;
 
 procedure DeCoder4X_EncodeFile_Ver4(const AFileName, AOutput: String; const APassword: RawByteString);
 var
@@ -505,42 +568,68 @@ var
   ahash: TDECHash;
   Key: TBytes;
   KdfVersion: byte;
-  HMacKey: RawByteString;
+  HMacKey: TBytes;
   IV: TBytes;
   Filler: Byte;
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
   bakTempStreamPosEncryptedData: Int64;
   tmp64: Int64;
+  IsCompressed: boolean;
+  IsFolder: boolean;
+  ATempFileName: string;
 begin
   tempstream := nil;
-  Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+  Source := nil;
   cipher := nil;
   ahash := nil;
+  IsCompressed := false;
+  IsFolder := false;
   try
+    IsFolder := DirectoryExists(AFileName);
+    if IsFolder then
+    begin
+      // TODO: Implement Zipping
+      // For ver1-3: ZIP (attention: 4 GiB limitation!)
+      // For ver4: 7zip
+      raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
+    end;
+
+    IsCompressed := IsCompressedFileType(AFileName);
+    if IsCompressed then
+    begin
+      ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
+      DeCoder4X_Compress(AFileName, ATempFileName);
+      Source := TFileStream.Create(ATempFileName, fmOpenRead or fmShareDenyNone);
+    end
+    else
+    begin
+      Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+    end;
+
     tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
     tempstream.Size := 0;
 
     // 1. Flags
-    F := 0;
-    if DirectoryExists(AFileName) then F := F + 1; // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
-    // TODO: ZLib Compress not yet implemented
-    //F := F + 2; // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
-    WriteByte(F);
+    // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
+    // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
     // Bit 2:    Reserved
     // Bit 3:    Reserved
     // Bit 4:    Reserved
     // Bit 5:    Reserved
     // Bit 6:    Reserved
     // Bit 7:    Reserved
+    F := 0;
+    if IsFolder then F := F + 1;
+    if IsCompressed then F := F + 2;
+    WriteByte(F);
 
     // 2. Version
     // 04 = (De)Coder 5.0 WorkInProgress
     WriteByte(Ord(fvDc50Wip));
 
     // 2.1 Magic Sequence (only version 4)
-    // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
-    WriteRaw('1.3.6.1.4.1.37476.2.2.1.4');
+    WriteRaw(DC4_OID);
 
     // 3. Filename
     // Ver4: Clear text filename, with length byte in front of it
@@ -575,11 +664,6 @@ begin
     KdfVersion := 0; // KDFx
     WriteByte(KdfVersion);
 
-    // 7.6 HMAC Key (only version 4+)
-    WriteByte(32);
-    HMacKey := Convert(RandomBytes(32));
-    WriteRaw(HMacKey);
-
     // 7.7 IV (only version 4+)
     WriteByte(16);
     IV := RandomBytes(16);
@@ -605,6 +689,8 @@ begin
       Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
     else
       raise Exception.Create('Invalid KDF version');
+    HMacKey := Key;
+
     Cipher.Init(Key, IV, Filler);
     try
       Source.Position := 0;
@@ -617,7 +703,7 @@ begin
     // 10. Checksum (version 1-3 hash on source, version 4+ hmac on ciphertext)
     tmp64 := tempstream.Position;
     tempstream.Position := bakTempStreamPosEncryptedData;
-    HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(BytesOf(HMacKey), tempstream, tempstream.size-tempstream.Position, OnProgressProc));
+    HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tempstream.size-tempstream.Position, OnProgressProc));
     tempstream.Position := tmp64;
     WriteRaw(HashResult2);
 
@@ -626,6 +712,10 @@ begin
     if Assigned(tempstream) then FreeAndNil(tempstream);
     if Assigned(Cipher) then FreeAndNil(Cipher);
     if Assigned(ahash) then FreeAndNil(ahash);
+    if IsCompressed and (ATempFileName<>'') then
+    begin
+      SecureDeleteFile(ATempFileName);
+    end;
   end;
 end;
 
@@ -634,17 +724,14 @@ end;
 procedure TFormMain.Button1Click(Sender: TObject);
 begin
 
-  DeCoder4X_DecodeFile('schloss.dc4', 'schloss.tmp', 'test');
-  DeCoder4X_Decompress('schloss.tmp', 'schloss_decoded.bmp');
-  DeleteFile('schloss.tmp');
+  DeleteFile('schloss_decoded.bmp');
+
+  DeCoder4X_DecodeFile('schloss.dc4', 'schloss_decoded.bmp', 'test');
   ShowMessage('ok');
 
   DeCoder4X_EncodeFile_Ver4('schloss_decoded.bmp', 'schloss.dc5', 'test');
   DeCoder4X_DecodeFile('schloss.dc5', 'schloss_decoded_dc5.bmp', 'test');
   ShowMessage('ok');
-
-  exit;
-
 
 end;
 

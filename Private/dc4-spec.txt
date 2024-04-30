@@ -137,7 +137,7 @@ Offset	Type	Size		Content/Description
 	Binary	var		Checksum of the data before encryption
 				Default hash configuration
 				Algorithm:	SHA 512
-				Size dependend on hash algorithm.
+				Size dependend on the hash algorithm (DigestSize).
 				The algorithms of DEC give out a hash with the length 16-64.
 ---------------------------------------------------------------------------------------------------
 
@@ -232,7 +232,7 @@ Offset	Type	Size		Content/Description
 					Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 	Binary	var		Secured checksum of the data before encryption
 					= Hash(Hash(Original Data) & Seed & User-Password)
-					Size dependend on hash algorithm.
+					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.
 	Binary	16		DC4-Terminus; Hardcoded value: "RENURVJNSU5VUw==" (BASE64: "DCTERMINUS")
 ---------------------------------------------------------------------------------------------------
@@ -345,7 +345,7 @@ Offset	Type	Size		Content/Description
 					[End]
 	Binary	var		Secured checksum of the data before encryption
 					= Hash(Hash(Original Data) & Seed & Hash(Seed & Hash(Seed & User-Password)))
-					Size dependend on hash algorithm.
+					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.
 	Binary	8		DC4-Terminus; Hardcoded value: 63 F3 DF 89 B7 27 20 EA
 ---------------------------------------------------------------------------------------------------
@@ -474,8 +474,6 @@ Offset	Type	Size		Content/Description
 					0x01	KDF1
 					0x02	KDF2
 					0x03	KDF3
-	Byte	1		HMAC Key Size (default: 32 = 0x20)
-	Binary	var		HMAC Key (Random data)
 	Byte	1		IV Size (default: 16 = 0x10)
 	Binary	var		IV (Random Data)
 	Byte	1		Filler byte of last block (default: 0xFF)
@@ -485,7 +483,8 @@ Offset	Type	Size		Content/Description
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
 	Binary	var		HMAC checksum (Encrypt-then-HMAC)
 					= HMAC(HMacKey, EncryptedData)
-					Size dependend on hash algorithm.
+					with Key = Encryption-Password
+					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.
 ---------------------------------------------------------------------------------------------------
 
