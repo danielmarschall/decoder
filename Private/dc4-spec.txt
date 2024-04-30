@@ -7,6 +7,7 @@ Contents:	Binary information
 Used by:	ViaThinkSoft (De)Coder 4.0
 		ViaThinkSoft (De)Coder 4.1
 Author:		Daniel Marschall
+Last update:    April, 30th 2024
 
 
 CONTENTS
@@ -22,15 +23,8 @@ CONTENTS
 
 [5.0]	DC4 Standard 3 used by (De)Coder 5.0
 
-[APP A]	Available cipher algorithms of DEC 5.1c
-
-[APP B]	Available cipher modes of DEC 5.1c
-
-[APP C]	Available hash algorithms of DEC 5.1c
-
-[APP D]	Comments
+[APP A]	Comments
 	* Links to websites
-	* CTSx and KDfx
 
 
 [1.0] SAMPLE FILE-FORMAT BY HAGEN REDDMANN
@@ -39,82 +33,82 @@ CONTENTS
 This file format is NOT used by (De)Coder.
 It is only the guideline of the DC4-Format.
 Hagen Reddmann posted the demo-algorithm in this topic:
-http://www.delphipraxis.net/topic79794,0,asc,0.html (in German)
+https://www.delphipraxis.net/topic79794,0,asc,0.html (in German)
 
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
 00h	Long	4		DEC 5.1c Cipher idendity with identity-base 0x84485225
-					0x51F07042	TCipher_Blowfish
-					0xB6936130	TCipher_Twofish
-					0x3C212341	TCipher_IDEA
-					0x42DBD0CA	TCipher_Cast256
-					0x43B28323	TCipher_Mars
-					0x76BA0D8C	TCipher_RC4
-					0x98B46CA0	TCipher_RC6
-					0xFDA1E273	TCipher_Rijndael (default)
-					0x2C4D11CF	TCipher_Square
-					0x96954A47	TCipher_SCOP
-					0x47E376A6	TCipher_Sapphire
-					0x6113DA7A	TCipher_1DES
-					0x73A67594	TCipher_2DES
-					0xCB1A12F1	TCipher_3DES
-					0x75D8876B	TCipher_2DDES
-					0x48B8AEDB	TCipher_3DDES
-					0x18A1F944	TCipher_3TDES
-					0x51C323C2	TCipher_3Way
-					0xE864D553	TCipher_Cast128
-					0xA1EEEAAF	TCipher_Gost
-					0x56555753	TCipher_Misty
-					0x5BF00A6F	TCipher_NewDES
-					0xB211D023	TCipher_Q128
-					0x9FD9A8B9	TCipher_RC2
-					0x01BD3D1A	TCipher_RC5
-					0x92D7CD5C	TCipher_SAFER
-					0x8B78B805	TCipher_Shark
-					0xD731ED9F	TCipher_Skipjack
-					0x0402530B	TCipher_TEA
-					0x6B431EA1	TCipher_TEAN
+					0x51F07042	TCipher_Blowfish (KeySize: 56, BlockSize: 8, BufferSize: 8)
+					0xB6936130	TCipher_Twofish (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x3C212341	TCipher_IDEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x42DBD0CA	TCipher_Cast256 (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x43B28323	TCipher_Mars (KeySize: 56, BlockSize: 16, BufferSize: 16)
+					0x76BA0D8C	TCipher_RC4 (KeySize: 256, BlockSize: 1, BufferSize: 16)
+					0x98B46CA0	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
+					0xFDA1E273	TCipher_Rijndael (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
+					0x2C4D11CF	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x96954A47	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0x47E376A6	TCipher_Sapphire(KeySize: 1024, BlockSize: 1, BufferSize: 32)
+					0x6113DA7A	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
+					0x73A67594	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xCB1A12F1	TCipher_3DES (KeySize: 24, BlockSize: 8, BufferSize: 8)
+					0x75D8876B	TCipher_2DDES (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x48B8AEDB	TCipher_3DDES (KeySize: 24, BlockSize: 16, BufferSize: 16)
+					0x18A1F944	TCipher_3TDES (KeySize: 24, BlockSize: 24, BufferSize: 24)
+					0x51C323C2	TCipher_3Way (KeySize: 12, BlockSize: 12, BufferSize: 12)
+					0xE864D553	TCipher_Cast128 (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xA1EEEAAF	TCipher_Gost (KeySize: 32, BlockSize: 8, BufferSize: 8)
+					0x56555753	TCipher_Misty (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x5BF00A6F	TCipher_NewDES (KeySize: 15, BlockSize: 8, BufferSize: 8)
+					0xB211D023	TCipher_Q128 (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x9FD9A8B9	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
+					0x01BD3D1A	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
+					0x92D7CD5C	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x8B78B805	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, not working in DEC 5.1c)
+					0xD731ED9F	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
+					0x0402530B	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x6B431EA1	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
 04h	Byte	1		DEC 5.1c Cipher mode
-					0x00h	CTSx	double CBC, with CFS8 padding of truncated final block (default)
-					0x01h	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
-					0x02h	CFB8	8bit Cipher Feedback mode
-					0x03h	CFBx	CFB on Blocksize of Cipher
-					0x04h	OFB8	8bit Output Feedback mode
-					0x05h	OFBx	OFB on Blocksize bytes
-					0x06h	CFS8	8Bit CFS, double CFB
-					0x07h	CFSx	CFS on Blocksize bytes
-					0x08h	ECBx	Electronic Code Book
+					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default, proprietary to DEC)
+					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
+					0x02	CFB8	8bit Cipher Feedback mode
+					0x03	CFBx	CFB on Blocksize of Cipher
+					0x04	OFB8	8bit Output Feedback mode
+					0x05	OFBx	OFB on Blocksize bytes
+					0x06	CFS8	8Bit CFS, double CFB
+					0x07	CFSx	CFS on Blocksize bytes
+					0x08	ECBx	Electronic Code Book (CalcMAC not possible)
 05h	Long	4		DEC 5.1c Hash-Idendity with identity-base 0x84485225.
-					0xD6B9FFD9	THash_MD2
-					0x3FDA5AEC	THash_MD4
-					0x48DD6A7A	THash_MD5
-					0xA5B81E29	THash_SHA
-					0x7E3889A5	THash_SHA1 (default)
-					0x9BFE22E7	THash_SHA256
-					0xC19C57B1	THash_SHA384
-					0xFDB0357F	THash_SHA512
-					0x815B1495	THash_Sapphire
-					0x3729E306	THash_Panama
-					0x0B148DEE	THash_Tiger
-					0x42F77C97	THash_RipeMD128
-					0x284031A1	THash_RipeMD160
-					0xE848790E	THash_RipeMD256
-					0x4FA820CB	THash_RipeMD320
-					0xB59AAC5E	THash_Haval128
-					0xDF2DE168	THash_Haval160
-					0xB6BB9C8B	THash_Haval192
-					0xBE6A5E2C	THash_Haval224
-					0x1F25A9C7	THash_Haval256
-					0x59D2CCC4	THash_Whirlpool
-					0xA07F7DB2	THash_Whirlpool1
-					0x9C721C33	THash_Square
-					0xE62E90A3	THash_Snefru128
-					0x4C91953A	THash_Snefru256
+					0xD6B9FFD9	THash_MD2 (DigestSize: 16, BlockSize: 16)
+					0x3FDA5AEC	THash_MD4 (DigestSize: 16, BlockSize: 64)
+					0x48DD6A7A	THash_MD5 (DigestSize: 16, BlockSize: 64)
+					0xA5B81E29	THash_SHA (DigestSize: 20, BlockSize: 64)
+					0x7E3889A5	THash_SHA1 (DigestSize: 20, BlockSize: 64, default)
+ 					0x9BFE22E7	THash_SHA256 (DigestSize: 32, BlockSize: 64)
+					0xC19C57B1	THash_SHA384 (DigestSize: 48, BlockSize: 128)
+					0xFDB0357F	THash_SHA512 (DigestSize: 64, BlockSize: 128, default)
+					0x815B1495	THash_Sapphire (DigestSize: 64, BlockSize: 1)
+					0x3729E306	THash_Panama (DigestSize: 32, BlockSize: 32)
+					0x0B148DEE	THash_Tiger (DigestSize: 24, BlockSize: 64)
+					0x42F77C97	THash_RipeMD128 (DigestSize: 16, BlockSize: 64)
+					0x284031A1	THash_RipeMD160 (DigestSize: 20, BlockSize: 64)
+					0xE848790E	THash_RipeMD256 (DigestSize: 32, BlockSize: 64)
+					0x4FA820CB	THash_RipeMD320 (DigestSize: 40, BlockSize: 64)
+					0xB59AAC5E	THash_Haval128 (DigestSize: 16, BlockSize: 128)
+					0xDF2DE168	THash_Haval160 (DigestSize: 20, BlockSize: 128)
+					0xB6BB9C8B	THash_Haval192 (DigestSize: 24, BlockSize: 128)
+					0xBE6A5E2C	THash_Haval224 (DigestSize: 28, BlockSize: 128)
+					0x1F25A9C7	THash_Haval256 (DigestSize: 32, BlockSize: 128)
+					0x59D2CCC4	THash_Whirlpool (DigestSize: 64, BlockSize: 64)
+					0xA07F7DB2	THash_Whirlpool1 (DigestSize: 64, BlockSize: 64)
+					0x9C721C33	THash_Square (DigestSize: 16, BlockSize: 16)
+					0xE62E90A3	THash_Snefru128 (DigestSize: 16, BlockSize: 48)
+					0x4C91953A	THash_Snefru256 (DigestSize: 32, BlockSize: 32)
 09h	Byte	1		Size of seed (Default value: 16 Bytes)
 0Ah	Binary	0-255		Seed (Random data)
 	Long	4		Size of data
-	Binary	0-2^32-1	DEC 5.1c encrypted data; Password = Hash->KDfx(User-Password, Seed)
+	Binary	var		DEC 5.1c encrypted data; Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 	Byte	1		Size of CalcMAC
 	Binary	0-255		CalcMAC; Size depends on cipher algorithm and cipher mode. The algorithms of DEC give out CalcMAC with the length 16-64.
 ---------------------------------------------------------------------------------------------------
@@ -135,11 +129,11 @@ Offset	Type	Size		Content/Description
 01h	Byte	1		Version flag; Hardcoded value: 01h.
 02h	String	var		Original file name
 	Byte	1		Terminus Value: 1Fh ("?")
-	Binary	16		Seed (Random data. Default size: 16 bytes (10h)
-	Binary	var		DEC 5.1c encrypted data
-					Password:       Hash->KDfx(User-Password, Seed)
+	Binary	16		Seed (Random data. Default size: 16 bytes = 0x10
+	Binary	var		DEC 5.1c encrypted data (read until file end minus the size of the checksum)
+					Password:       Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 					Algorithm:	RIJNDAEL (AES)
-					Mode:		CTSx
+					Mode:		CTSx (proprietary to DEC)
 	Binary	var		Checksum of the data before encryption
 				Default hash configuration
 				Algorithm:	SHA 512
@@ -166,38 +160,38 @@ Offset	Type	Size		Content/Description
 	Byte	1		Terminus Value: 1Fh ("?")
 	Long	4		DEC 5.1c Idendity-Base; Default 0x84671842
 	Long	4		DEC 5.1c Cipher idendity. If the default identitiy base 0x84671842 is used, then the identities are:
-					0xFAD52117	TCipher_Blowfish
-					0x1DB63065	TCipher_Twofish
-					0x97047214	TCipher_IDEA
-					0xE9FE819F	TCipher_Cast256
-					0xE897D276	TCipher_Mars
-					0xDD9F5CD9	TCipher_RC4
-					0x33913DF5	TCipher_RC6
-					0x5684B326	TCipher_Rijndael (default)
-					0x8768409A	TCipher_Square
-					0x3DB01B12	TCipher_SCOP
-					0xECC627F3	TCipher_Sapphire
-					0xCA368B2F	TCipher_1DES
-					0xD88324C1	TCipher_2DES
-					0x603F43A4	TCipher_3DES
-					0xDEFDD63E	TCipher_2DDES
-					0xE39DFF8E	TCipher_3DDES
-					0xB384A811	TCipher_3TDES
-					0xFAE67297	TCipher_3Way
-					0x43418406	TCipher_Cast128
-					0x0ACBBBFA	TCipher_Gost
-					0xFD700606	TCipher_Misty
-					0xF0D55B3A	TCipher_NewDES
-					0x19348176	TCipher_Q128
-					0x34FCF9EC	TCipher_RC2
-					0xAA986C4F	TCipher_RC5
-					0x39F29C09	TCipher_SAFER
-					0x205DE950	TCipher_Shark
-					0x7C14BCCA	TCipher_Skipjack
-					0xAF27025E	TCipher_TEA
-					0xC0664FF4	TCipher_TEAN
-	Byte	1		DEC 5.1c Cipher mode (see appendix B)
-					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default)
+					0xFAD52117	TCipher_Blowfish (KeySize: 56, BlockSize: 8, BufferSize: 8)
+					0x1DB63065	TCipher_Twofish (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x97047214	TCipher_IDEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xE9FE819F	TCipher_Cast256 (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0xE897D276	TCipher_Mars (KeySize: 56, BlockSize: 16, BufferSize: 16)
+					0xDD9F5CD9	TCipher_RC4 (KeySize: 256, BlockSize: 1, BufferSize: 16)
+					0x33913DF5	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
+					0x5684B326	TCipher_Rijndael (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
+					0x8768409A	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x3DB01B12	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0xECC627F3	TCipher_Sapphire(KeySize: 1024, BlockSize: 1, BufferSize: 32)
+					0xCA368B2F	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
+					0xD88324C1	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x603F43A4	TCipher_3DES (KeySize: 24, BlockSize: 8, BufferSize: 8)
+					0xDEFDD63E	TCipher_2DDES (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0xE39DFF8E	TCipher_3DDES (KeySize: 24, BlockSize: 16, BufferSize: 16)
+					0xB384A811	TCipher_3TDES (KeySize: 24, BlockSize: 24, BufferSize: 24)
+					0xFAE67297	TCipher_3Way (KeySize: 12, BlockSize: 12, BufferSize: 12)
+					0x43418406	TCipher_Cast128 (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x0ACBBBFA	TCipher_Gost (KeySize: 32, BlockSize: 8, BufferSize: 8)
+					0xFD700606	TCipher_Misty (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xF0D55B3A	TCipher_NewDES (KeySize: 15, BlockSize: 8, BufferSize: 8)
+					0x19348176	TCipher_Q128 (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x34FCF9EC	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
+					0xAA986C4F	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
+					0x39F29C09	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x205DE950	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, not working in DEC 5.1c)
+					0x7C14BCCA	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
+					0xAF27025E	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xC0664FF4	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
+	Byte	1		DEC 5.1c Cipher mode
+					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default, proprietary to DEC)
 					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
 					0x02	CFB8	8bit Cipher Feedback mode
 					0x03	CFBx	CFB on Blocksize of Cipher
@@ -205,37 +199,37 @@ Offset	Type	Size		Content/Description
 					0x05	OFBx	OFB on Blocksize bytes
 					0x06	CFS8	8Bit CFS, double CFB
 					0x07	CFSx	CFS on Blocksize bytes
-					0x08	ECBx	Electronic Code Book
+					0x08	ECBx	Electronic Code Book (CalcMAC not possible)
 	Long	4		DEC 5.1c Hash idendity. If the default identitiy base 0x84671842 is used, then the identities are:
-					0x7D9CAE8C	THash_MD2
-					0x94FF0BB9	THash_MD4
-					0xE3F83B2F	THash_MD5
-					0x0E9D4F7C	THash_SHA
-					0xD51DD8F0	THash_SHA1
-					0x30DB73B2	THash_SHA256
-					0x6AB906E4	THash_SHA384
-					0x5695642A	THash_SHA512 (default)
-					0x2A7E45C0	THash_Sapphire
-					0x9C0CB253	THash_Panama
-					0xA031DCBB	THash_Tiger
-					0xE9D22DC2	THash_RipeMD128
-					0x836560F4	THash_RipeMD160
-					0x436D285B	THash_RipeMD256
-					0xE48D719E	THash_RipeMD320
-					0x1EBFFD0B	THash_Haval128
-					0x7408B03D	THash_Haval160
-					0x1D9ECDDE	THash_Haval192
-					0x154F0F79	THash_Haval224
-					0xB400F892	THash_Haval256
-					0xF2F79D91	THash_Whirlpool
-					0x0B5A2CE7	THash_Whirlpool1
-					0x37574D66	THash_Square
-					0x4D0BC1F6	THash_Snefru128
-					0xE7B4C46F	THash_Snefru256
+					0x7D9CAE8C	THash_MD2 (DigestSize: 16, BlockSize: 16)
+					0x94FF0BB9	THash_MD4 (DigestSize: 16, BlockSize: 64)
+					0xE3F83B2F	THash_MD5 (DigestSize: 16, BlockSize: 64)
+					0x0E9D4F7C	THash_SHA (DigestSize: 20, BlockSize: 64)
+					0xD51DD8F0	THash_SHA1 (DigestSize: 20, BlockSize: 64)
+					0x30DB73B2	THash_SHA256 (DigestSize: 32, BlockSize: 64)
+					0x6AB906E4	THash_SHA384 (DigestSize: 48, BlockSize: 128)
+					0x5695642A	THash_SHA512 (DigestSize: 64, BlockSize: 128, default)
+					0x2A7E45C0	THash_Sapphire (DigestSize: 64, BlockSize: 1)
+					0x9C0CB253	THash_Panama (DigestSize: 32, BlockSize: 32)
+					0xA031DCBB	THash_Tiger (DigestSize: 24, BlockSize: 64)
+					0xE9D22DC2	THash_RipeMD128 (DigestSize: 16, BlockSize: 64)
+					0x836560F4	THash_RipeMD160 (DigestSize: 20, BlockSize: 64)
+					0x436D285B	THash_RipeMD256 (DigestSize: 32, BlockSize: 64)
+					0xE48D719E	THash_RipeMD320 (DigestSize: 40, BlockSize: 64)
+					0x1EBFFD0B	THash_Haval128 (DigestSize: 16, BlockSize: 128)
+					0x7408B03D	THash_Haval160 (DigestSize: 20, BlockSize: 128)
+					0x1D9ECDDE	THash_Haval192 (DigestSize: 24, BlockSize: 128)
+					0x154F0F79	THash_Haval224 (DigestSize: 28, BlockSize: 128)
+					0xB400F892	THash_Haval256 (DigestSize: 32, BlockSize: 128)
+					0xF2F79D91	THash_Whirlpool (DigestSize: 64, BlockSize: 64)
+					0x0B5A2CE7	THash_Whirlpool1 (DigestSize: 64, BlockSize: 64)
+					0x37574D66	THash_Square (DigestSize: 16, BlockSize: 16)
+					0x4D0BC1F6	THash_Snefru128 (DigestSize: 16, BlockSize: 48)
+					0xE7B4C46F	THash_Snefru256 (DigestSize: 32, BlockSize: 32)
 	Byte	1		Size of seed; Default value:	32 byte
 	Binary	0-255		Seed (Random data)
-	Binary	var		With DEC 5.1c encrypted data, encrypted with password
-					Password = Hash->KDfx(User-Password, Seed)
+	Binary	var		With DEC 5.1c encrypted data, encrypted with password (read until file end minus the size of the checksum and the file terminus)
+					Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 	Binary	var		Secured checksum of the data before encryption
 					= Hash(Hash(Original Data) & Seed & User-Password)
 					Size dependend on hash algorithm.
@@ -262,46 +256,47 @@ Offset	Type	Size		Content/Description
 					00h: No
 					01h: Yes
 03h	Long	4		Size of the encrypted filename that follows
-07h	Binary	0-2^32-1	Original file name, not null-terminated WideString
+07h	Binary	var		Original file name, not null-terminated WideString
 				Encrypted with DEC 5.1c (cipher/hash see below)
 				If offset 02h of this part has the value 00h:
 					Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
 				If offset 02h of this part has the value 01h:
 					Encryption-Password = Hash->KDfx(User-Password, Seed)
+				KDFx is proprietary to DEC
 	Long	4		DEC 5.1c Idendity-Base; Default Idendity-Base: 0x19387612
 	Long	4		DEC 5.1c Cipher idendity. If the default identitiy base 0x84671842 is used, then the identities are:
-					0xEC871D7C	TCipher_Blowfish
-					0x0BE40C0E	TCipher_Twofish
-					0x81564E7F	TCipher_IDEA
-					0xFFACBDF4	TCipher_Cast256
-					0xFEC5EE1D	TCipher_Mars
-					0xCBCD60B2	TCipher_RC4
-					0x25C3019E	TCipher_RC6
-					0x40D68F4D	TCipher_Rijndael (default)
-					0x913A7CF1	TCipher_Square
-					0x2BE22779	TCipher_SCOP
-					0xFA941B98	TCipher_Sapphire
-					0xDC64B744	TCipher_1DES
-					0xCED118AA	TCipher_2DES
-					0x766D7FCF	TCipher_3DES
-					0xC8AFEA55	TCipher_2DDES
-					0xF5CFC3E5	TCipher_3DDES
-					0xA5D6947A	TCipher_3TDES
-					0xECB44EFC	TCipher_3Way
-					0x5513B86D	TCipher_Cast128
-					0x1C998791	TCipher_Gost
-					0xEB223A6D	TCipher_Misty
-					0xE6876751	TCipher_NewDES
-					0x0F66BD1D	TCipher_Q128
-					0x22AEC587	TCipher_RC2
-					0xBCCA5024	TCipher_RC5
-					0x2FA0A062	TCipher_SAFER
-					0x360FD53B	TCipher_Shark
-					0x6A4680A1	TCipher_Skipjack
-					0xB9753E35	TCipher_TEA
-					0xD634739F	TCipher_TEAN
-	Byte	1		DEC 5.1c Cipher mode (see appendix B)
-					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default)
+					0xEC871D7C	TCipher_Blowfish (KeySize: 56, BlockSize: 8, BufferSize: 8)
+					0x0BE40C0E	TCipher_Twofish (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x81564E7F	TCipher_IDEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xFFACBDF4	TCipher_Cast256 (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0xFEC5EE1D	TCipher_Mars (KeySize: 56, BlockSize: 16, BufferSize: 16)
+					0xCBCD60B2	TCipher_RC4 (KeySize: 256, BlockSize: 1, BufferSize: 16)
+					0x25C3019E	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
+					0x40D68F4D	TCipher_Rijndael (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
+					0x913A7CF1	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x2BE22779	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0xFA941B98	TCipher_Sapphire(KeySize: 1024, BlockSize: 1, BufferSize: 32)
+					0xDC64B744	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
+					0xCED118AA	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x766D7FCF	TCipher_3DES (KeySize: 24, BlockSize: 8, BufferSize: 8)
+					0xC8AFEA55	TCipher_2DDES (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0xF5CFC3E5	TCipher_3DDES (KeySize: 24, BlockSize: 16, BufferSize: 16)
+					0xA5D6947A	TCipher_3TDES (KeySize: 24, BlockSize: 24, BufferSize: 24)
+					0xECB44EFC	TCipher_3Way (KeySize: 12, BlockSize: 12, BufferSize: 12)
+					0x5513B86D	TCipher_Cast128 (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x1C998791	TCipher_Gost (KeySize: 32, BlockSize: 8, BufferSize: 8)
+					0xEB223A6D	TCipher_Misty (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xE6876751	TCipher_NewDES (KeySize: 15, BlockSize: 8, BufferSize: 8)
+					0x0F66BD1D	TCipher_Q128 (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x22AEC587	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
+					0xBCCA5024	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
+					0x2FA0A062	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x360FD53B	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, not working in DEC 5.1c)
+					0x6A4680A1	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
+					0xB9753E35	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xD634739F	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
+	Byte	1		DEC 5.1c Cipher mode
+					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default, proprietary to DEC)
 					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
 					0x02	CFB8	8bit Cipher Feedback mode
 					0x03	CFBx	CFB on Blocksize of Cipher
@@ -309,37 +304,37 @@ Offset	Type	Size		Content/Description
 					0x05	OFBx	OFB on Blocksize bytes
 					0x06	CFS8	8Bit CFS, double CFB
 					0x07	CFSx	CFS on Blocksize bytes
-					0x08	ECBx	Electronic Code Book
+					0x08	ECBx	Electronic Code Book (CalcMAC not possible)
 	Long	4		DEC 5.1c Hash idendity. If the default identitiy base 0x84671842 is used, then the identities are:
-					0x6BCE92E7	THash_MD2
-					0x82AD37D2	THash_MD4
-					0xF5AA0744	THash_MD5
-					0x18CF7317	THash_SHA
-					0xC34FE49B	THash_SHA1
-					0x26894FD9	THash_SHA256
-					0x7CEB3A8F	THash_SHA384
-					0x40C75841	THash_SHA512 (default)
-					0x3C2C79AB	THash_Sapphire
-					0x8A5E8E38	THash_Panama
-					0xB663E0D0	THash_Tiger
-					0xFF8011A9	THash_RipeMD128
-					0x95375C9F	THash_RipeMD160
-					0x553F1430	THash_RipeMD256
-					0xF2DF4DF5	THash_RipeMD320
-					0x08EDC160	THash_Haval128
-					0x625A8C56	THash_Haval160
-					0x0BCCF1B5	THash_Haval192
-					0x031D3312	THash_Haval224
-					0xA252C4F9	THash_Haval256
-					0xE4A5A1FA	THash_Whirlpool
-					0x1D08108C	THash_Whirlpool1
-					0x2105710D	THash_Square
-					0x5B59FD9D	THash_Snefru128
-					0xF1E6F804	THash_Snefru256
-	Byte	1		Size of seed; Default value:	32 byte (20h)
+					0x6BCE92E7	THash_MD2 (DigestSize: 16, BlockSize: 16)
+					0x82AD37D2	THash_MD4 (DigestSize: 16, BlockSize: 64)
+					0xF5AA0744	THash_MD5 (DigestSize: 16, BlockSize: 64)
+					0x18CF7317	THash_SHA (DigestSize: 20, BlockSize: 64)
+					0xC34FE49B	THash_SHA1 (DigestSize: 20, BlockSize: 64)
+					0x26894FD9	THash_SHA256 (DigestSize: 32, BlockSize: 64)
+					0x7CEB3A8F	THash_SHA384 (DigestSize: 48, BlockSize: 128)
+					0x40C75841	THash_SHA512 (DigestSize: 64, BlockSize: 128, default)
+					0x3C2C79AB	THash_Sapphire (DigestSize: 64, BlockSize: 1)
+					0x8A5E8E38	THash_Panama (DigestSize: 32, BlockSize: 32)
+					0xB663E0D0	THash_Tiger (DigestSize: 24, BlockSize: 64)
+					0xFF8011A9	THash_RipeMD128 (DigestSize: 16, BlockSize: 64)
+					0x95375C9F	THash_RipeMD160 (DigestSize: 20, BlockSize: 64)
+					0x553F1430	THash_RipeMD256 (DigestSize: 32, BlockSize: 64)
+					0xF2DF4DF5	THash_RipeMD320 (DigestSize: 40, BlockSize: 64)
+					0x08EDC160	THash_Haval128 (DigestSize: 16, BlockSize: 128)
+					0x625A8C56	THash_Haval160 (DigestSize: 20, BlockSize: 128)
+					0x0BCCF1B5	THash_Haval192 (DigestSize: 24, BlockSize: 128)
+					0x031D3312	THash_Haval224 (DigestSize: 28, BlockSize: 128)
+					0xA252C4F9	THash_Haval256 (DigestSize: 32, BlockSize: 128)
+					0xE4A5A1FA	THash_Whirlpool (DigestSize: 64, BlockSize: 64)
+					0x1D08108C	THash_Whirlpool1 (DigestSize: 64, BlockSize: 64)
+					0x2105710D	THash_Square (DigestSize: 16, BlockSize: 16)
+					0x5B59FD9D	THash_Snefru128 (DigestSize: 16, BlockSize: 48)
+					0xF1E6F804	THash_Snefru256 (DigestSize: 32, BlockSize: 32)
+	Byte	1		Size of seed (default: 32 byte = 0x20)
 	Binary	0-255		Seed (Random data)
-	Binary	var		With DEC 5.1c encrypted data
-					Encryption-Password = Hash->KDfx(User-Password, Seed)
+	Binary	var		With DEC 5.1c encrypted data (read until file end minus the size of the checksum and the file terminus)
+					Encryption-Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 					[I don't understand this paragraph anymore. You can probably ignore it.]
 							The final version of (De)Coder 4.1 can also use a 2-factor-method.
 							The "special-checksum" of a file can be used as the user password.
@@ -374,22 +369,56 @@ Offset	Type	Size		Content/Description
 					Bit 6:      Reserved
 					Bit 7/MSB:  Reserved
 01h	Byte	1		Version flag; Hardcoded value: 04h
-02h	Binary	27		Magic Sequence; Hardcoded value: "1.3.6.1.4.1.37476.2.2.1.4.4"
-1Dh	Byte	1		Filename encrypted with User-Password?
-					00h: No
-					01h: Yes
-1Eh	Long	4		Size of the encrypted filename that follows
-22h	Binary	0-2^32-1	Original file name, not null-terminated WideString
-				Encrypted with DEC 6.0 (cipher/hash see below)
-				If offset 02h of this part has the value 00h:
-					Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
-				If offset 02h of this part has the value 01h:
-					Encryption-Password = Hash->KDfx(User-Password, Seed)
-				// TODO: There should be a HMAC too???
-	Long	4		DEC 5.1c Idendity-Base; Default Idendity-Base: 0x1259D82A
-	Long	4		DEC 5.1c Cipher idendity. If the default identitiy base 0x1259D82A is used, then the identities are:
-					(TODO: DEC 6.0 ciphers)
-	Byte	1		DEC 5.1c Cipher mode (see appendix B)
+02h	Binary	27		Magic Sequence; Hardcoded value: "1.3.6.1.4.1.37476.2.2.1.4"
+					This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
+1Bh	Byte	1		Size of the encrypted filename that follows
+1Ch	Binary	var		Original file name; possible values:
+					- Original name in its entirety (foobar.txt)
+					- Just its extension (*.txt)
+					- Redacted (empty string)
+	Long	4		DEC 6.0 Idendity-Base; Default Idendity-Base: 0x1259D82A.
+					Backwards compatible with DEC 5.1c. Also, the following internal renaming is applied
+					to ensure that the identity base is equal to DEC 5.1c:
+					- TCipher_AES (DEC 6.0) will be renamed to TCipher_Rijndael (DEC 5.1)
+					- THash_Whirlpool0 (DEC 6.0) will be renamed to THash_Whirlpool (DEC 5.1)
+					- THash_SHA0 (DEC 6.0) will be renamed to THash_SHA (DEC 5.1)
+	Long	4		DEC 6.0 Cipher idendity. If the default identitiy base 0x1259D82A is used, then the identities are:
+					0x14CEB4D7	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
+					0x366FED8E	TCipher_Mars (KeySize: 56, BlockSize: 16, BufferSize: 16)
+					0xA2EC8332	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
+					0xE70AA3F1	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x9DB9BBFE	TCipher_Cast128 (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x03676321	TCipher_RC4 (KeySize: 256, BlockSize: 1, BufferSize: 16)
+					0xBD7FDE66	TCipher_XTEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xE34824EA	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0xEA04C614	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
+					0x2E2D64C2	TCipher_NewDES (KeySize: 15, BlockSize: 8, BufferSize: 8)
+					0xED69020D	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
+					0x067B1B39	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xC7CCBE8E	TCipher_Q128 (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0xC34E0F9D	TCipher_Twofish (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x242D1EEF	TCipher_Blowfish (KeySize: 56, BlockSize: 8, BufferSize: 8)
+					0xB83DBC1A	TCipher_AES128 (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x3D65C076	TCipher_3DDES (KeySize: 24, BlockSize: 16, BufferSize: 16)
+					0x6D7C97E9	TCipher_3TDES (KeySize: 24, BlockSize: 24, BufferSize: 24)
+					0x241E4D6F	TCipher_3Way (KeySize: 12, BlockSize: 12, BufferSize: 12)
+					0x71DF3DA6	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x66BC7BE6	TCipher_Null (KeySize: 0, BlockSize: 1, BufferSize: 8)
+					0x1282B983	TCipher_AES256 (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0xBEC77C5C	TCipher_3DES (KeySize: 24, BlockSize: 8, BufferSize: 8)
+					0x0005E9C6	TCipher_2DDES (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x59907F62	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x3706BE67	TCipher_Cast256 (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x323E180B	TCipher_Sapphire (KeySize: 1024, BlockSize: 1, BufferSize: 32)
+					0x49FC4DEC	TCipher_IDEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x988B2D75	TCipher_AES (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
+					0xFEA5D6A8	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xD4338402	TCipher_Gost (KeySize: 32, BlockSize: 8, BufferSize: 8)
+					0x238839FE	TCipher_Misty (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x746053B7	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
+					0x1E9E700C	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xBB1C8CCF	TCipher_AES192 (KeySize: 24, BlockSize: 16, BufferSize: 16)
+	Byte	1		DEC 6.0 Cipher mode
 					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default, proprietary to DEC)
 					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
 					0x02	CFB8	8bit Cipher Feedback mode
@@ -401,135 +430,75 @@ Offset	Type	Size		Content/Description
 					0x08	ECBx	Electronic Code Book
 					0x09	GCM	Galois Counter Mode
 					0x0A	CTS3	double CBC, with less secure padding of truncated final block
-	Long	4		DEC 5.1c Hash idendity. If the default identitiy base 0x1259D82A is used, then the identities are:
-					(TODO: DEC 6.0 hashes)
+	Long	4		DEC 6.0 Hash idendity. If the default identitiy base 0x1259D82A is used, then the identities are:
+					0x42F48DAB	THash_Panama (DigestSize: 32, BlockSize: 32)
+					0x9D9517A3	THash_RipeMD256 (DigestSize: 32, BlockSize: 64)
+					0xC366F226	THash_Haval192 (DigestSize: 24, BlockSize: 128)
+					0xB441391C	THash_SHA384 (DigestSize: 48, BlockSize: 128)
+					0xEE234C4A	THash_SHA256 (DigestSize: 32, BlockSize: 64)
+					0xC047C2F3	THash_Haval128 (DigestSize: 16, BlockSize: 128)
+					0xA09321D2	THash_SHA3_224 (DigestSize: 28, BlockSize: 144)
+					0xE9AF729E	THash_Square (DigestSize: 16, BlockSize: 16)
+					0x2F5EA7BA	THash_Keccak_224 (DigestSize: 28, BlockSize: 144)
+					0x6792C1A1	THash_SHA3_512 (DigestSize: 64, BlockSize: 72, default)
+					0x93F3FE0E	THash_Snefru128 (DigestSize: 16, BlockSize: 48)
+					0xE85F47C9	THash_Keccak_512 (DigestSize: 64, BlockSize: 72)
+					0xF4867A38	THash_Sapphire (DigestSize: 64, BlockSize: 1)
+					0x5BBEA36F	THash_SHA3_384 (DigestSize: 48, BlockSize: 104)
+					0x7CE2D79E	THash_SHA0 (DigestSize: 20, BlockSize: 64)
+					0x8E115051	THash_Keccak_256 (DigestSize: 32, BlockSize: 136)
+					0xD4732507	THash_Keccak_384 (DigestSize: 48, BlockSize: 104)
+					0xAAF08FC5	THash_Haval160 (DigestSize: 20, BlockSize: 128)
+					0x4F6CBBA1	THash_SHA224 (DigestSize: 28, BlockSize: 64)
+					0xEC61EF43	THash_BCrypt (DigestSize: 23, BlockSize: 8)
+					0xA2A52389	THash_Whirlpool0 (DigestSize: 64, BlockSize: 64)
+					0x0BE5E708	THash_SHA1 (DigestSize: 20, BlockSize: 64)
+					0x6AF8C76A	THash_Haval256 (DigestSize: 32, BlockSize: 128)
+					0x394CFB97	THash_Snefru256 (DigestSize: 32, BlockSize: 32)
+					0xA3649174	THash_MD2 (DigestSize: 16, BlockSize: 16)
+					0x4A073441	THash_MD4 (DigestSize: 16, BlockSize: 64)
+					0x01DCD639	THash_SHA3_256 (DigestSize: 32, BlockSize: 136)
+					0x5D9D5F0C	THash_RipeMD160 (DigestSize: 20, BlockSize: 64)
+					0x3D0004D7	THash_MD5 (DigestSize: 16, BlockSize: 64)
+					0xE87A86C8	THash_WhirlpoolT (DigestSize: 64, BlockSize: 64)
+					0xCBB73081	THash_Haval224 (DigestSize: 28, BlockSize: 128)
+					0x7EC9E343	THash_Tiger (DigestSize: 24, BlockSize: 64)
+					0x3A754E66	THash_RipeMD320 (DigestSize: 40, BlockSize: 64)
+					0xF7DACACC	THash_Shake256 (DigestSize: 0, BlockSize: 136)
+					0x886D5BD2	THash_SHA512 (DigestSize: 64, BlockSize: 128)
+					0x5D65CF55	THash_Shake128 (DigestSize: 0, BlockSize: 168)
+					0xD5A2131F	THash_Whirlpool1 (DigestSize: 64, BlockSize: 64)
+					0x372A123A	THash_RipeMD128 (DigestSize: 16, BlockSize: 64)
 	Byte	1		KDF version
 					0x00	KDFx (default, proprietary to DEC)
 					0x01	KDF1
 					0x02	KDF2
 					0x03	KDF3
-	Long	4		HMAC Key Size (default: 32)
+	Byte	1		HMAC Key Size (default: 32 = 0x20)
 	Binary	var		HMAC Key (Random data)
-	Long	4		IV Size (default: 32)
+	Byte	1		IV Size (default: 32 = 0x20)
 	Binary	var		IV (Random Data)
 	Byte	1		Filler byte of last block (default: 0xFF)
-	Byte	1		Size of seed; Default value:	32 byte (20h)
+	Byte	1		Size of seed (default 32 = 0x20)
 	Binary	0-255		Seed (Random data)
-	Binary	var		With DEC 5.1c encrypted data
-					Encryption-Password = Hash->KDfx(User-Password, Seed)
+	Binary	var		With DEC 6.0 encrypted data (read until file end minus the size of the checksum)
+					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
 	Binary	var		HMAC checksum (Encrypt-then-HMAC)
-					= HMAC(HMacKey, EncryptedContents)
+					= HMAC(HMacKey, EncryptedData)
 					Size dependend on hash algorithm.
 					The algorithms of DEC give out a hash with the length 16-64.
 ---------------------------------------------------------------------------------------------------
 
 
-[APPENDIX A] AVAILABLE CIPHER ALGORITHMS OF DEC 5.1C
-====================================================
-
------------------------------------------------------------------------------------------------------------------------------
-Class-Name		Keysize	Blocksize	Buffersize	Usersize	Usersave	Comments
------------------------------------------------------------------------------------------------------------------------------
-TCipher_Blowfish	  56	 8		 8		4168		No		-
-TCipher_Twofish		  32	16		16		4256		No		-
-TCipher_IDEA		  16	 8		 8		 208		No		-
-TCipher_Cast256		  32	16		16		 384		No		-
-TCipher_Mars		  56	16		16		 160		No		-
-TCipher_RC4		 256	 1		16		 258		Yes		-
-TCipher_RC6		 256	16		16		 272		No		-
-TCipher_Rijndael	  32	16		16		 480		No		Used by (De)Coder 4.0 and 4.1. In DEC 6.0 called TCipher_AES.
-TCipher_Square		  16	16		16		 288		No		-
-TCipher_SCOP		  48	 4		32		1548		Yes		-
-TCipher_Sapphire	1024	 1		32		1044		Yes		-
-TCipher_1DES		   8	 8		 8		 256		No		-
-TCipher_2DES		  16	 8		 8		 512		No		-
-TCipher_3DES		  24	 8		 8		 768		No		-
-TCipher_2DDES		  16	16		16		 512		No		-
-TCipher_3DDES		  24	16		16		 768		No		-
-TCipher_3TDES		  24	24		24		 768		No		-
-TCipher_3Way		  12	12		12		 120		No		-
-TCipher_Cast128		  16	 8		 8		 128		No		-
-TCipher_Gost		  32	 8		 8		  32		No		-
-TCipher_Misty		  16	 8		 8		 128		No		-
-TCipher_NewDES		  15	 8		 8		 120		Yes		-
-TCipher_Q128		  16	16		16		 256		No		-
-TCipher_RC2		 128	 8		 8		 128		No		-
-TCipher_RC5		 256	 8		 8		 136		No		-
-TCipher_SAFER		  16	 8		 8		 768		No		-
-TCipher_Shark		  16	 8		 8		 112		No		Not working in DEC 5.1c
-TCipher_Skipjack	  10	 8		 8		2560		No		-
-TCipher_TEA		  16	 8		 8		  32		No		-
-TCipher_TEAN		  16	 8		 8		  32		No		-
------------------------------------------------------------------------------------------------------------------------------
-
-
-[APPENDIX B] AVAILABLE CIPHER MODES OF DEC 5.1C
-===============================================
-
------------------------------------------------------------------------------------------------------------------------------
-Value	Name	Description								Comments
------------------------------------------------------------------------------------------------------------------------------
-00h	CTSx	double CBC, with CFS8 padding of truncated final block			Used by (De)Coder 4.0 and 4.1
-01h	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block	-
-02h	CFB8	8bit Cipher Feedback mode						-
-03h	CFBx	CFB on Blocksize of Cipher						-
-04h	OFB8	8bit Output Feedback mode						-
-05h	OFBx	OFB on Blocksize bytes							-
-06h	CFS8	8Bit CFS, double CFB							-
-07h	CFSx	CFS on Blocksize bytes							-
-08h	ECBx	Electronic Code Book							CalcMAC not possible
------------------------------------------------------------------------------------------------------------------------------
-
-
-[APPENDIX C] AVAILABLE HASH ALGORITHMS OF DEC 5.1C
-==================================================
-
------------------------------------------------------------------------------------------------------------------------------
-Class-Name		Digestsize	Blocksize	Comments
------------------------------------------------------------------------------------------------------------------------------
-THash_MD2		16		 16		-
-THash_MD4		16		 64		-	
-THash_MD5		16		 64		-
-THash_SHA		20		 64		In DEC 6.0 called THash_SHA0
-THash_SHA1		20		 64		-
-THash_SHA256		32		 64		-
-THash_SHA384		48		128		-
-THash_SHA512		64		128		Used by (De)Coder 4.0 and 4.1
-THash_Sapphire		64		  1		-
-THash_Panama		32		 32		-
-THash_Tiger		24		 64		-
-THash_RipeMD128		16		 64		-
-THash_RipeMD160		20		 64		-
-THash_RipeMD256		32		 64		-
-THash_RipeMD320		40		 64		-
-THash_Haval128		16		128		-
-THash_Haval160		20		128		-
-THash_Haval192		24		128		-
-THash_Haval224		28		128		-
-THash_Haval256		32		128		-
-THash_Whirlpool		64		 64		In DEC 6.0 called THash_Whirlpool0
-THash_Whirlpool1	64		 64		-
-THash_Square		16		 16		-
-THash_Snefru128		16		 48		-
-THash_Snefru256		32		 32		-
------------------------------------------------------------------------------------------------------------------------------
-
-
-== [APPENDIX D] COMMENTS ==
+== [APPENDIX A] COMMENTS ==
 
 * Links to websites
 
-  Source code and program "(De)Coder" downloadable at
-  http://www.viathinksoft.de/info/decoder/ (in German)
+  Source code and program "(De)Coder" downloadable at:
+  https://www.viathinksoft.com/projects/decoder
 
-  Other informations about the file extension:
-  http://www.fileinfo.net/extension/dc4
-  http://www.sharpened.net/helpcenter/file_extension.php?dc4
+  Other information about the file extension:
+  https://fileinfo.com/extension/dc4
 
-  Delphi Encryption Compendium (DEC) downloadable at
-  http://dec.michael-puff.de/ (in German)
-
-* CTSx and KDfx
-
-  CTSx and KDfx are some of the special DEC methods.
-  Please look at the DEC source code for further information.
+  Delphi Encryption Compendium (DEC) downloadable at:
+  https://github.com/MHumm/DelphiEncryptionCompendium

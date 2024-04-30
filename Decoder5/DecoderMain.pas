@@ -10,7 +10,12 @@ type
   TFormMain = class(TForm)
     Button1: TButton;
     ProgressBar1: TProgressBar;
+    Memo1: TMemo;
+    Button2: TButton;
+    Button3: TButton;
     procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   end;
 
 var
@@ -165,14 +170,6 @@ begin
   cipher := nil;
   ahash := nil;
   try
-    // TODO: Make a version 4 file format, based on version 2 (not 3!)
-    //  (OK) - Add IV
-    //  (OK) - Add Filler
-    //  (OK) - Add version of KDF (KDFx, KDF1, KDF2, KDF3)
-    //  (OK) - encrypt-then-hmac instead of hash of original data. Add hmac key
-    //  (OK) - No file terminus, or a human readable magic sequence (OID)?
-    //       - HMAC for file name encryption?
-
     // 1. Flags
     // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
     // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
@@ -210,11 +207,13 @@ begin
     end
     else
     begin
-      MagicSeq := '1.3.6.1.4.1.37476.2.2.1.4.' + IntToStr(Ord(V));
+      // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
+      MagicSeq := RawByteString('1.3.6.1.4.1.37476.2.2.1.4');
       FileTerminus := '';
     end;
     tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
 
+    // 2.1 Magic Sequence (only version 4)
     if MagicSeq <> '' then
     begin
       if ReadRaw(Length(MagicSeq)) <> MagicSeq then
@@ -240,7 +239,7 @@ begin
         OrigName := Convert(DecodeBase64(OrigName));
       end;
     end
-    else if (V = fvDc41FinalCancelled) or (V = fvDc50Wip) then
+    else if V = fvDc41FinalCancelled then
     begin
       FileNameUserPasswordEncrypted := ReadByte = $01; // Filename encrypted with user-password? (00=No, 01=Yes)
       // Filename encrypted with DEC 5.1c
@@ -248,7 +247,14 @@ begin
       // if not encrypted with user-password, otherwise:
       // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
       OrigName := ReadRaw(ReadLong); // will be decrypted below (after we initialized hash/cipher)
-      // TODO: should there be a HMAC?
+    end
+    else if V = fvDc50Wip then
+    begin
+      // Possible values:
+      // - Original name in its entirety (foobar.txt)
+      // - Just its extension (*.txt)
+      // - Redacted (empty string)
+      OrigName := ReadRaw(ReadByte);
     end
     else
       Assert(False);
@@ -261,7 +267,7 @@ begin
 
     // 5. Cipher identity (only version 2+)
     if V = fvDc40 then
-      Cipher := TCipher_Rijndael.Create
+      Cipher := TCipher_AES.Create
     else
       Cipher := DEC51_CipherById(idBase, ReadLong).Create;
 
@@ -286,11 +292,11 @@ begin
 
     // 7.6 HMAC Key (only version 4+)
     if V = fvDc50Wip then
-      HMacKey := ReadRaw(ReadLong);
+      HMacKey := ReadRaw(ReadByte);
 
     // 7.7 IV (only version 4+)
     if V = fvDc50Wip then
-      IV := BytesOf(ReadRaw(ReadLong));
+      IV := BytesOf(ReadRaw(ReadByte));
 
     // 7.8 Last-Block-Filler (only version 4+)
     if V = fvDc50Wip then
@@ -305,13 +311,14 @@ begin
       Seed := ReadRaw(ReadByte);
 
     // 9. Encrypted data
-    (* TODO Not implemented for version 3 (actually, I don't understand this description anymore):
- 					The "special-checksum" of a file can be used as the user password.
-					The formula is:
-					User-Password = Hash(File-Contents)
-					Combined formula:
-					Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
-      What I don't understand: How should the program know if the user password or the "hash" password is used??
+    (* TODO:
+          Not implemented for version 3 (actually, I don't understand this description anymore):
+                The "special-checksum" of a file can be used as the user password.
+                The formula is:
+                   User-Password = Hash(File-Contents)
+                Combined formula:
+                   Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
+          What I don't understand: How should the program know if the user password or the "hash" password is used??
     *)
     ahash.Init;
     try
@@ -401,7 +408,7 @@ begin
     if readraw(ahash.DigestSize) <> HashResult2 then
       raise Exception.Create('Hash mismatch');
 
-    // 11. Terminus (only version 2+)
+    // 11. Terminus (only version 2 and 3)
     if (FileTerminus <> '') and (ReadRaw(Length(FileTerminus)) <> FileTerminus) then
       raise Exception.Create('File terminus wrong');
 
@@ -530,6 +537,51 @@ begin
     Result := HashInstance.DigestAsBytes;
   finally
     HashInstance.Free;
+  end;
+end;
+
+procedure TFormMain.Button2Click(Sender: TObject);
+var
+  p: TPair<int64, TDECClass>;
+  c: TDECClass;
+  cn: string;
+const
+  IdentityBase = $1259D82A; // DC 5.0
+begin
+  Memo1.Clear;
+  for p in TDECHash.ClassList do
+  begin
+    c := p.Value;
+    cn := c.ClassName;
+    Memo1.Lines.Add(
+      '0x'+IntToHex(DEC51_Identity(IdentityBase, cn), 8) + #9 +
+      cn +
+      ' (DigestSize: '+IntToStr(TDECHashClass(c).DigestSize) +
+      ', BlockSize: '+IntToStr(TDECHashClass(c).BlockSize) + ')'
+    );
+  end;
+end;
+
+procedure TFormMain.Button3Click(Sender: TObject);
+var
+  p: TPair<int64, TDECClass>;
+  c: TDECClass;
+  cn: string;
+const
+  IdentityBase = $1259D82A; // DC 5.0
+begin
+  Memo1.Clear;
+  for p in TDECCipher.ClassList do
+  begin
+    c := p.Value;
+    cn := c.ClassName;
+    Memo1.Lines.Add(
+      '0x'+IntToHex(DEC51_Identity(IdentityBase, cn), 8) + #9 +
+      cn +
+      ' (KeySize: '+IntToStr(TDECCipherClass(c).Context.KeySize) +
+      ', BlockSize: '+IntToStr(TDECCipherClass(c).Context.BlockSize) +
+      ', BufferSize: '+IntToStr(TDECCipherClass(c).Context.BufferSize) + ')'
+    );
   end;
 end;
 
