@@ -255,8 +255,8 @@ Offset	Type	Size		Content/Description
 02h	Byte	1		Filename encrypted with User-Password?
 					00h: No
 					01h: Yes
-03h	Long	4		Size of the encrypted filename that follows
-07h	Binary	var		Original file name, not null-terminated WideString
+03h	Long	4		Size (in bytes) of the encrypted filename that follows
+07h	Binary	var		Original file name, not null-terminated WideString (UTF-16)
 				Encrypted with DEC 5.1c (cipher/hash see below)
 				If offset 02h of this part has the value 00h:
 					Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
@@ -373,9 +373,9 @@ Offset	Type	Size		Content/Description
 					This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
 1Bh	Byte	1		Size of the encrypted filename that follows
 1Ch	Binary	var		Original file name, UTF-8 Encoded; possible values:
-					- Original name in its entirety (foobar.txt)
-					- Just its extension (*.txt)
-					- Redacted (empty string)
+					- Original name in its entirety (example "foobar.txt")
+					- Just its extension (example "*.txt")
+					- Redacted (empty string "")
 	Long	4		DEC 6.4 Idendity-Base; Default Idendity-Base: 0x1259D82A.
 					Backwards compatible with DEC 5.1c. Also, the following internal renaming is applied
 					to ensure that the identity base is equal to DEC 5.1c:

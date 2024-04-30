@@ -234,6 +234,7 @@ var
   IsFolder: boolean;
   ATempFileName: string;
   KdfIterations: Long;
+  OrigNameEncrypted: RawByteString;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -330,15 +331,14 @@ begin
       // Encryption-Password = Hash->KDfx(User-Password, Seed)
       // if not encrypted with user-password, otherwise:
       // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
-      // TODO: Unsure... will RawByteString correctly casted to WideString (UTF-16), or do we need to do the cast with pointers? (Probably the latter...)
-      OrigName := WideString(ReadRaw(ReadLong*SizeOf(WideChar))); // will be decrypted below (after we initialized hash/cipher)
+      OrigNameEncrypted := ReadRaw(ReadLong); // will be decrypted below (after we initialized hash/cipher)
     end
     else if V = fvDc50Wip then
     begin
       // Possible values:
-      // - Original name in its entirety (foobar.txt)
-      // - Just its extension (*.txt)
-      // - Redacted (empty string)
+      // - Original name in its entirety (example "foobar.txt")
+      // - Just its extension (example "*.txt")
+      // - Redacted (empty string "")
       OrigName := UTF8ToString(ReadRaw(ReadByte));
     end
     else
@@ -465,9 +465,11 @@ begin
         Assert(False);
       Cipher.Init(Key, IV, Filler);
       try
-        OrigName := TDECFormattedCipher(Cipher).DecodeStringToString(OrigName);
+        OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
+        if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
+        OrigName := WideString(PWideString(Pointer(OrigNameEncrypted)));
       finally
-        Cipher.Done;
+        Cipher.Done; // TODO: I don't understand, if Done() processes the last byte/block, it won't affect our string since we already got the result from DecodeRawByteString(). Asked here https://github.com/MHumm/DelphiEncryptionCompendium/issues/63
       end;
     end;
 
