@@ -85,6 +85,12 @@ begin
   raise Exception.CreateFmt('Cipher ID %d with base %d not found', [Identity, IdentityBase]);
 end;
 
+type
+  TDECHashExtendedAuthentication = class helper for TDECHashAuthentication
+    class function HMACStream(const Key: TBytes; const Stream: TStream; Size: Int64;
+      const OnProgress:TDECProgressEvent): TBytes;
+  end;
+
 procedure DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString);
 var
   Source: TStream;
@@ -150,6 +156,7 @@ var
   FileNameUserPasswordEncrypted: boolean;
   FilenamePassword: RawByteString;
   KdfVersion: byte;
+  HMacKey: RawByteString;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -160,9 +167,8 @@ begin
     //       - Add IV
     //       - Add Filler
     //  (OK) - Add version of KDF (KDFx, KDF1, KDF2, KDF3)
-    //       - encrypt-then-hmac instead of hash of original data. Add hmac key
+    //  (OK) - encrypt-then-hmac instead of hash of original data. Add hmac key
     //       - No file terminus, or a human readable magic sequence (OID)?
-    //       - Instead of identify base, use class names human readable?
 
     // 1. Flags
     // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
@@ -256,6 +262,10 @@ begin
     else
       KdfVersion := 0; // KDFx
 
+    // 7.6 HMAC Key (only version 4+)
+    if V = fvDc50Wip then
+      HMacKey := ReadRaw(ReadLong);
+
     // 8. Seed
     if V = fvDc40 then
       Seed := ReadRaw(16)
@@ -323,27 +333,33 @@ begin
       end;
     end;
 
-    // 10. Checksum
+    // 10. Checksum (version 1-3 hash, version 4+ hmac)
     tempstream.position := 0;
     ahash.Init;
     try
-      TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
       if V = fvDc40 then
       begin
+        TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
         HashResult2 := Convert(HashResult);
       end
       else if V = fvDc41Beta then
       begin
+        TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
         HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
       end
       else if V = fvDc41FinalCancelled then
       begin
+        TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
         HashResult2 := TDECHashExtended(ahash).CalcString(
           Convert(HashResult) + Seed +
               TDECHashExtended(ahash).CalcString(
                 Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
               , TFormat_Copy)
         , TFormat_Copy);
+      end
+      else if V = fvDc50Wip then
+      begin
+        HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(BytesOf(HMacKey), tempstream, tempstream.size, OnProgressProc));
       end
       else
         Assert(False);
@@ -404,6 +420,85 @@ begin
   DeCoder4X_Decompress('schloss.tmp', 'schloss_decoded.bmp');
   DeleteFile('schloss.tmp');
   ShowMessage('ok');
+end;
+
+{ TDECHashExtendedAuthentication }
+
+class function TDECHashExtendedAuthentication.HMACStream(const Key: TBytes;
+  const Stream: TStream; Size: Int64;
+  const OnProgress: TDECProgressEvent): TBytes;
+const
+  CONST_UINT_OF_0x36 = $3636363636363636;
+  CONST_UINT_OF_0x5C = $5C5C5C5C5C5C5C5C;
+var
+  HashInstance: TDECHashAuthentication;
+  InnerKeyPad, OuterKeyPad: array of Byte;
+  I, KeyLength, BlockSize, DigestLength: Integer;
+begin
+  // Taken from TDECHashAuthentication.HMAC and changed HashInstance.Calc to HashInstance.CalcStream for the message
+  HashInstance := TDECHashAuthenticationClass(self).Create;
+  try
+    BlockSize    := HashInstance.BlockSize; // 64 for sha1, ...
+    DigestLength := HashInstance.DigestSize;
+    KeyLength    := Length(Key);
+
+    SetLength(InnerKeyPad, BlockSize);
+    SetLength(OuterKeyPad, BlockSize);
+
+    I := 0;
+
+    if KeyLength > BlockSize then
+    begin
+      Result    := HashInstance.CalcBytes(Key);
+      KeyLength := DigestLength;
+    end
+    else
+      Result := Key;
+
+    while I <= KeyLength - SizeOf(NativeUInt) do
+    begin
+      PNativeUInt(@InnerKeyPad[I])^ := PNativeUInt(@Result[I])^ xor NativeUInt(CONST_UINT_OF_0x36);
+      PNativeUInt(@OuterKeyPad[I])^ := PNativeUInt(@Result[I])^ xor NativeUInt(CONST_UINT_OF_0x5C);
+      Inc(I, SizeOf(NativeUInt));
+    end;
+
+    while I < KeyLength do
+    begin
+      InnerKeyPad[I] := Result[I] xor $36;
+      OuterKeyPad[I] := Result[I] xor $5C;
+      Inc(I);
+    end;
+
+    while I <= BlockSize - SizeOf(NativeUInt) do
+    begin
+      PNativeUInt(@InnerKeyPad[I])^ := NativeUInt(CONST_UINT_OF_0x36);
+      PNativeUInt(@OuterKeyPad[I])^ := NativeUInt(CONST_UINT_OF_0x5C);
+      Inc(I, SizeOf(NativeUInt));
+    end;
+
+    while I < BlockSize do
+    begin
+      InnerKeyPad[I] := $36;
+      OuterKeyPad[I] := $5C;
+      Inc(I);
+    end;
+
+    HashInstance.Init;
+    HashInstance.Calc(InnerKeyPad[0], BlockSize);
+    if (Stream.Size - Stream.Position) > 0 then
+      TDECHashExtended(HashInstance).CalcStream(Stream, Stream.Size-Stream.Position, OnProgress, false);
+    HashInstance.Done;
+    Result := HashInstance.DigestAsBytes;
+
+    HashInstance.Init;
+    HashInstance.Calc(OuterKeyPad[0], BlockSize);
+    HashInstance.Calc(Result[0], DigestLength);
+    HashInstance.Done;
+
+    Result := HashInstance.DigestAsBytes;
+  finally
+    HashInstance.Free;
+  end;
 end;
 
 end.
