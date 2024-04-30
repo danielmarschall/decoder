@@ -48,7 +48,7 @@ Offset	Type	Size		Content/Description
 					0x98B46CA0	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
 					0xFDA1E273	TCipher_Rijndael (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
 					0x2C4D11CF	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
-					0x96954A47	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0x96954A47	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32, faulty implementation)
 					0x47E376A6	TCipher_Sapphire(KeySize: 1024, BlockSize: 1, BufferSize: 32)
 					0x6113DA7A	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
 					0x73A67594	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -65,7 +65,7 @@ Offset	Type	Size		Content/Description
 					0x9FD9A8B9	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
 					0x01BD3D1A	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
 					0x92D7CD5C	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
-					0x8B78B805	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, not working in DEC 5.1c)
+					0x8B78B805	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, faulty implementation)
 					0xD731ED9F	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
 					0x0402530B	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
 					0x6B431EA1	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -169,7 +169,7 @@ Offset	Type	Size		Content/Description
 					0x33913DF5	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
 					0x5684B326	TCipher_Rijndael (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
 					0x8768409A	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
-					0x3DB01B12	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0x3DB01B12	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32, faulty implementation)
 					0xECC627F3	TCipher_Sapphire(KeySize: 1024, BlockSize: 1, BufferSize: 32)
 					0xCA368B2F	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
 					0xD88324C1	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -186,7 +186,7 @@ Offset	Type	Size		Content/Description
 					0x34FCF9EC	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
 					0xAA986C4F	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
 					0x39F29C09	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
-					0x205DE950	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, not working in DEC 5.1c)
+					0x205DE950	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, faulty implementation)
 					0x7C14BCCA	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
 					0xAF27025E	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
 					0xC0664FF4	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -274,7 +274,7 @@ Offset	Type	Size		Content/Description
 					0x25C3019E	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
 					0x40D68F4D	TCipher_Rijndael (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
 					0x913A7CF1	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
-					0x2BE22779	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0x2BE22779	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32, faulty implementation)
 					0xFA941B98	TCipher_Sapphire(KeySize: 1024, BlockSize: 1, BufferSize: 32)
 					0xDC64B744	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
 					0xCED118AA	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -291,7 +291,7 @@ Offset	Type	Size		Content/Description
 					0x22AEC587	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
 					0xBCCA5024	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
 					0x2FA0A062	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
-					0x360FD53B	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, not working in DEC 5.1c)
+					0x360FD53B	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8, faulty implementation)
 					0x6A4680A1	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
 					0xB9753E35	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
 					0xD634739F	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -354,7 +354,7 @@ Offset	Type	Size		Content/Description
 [5.0] DC4 STANDARD 4 USED BY (DE)CODER 5.0
 ==========================================
 
-This file format was intended to be used by the (De)Coder 5.0. (The file-name extension is still dc4)
+This file format was intended to be used by (De)Coder 5.0. The file-name extension is still dc4, though.
 
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description

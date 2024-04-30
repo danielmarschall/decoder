@@ -99,6 +99,7 @@ type
 procedure DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString);
 var
   Source: TStream;
+  HashClass: TDECHashClass;
 
   type
     TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
@@ -164,6 +165,7 @@ var
   HMacKey: RawByteString;
   IV: TBytes;
   Filler: Byte;
+  CipherClass: TDECCipherClass;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -267,9 +269,13 @@ begin
 
     // 5. Cipher identity (only version 2+)
     if V = fvDc40 then
-      Cipher := TCipher_AES.Create
+      CipherClass := TCipher_AES
     else
-      Cipher := DEC51_CipherById(idBase, ReadLong).Create;
+      CipherClass := DEC51_CipherById(idBase, ReadLong);
+    if (V <> fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
+    if (V <> fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
+    if (V <> fvDc50Wip) and (CipherClass = TCipher_Shark) then Cipherclass := TCipher_Shark_DEC52; // It didn't work in DEC 5.1c
+    Cipher := CipherClass.Create;
 
     // 6. Cipher mode (only version 2+)
     if V = fvDc40 then
@@ -279,9 +285,10 @@ begin
 
     // 7. Hash identity (only version 2+)
     if V = fvDc40 then
-      AHash := THash_SHA512.Create
+      HashClass := THash_SHA512
     else
-      AHash := DEC51_HashById(idBase, ReadLong).Create;
+      HashClass := DEC51_HashById(idBase, ReadLong);
+    AHash := HashClass.Create;
 
     // 7.5 KDF version (only version 4+)
     // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3
