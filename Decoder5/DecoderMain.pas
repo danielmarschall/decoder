@@ -176,7 +176,25 @@ begin
   end;
 end;
 
-procedure DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString);
+type
+  TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
+
+  TDC4FileInfo = record
+    Dc4FormatVersion: TDcFormatVersion;
+    IsZLibCompressed: boolean;
+    IsCompressedFolder: boolean;
+    OrigFileName: string;
+    KDF: TKdfVersion;
+    KDF_Iterations: Integer;
+    IVSize: integer;
+    SeedSize: integer;
+    HashClass: TDECHashClass;
+    CipherClass: TDECCipherClass;
+    CipherMode: TCipherMode;
+    FillMode: TBlockFillMode;
+  end;
+
+function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; const OnlyReadFileInfo: boolean=false): TDC4FileInfo;
 var
   Source: TStream;
 
@@ -223,18 +241,19 @@ var
   Key: TBytes;
   FileNameUserPasswordEncrypted: boolean;
   FilenamePassword: RawByteString;
-  KdfVersion: byte;
+  KdfVersion: TKdfVersion;
   HMacKey: TBytes;
   IV: TBytes;
   Filler: Byte;
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
-  bakTempStreamPosEncryptedData: Int64;
+  bakSourcePosEncryptedData: Int64;
   IsCompressed: boolean;
   IsFolder: boolean;
   ATempFileName: string;
   KdfIterations: Long;
   OrigNameEncrypted: RawByteString;
+  iBlockFillMode: Byte;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -259,13 +278,16 @@ begin
     if IsCompressed then
     begin
       ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
-      tempstream := TFileStream.Create(ATempFileName, fmOpenReadWrite or fmCreate);
+      if not OnlyReadFileInfo then
+        tempstream := TFileStream.Create(ATempFileName, fmOpenReadWrite or fmCreate);
     end
     else
     begin
-      tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+      if not OnlyReadFileInfo then
+        tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
     end;
-    tempstream.Size := 0;
+    if not OnlyReadFileInfo then
+      tempstream.Size := 0;
 
     // 2. Version
     // 01 = (De)Coder 4.0
@@ -377,7 +399,20 @@ begin
     if V = fvDc50Wip then
       IV := BytesOf(ReadRaw(ReadByte));
 
-    // 7.6 Last-Block-Filler (only version 4+)
+    // 7.6 Cipher block filling mode (only version 4+)
+    if V = fvDc50Wip then
+    begin
+      iBlockFillMode := ReadByte;
+      if integer(iBlockFillMode) > Ord(High(TBlockFillMode)) then
+        raise Exception.Create('Invalid block filling mode');
+      Cipher.FillMode := TBlockFillMode(iBlockFillMode);
+    end
+    else
+    begin
+      Cipher.FillMode := TBlockFillMode.fmByte;
+    end;
+
+    // 7.7 Last-Block-Filler (only version 4+)
     if V = fvDc50Wip then
       Filler := ReadByte
     else
@@ -390,79 +425,89 @@ begin
       Seed := ReadRaw(ReadByte);
 
     // 8.5 KDF version (only version 4+)
-    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3, 4=PBKDF2
+    // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
     // For PBKDF2, a DWORD with the iterations follows
     if V = fvDc50Wip then
-      KdfVersion := ReadByte
+      KdfVersion := TKdfVersion(ReadByte)
     else
-      KdfVersion := 0; // KDFx
-    if KDFVersion = 4 then
+      KdfVersion := kvKdfx;
+    if KDFVersion = kvUnknown then {this will also be set if the value is too big}
+      raise Exception.Create('Invalid KDF version');
+
+    // 8.6 KDF Iterations (ONLY PRESENT for PBKDF2)
+    if KDFVersion = kvPbkdf2 then
       KdfIterations := ReadLong
     else
       KdfIterations := 0;
 
     // 9. Encrypted data
-    (* TODO:
-          Not implemented for version 3 (actually, I don't understand this description anymore):
-                The "special-checksum" of a file can be used as the user password.
-                The formula is:
-                   User-Password = Hash(File-Contents)
-                Combined formula:
-                   Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
-          What I don't understand: How should the program know if the user password or the "hash" password is used??
-    *)
-    if KDFVersion = 0 then
-      Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-    else if KDFVersion = 1 then
-      Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-    else if KDFVersion = 2 then
-      Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-    else if KDFVersion = 3 then
-      Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-    else if KDFVersion = 4 then
-      Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
-    else
-      raise Exception.Create('Invalid KDF version');
+    if not OnlyReadFileInfo then
+    begin
+      (* TODO:
+            Not implemented for version 3 (actually, I don't understand this description anymore):
+                  The "special-checksum" of a file can be used as the user password.
+                  The formula is:
+                     User-Password = Hash(File-Contents)
+                  Combined formula:
+                     Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
+            What I don't understand: How should the program know if the user password or the "hash" password is used??
+      *)
+      if KDFVersion = kvKdfx then
+        Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = kvKdf1 then
+        Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = kvKdf2 then
+        Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = kvKdf3 then
+        Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+      else if KDFVersion = kvPbkdf2 then
+        Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+      else
+        Assert(False);
 
-    HMacKey := Key;
+      HMacKey := Key;
+    end;
 
     // Verify HMAC before decrypting (the HMAC located below)
-    if V = fvDc50Wip then
+    if not OnlyReadFileInfo and (V = fvDc50Wip) then
     begin
-      bakTempStreamPosEncryptedData := Source.Position;
+      bakSourcePosEncryptedData := Source.Position;
       HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
       Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
       if ReadRaw(ahash.DigestSize) <> HashResult2 then
         raise Exception.Create('HMAC mismatch');
-      Source.Position := bakTempStreamPosEncryptedData;
+      Source.Position := bakSourcePosEncryptedData;
     end;
 
-    Cipher.Init(Key, IV, Filler);
-    try
-      TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
-    finally
-      Cipher.Done;
+    if not OnlyReadFileInfo then
+    begin
+      Cipher.Init(Key, IV, Filler);
+      try
+        TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
+      finally
+        Cipher.Done;
+      end;
     end;
 
     // Decrypt filename (version 3 only)
     if V = fvDc41FinalCancelled then
     begin
-      if FileNameUserPasswordEncrypted then
-        FilenamePassword := APassword
-      else
+      if not FileNameUserPasswordEncrypted then
+      begin
         FilenamePassword := RawByteString(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C);
-      if KDFVersion = 0 then
-        Key := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else if KDFVersion = 1 then
-        Key := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else if KDFVersion = 2 then
-        Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else if KDFVersion = 3 then
-        Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-      else if KDFVersion = 4 then
-        Key := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
-      else
-        Assert(False);
+        if KDFVersion = kvKdfx then
+          Key := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf1 then
+          Key := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf2 then
+          Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf3 then
+          Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvPbkdf2 then
+          Key := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+        else
+          Assert(False);
+      end;
       Cipher.Init(Key, IV, Filler);
       try
         OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
@@ -475,7 +520,7 @@ begin
 
     // 10. Checksum (version 1-3 hash on source, version 4+ hmac on ciphertext)
     // (For version 4, the HMAC was checked above, before encrypting)
-    if V <> fvDc50Wip then
+    if not OnlyReadFileInfo and (V <> fvDc50Wip) then
     begin
       tempstream.position := 0;
       if V = fvDc40 then
@@ -505,20 +550,35 @@ begin
     end;
 
     // 11. Terminus (only version 2 and 3)
+    if OnlyReadFileInfo then Source.Position := Source.Size - Length(FileTerminus);
     if (FileTerminus <> '') and (ReadRaw(Length(FileTerminus)) <> FileTerminus) then
       raise Exception.Create('File terminus wrong');
 
-    if IsCompressed then
+    if not OnlyReadFileInfo and IsCompressed then
     begin
       FreeAndNil(tempstream);
       DeCoder4X_Decompress(ATempFileName, AOutput);
     end;
 
-    if IsFolder then
+    if not OnlyReadFileInfo and IsFolder then
     begin
       // TODO: Extract ZIP (ver1-3) or 7zip (ver4) to folder
       ShowMessage('Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool');
     end;
+
+    ZeroMemory(@result, Sizeof(result));
+    result.Dc4FormatVersion := V;
+    result.IsZLibCompressed := IsCompressed;
+    result.IsCompressedFolder := IsFolder;
+    result.OrigFileName := OrigName;
+    result.KDF := KdfVersion;
+    result.KDF_Iterations := KdfIterations;
+    result.IVSize := Length(IV);
+    result.SeedSize := Length(Seed);
+    result.HashClass := HashClass;
+    result.CipherClass := CipherClass;
+    result.CipherMode := Cipher.Mode;
+    result.FillMode := Cipher.FillMode;
 
   finally
     if Assigned(Source) then FreeAndNil(Source);
@@ -536,8 +596,14 @@ function IsCompressedFileType(AFileName: string): boolean;
 begin
   result :=
     SameText(ExtractFileExt(AFileName), '.zip') or
+    SameText(ExtractFileExt(AFileName), '.7z') or
+    SameText(ExtractFileExt(AFileName), '.rar') or
+    SameText(ExtractFileExt(AFileName), '.gz') or
+    SameText(ExtractFileExt(AFileName), '.xz') or
     SameText(ExtractFileExt(AFileName), '.mp3') or
+    SameText(ExtractFileExt(AFileName), '.mp4') or
     SameText(ExtractFileExt(AFileName), '.png') or
+    SameText(ExtractFileExt(AFileName), '.gif') or
     SameText(ExtractFileExt(AFileName), '.jpg') or
     SameText(ExtractFileExt(AFileName), '.jpeg');
 end;
@@ -582,7 +648,7 @@ var
   OrigName: RawByteString;
   ahash: TDECHash;
   Key: TBytes;
-  KdfVersion: byte;
+  KdfVersion: TKdfVersion;
   HMacKey: TBytes;
   IV: TBytes;
   Filler: Byte;
@@ -593,6 +659,7 @@ var
   IsCompressed: boolean;
   IsFolder: boolean;
   ATempFileName: string;
+  KdfIterations: long;
 begin
   tempstream := nil;
   Source := nil;
@@ -649,9 +716,9 @@ begin
     // 3. Filename
     // Ver4: Clear text filename, with length byte in front of it
     // Possible values:
-    // - Original name in its entirety (foobar.txt)
-    // - Just its extension (*.txt)
-    // - Redacted (empty string)
+    // - Original name in its entirety (example "foobar.txt")
+    // - Just its extension (example "*.txt")
+    // - Redacted (empty string "")
     OrigName := UTF8Encode(ExtractFileName(AFileName));
     WriteByte(Length(OrigName));
     WriteRaw(OrigName);
@@ -679,7 +746,10 @@ begin
     IV := RandomBytes(16);
     WriteRaw(Convert(IV));
 
-    // 7.6 Last-Block-Filler (only version 4+)
+    // 7.6 Cipher block filling mode (only version 4+)
+    WriteByte(Ord(Cipher.FillMode));
+
+    // 7.7 Last-Block-Filler (only version 4+)
     Filler := $FF;
     WriteByte(Filler);
 
@@ -689,21 +759,24 @@ begin
     WriteRaw(Seed);
 
     // 8.5 KDF version (only version 4+)
-    // 0=KDFx, 1=KDF1, 2=KDF2, 3=KDF3
-    KdfVersion := 0; // KDFx
-    WriteByte(KdfVersion);
+    // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
+    KdfVersion := kvKdfx;
+    WriteByte(Ord(KdfVersion));
+    KdfIterations := 0; // only for KdfVersion=kvPbkdf2
 
     // 9. Encrypted data
-    if KDFVersion = 0 then
+    if KDFVersion = kvKdfx then
       Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-    else if KDFVersion = 1 then
+    else if KDFVersion = kvKdf1 then
       Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-    else if KDFVersion = 2 then
+    else if KDFVersion = kvKdf2 then
       Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-    else if KDFVersion = 3 then
+    else if KDFVersion = kvKdf3 then
       Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+    else if KDFVersion = kvPbkdf2 then
+      Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
     else
-      raise Exception.Create('Invalid KDF version');
+      Assert(False);
     HMacKey := Key;
 
     Cipher.Init(Key, IV, Filler);
@@ -737,7 +810,10 @@ end;
 
 
 procedure TFormMain.Button1Click(Sender: TObject);
+var
+  fi: TDC4FileInfo;
 begin
+
 
   DeleteFile('schloss_decoded.bmp');
 
@@ -746,6 +822,14 @@ begin
 
   DeCoder4X_EncodeFile_Ver4('schloss_decoded.bmp', 'schloss.dc5', 'test');
   DeCoder4X_DecodeFile('schloss.dc5', 'schloss_decoded_dc5.bmp', 'test');
+  ShowMessage('ok');
+
+
+
+  fi := DeCoder4X_DecodeFile('schloss.dc4', '', '', true);
+  ShowMessage('ok');
+
+  fi := DeCoder4X_DecodeFile('schloss.dc5', '', '', true);
   ShowMessage('ok');
 
 end;

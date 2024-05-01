@@ -471,16 +471,18 @@ Offset	Type	Size		Content/Description
 					0x372A123A	THash_RipeMD128 (DigestSize: 16, BlockSize: 64)
 	Byte	1		IV Size (default: 16 = 0x10)
 	Binary	var		IV (Random Data)
+	Byte	1		Blocking filling mode (default: 0x00)
+					0x00	Byte filling mode
 	Byte	1		Filler byte of last block (default: 0xFF)
 	Byte	1		Size of seed (default 32 = 0x20)
 	Binary	0-255		Seed (Random data)
 	Byte	1		KDF version
-					0x00	KDFx (default, proprietary to DEC)
 					0x01	KDF1
 					0x02	KDF2
 					0x03	KDF3
-					0x04	PBKDF3
-	Long	4		PBKDF iterations (ONLY present if KDF Version 0x04)
+					0x04	KDFx (default, proprietary to DEC)
+					0x05	PBKDF2
+	Long	4		PBKDF iterations (ONLY present if KDF Version = 0x05)
 	Binary	var		With DEC 6.4 encrypted data (read until file end minus the size of the checksum)
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
 	Binary	var		HMAC checksum (Encrypt-then-HMAC)
