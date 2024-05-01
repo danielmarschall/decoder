@@ -33,7 +33,7 @@ CONTENTS
 This file format is NOT used by (De)Coder.
 It is only the guideline of the DC4-Format.
 Hagen Reddmann posted the demo-algorithm in this topic:
-https://www.delphipraxis.net/topic79794,0,asc,0.html (in German)
+https://www.delphipraxis.net/66783-sichere-verschluesselung-von-dateien-mit-dem-dec-5-1-a.html (in German)
 
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
@@ -110,7 +110,7 @@ Offset	Type	Size		Content/Description
 	Long	4		Size of data
 	Binary	var		DEC 5.1c encrypted data; Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 	Byte	1		Size of CalcMAC
-	Binary	0-255		CalcMAC; Size depends on cipher algorithm and cipher mode. The algorithms of DEC give out CalcMAC with the length 16-64.
+	Binary	0-255		DEC "CalcMAC"; Size depends on cipher algorithm and cipher mode. The algorithms of DEC give out CalcMAC with the length 16-64.
 ---------------------------------------------------------------------------------------------------
 
 

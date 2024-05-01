@@ -107,8 +107,62 @@ type
 type
   TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
 
+  TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
+
+  TDC4FileInfo = record
+    Dc4FormatVersion: TDcFormatVersion;
+    IsZLibCompressed: boolean;
+    IsCompressedFolder: boolean;
+    OrigFileName: string;
+    KDF: TKdfVersion;
+    KDF_Iterations: Integer;
+    IVSize: integer;
+    SeedSize: integer;
+    HashClass: TDECHashClass;
+    CipherClass: TDECCipherClass;
+    CipherMode: TCipherMode;
+    FillMode: TBlockFillMode;
+  end;
+
 const
-  DC4_ID_BASES: array[0..4] of Int64 = (
+  DC4_SUBFORMAT_VERSION: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of string = (
+    'Unknown',
+    '(De)Coder 4.0',
+    '(De)Coder 4.1 Beta',
+    '(De)Coder 4.1 Final (Cancelled)',
+    '(De)Coder 5.0 WIP'
+  );
+
+  INTEGRITY_CHECK_INFO: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of string = (
+    'Unknown', // CalcMac for Hagen Reddmann Example
+    'Hash of source data',
+    'Nested Hash of source data with password',
+    'Nested Hash of source data with password',
+    'Encrypt-then-HMAC'
+  );
+
+  KDF_VERSION_NAMES: array[Low(TKdfVersion)..High(TKdfVersion)] of string = (
+    'Unknown', 'KDF1', 'KDF2', 'KDF3', 'KDFx', 'PBKDF2'
+  );
+
+  CIPHER_MODE_NAMES: array[Low(TCipherMode)..High(TCipherMode)] of string = (
+    'CTSx = double CBC, with CFS8 padding of truncated final block',
+    'CBCx = Cipher Block Chaining, with CFB8 padding of truncated final block',
+    'CFB8 = 8bit Cipher Feedback mode',
+    'CFBx = CFB on Blocksize of Cipher',
+    'OFB8 = 8bit Output Feedback mode',
+    'OFBx = OFB on Blocksize bytes',
+    'CFS8 = 8Bit CFS, double CFB',
+    'CFSx = CFS on Blocksize bytes',
+    'ECBx = Electronic Code Book',
+    'GCM  = Galois Counter Mode'
+  );
+
+  CIPHER_FILLMODE_NAMES: array[Low(TBlockFillMode)..High(TBlockFillMode)] of string = (
+    'Bytes'
+  );
+
+  DC4_ID_BASES: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of Int64 = (
     $84485225, // Hagen Reddmann Example (no .dc4 files)
     $59178954, // (De)Coder 4.0 (identities not used)
     $84671842, // (De)Coder 4.1 beta
@@ -175,24 +229,6 @@ begin
     FreeAndNil(CompressInputStream);
   end;
 end;
-
-type
-  TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
-
-  TDC4FileInfo = record
-    Dc4FormatVersion: TDcFormatVersion;
-    IsZLibCompressed: boolean;
-    IsCompressedFolder: boolean;
-    OrigFileName: string;
-    KDF: TKdfVersion;
-    KDF_Iterations: Integer;
-    IVSize: integer;
-    SeedSize: integer;
-    HashClass: TDECHashClass;
-    CipherClass: TDECCipherClass;
-    CipherMode: TCipherMode;
-    FillMode: TBlockFillMode;
-  end;
 
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; const OnlyReadFileInfo: boolean=false): TDC4FileInfo;
 var
@@ -368,7 +404,7 @@ begin
 
     // 4. IdBase (only version 2+)
     if V = fvDc40 then
-      idBase := DC4_ID_BASES[Ord(V)]
+      idBase := DC4_ID_BASES[V]
     else
       idBase := ReadLong;
 
@@ -724,7 +760,7 @@ begin
     WriteRaw(OrigName);
 
     // 4. IdBase (only version 2+)
-    idBase := DC4_ID_BASES[Ord(fvDc50Wip)];
+    idBase := DC4_ID_BASES[fvDc50Wip];
     WriteLong(idBase);
 
     // 5. Cipher identity (only version 2+)
@@ -747,6 +783,7 @@ begin
     WriteRaw(Convert(IV));
 
     // 7.6 Cipher block filling mode (only version 4+)
+    Cipher.FillMode := TBlockFillMode.fmByte;
     WriteByte(Ord(Cipher.FillMode));
 
     // 7.7 Last-Block-Filler (only version 4+)
@@ -807,7 +844,10 @@ begin
   end;
 end;
 
-
+function YesNo(b: boolean): string;
+begin
+  if b then exit('Yes') else exit('No');
+end;
 
 procedure TFormMain.Button1Click(Sender: TObject);
 var
@@ -832,6 +872,28 @@ begin
   fi := DeCoder4X_DecodeFile('schloss.dc5', '', '', true);
   ShowMessage('ok');
 
+  Memo1.Lines.Clear;
+
+  Memo1.Lines.Add('File Format: (De)Coder 4.x/5.x Encrypted File');
+  Memo1.Lines.Add('Sub-Format: ' + IntToStr(Ord(fi.Dc4FormatVersion)) + ' = ' + DC4_SUBFORMAT_VERSION[fi.Dc4FormatVersion]);
+  Memo1.Lines.Add('Is compressed folder: ' + YesNo(fi.IsCompressedFolder));
+  Memo1.Lines.Add('Data additionally ZLib-compressed: ' + YesNo(fi.IsZLibCompressed));
+  Memo1.Lines.Add('Original filename: ' + fi.OrigFileName);
+  Memo1.Lines.Add('Key Derivation Algorithm: ' + KDF_VERSION_NAMES[fi.KDF]);
+  if fi.KDF = kvPbkdf2 then
+    Memo1.Lines.Add('PBKDF Iterations: ' + IntToStr(fi.KDF_Iterations));
+  Memo1.Lines.Add('Hashing Algorithm: ' + StringReplace(fi.HashClass.ClassName, 'THash_', '', []));
+  Memo1.Lines.Add('Hash Digest Size: ' + IntToStr(fi.HashClass.DigestSize));
+  Memo1.Lines.Add('Hash Block Size: ' + IntToStr(fi.HashClass.BlockSize));
+  Memo1.Lines.Add('Hash Seed Size: ' + IntToStr(fi.SeedSize));
+  Memo1.Lines.Add('Encryption Algorithm: ' + StringReplace(fi.CipherClass.ClassName, 'TCipher_', '', []));
+  Memo1.Lines.Add('Cipher Key Size: ' + IntToStr(fi.CipherClass.Context.KeySize));
+  Memo1.Lines.Add('Cipher Block Size: ' + IntToStr(fi.CipherClass.Context.BlockSize));
+  Memo1.Lines.Add('Cipher Buffer Size: ' + IntToStr(fi.CipherClass.Context.BufferSize));
+  Memo1.Lines.Add('Cipher IV Size: ' + IntToStr(fi.IVSize));
+  Memo1.Lines.Add('Cipher Mode: ' + CIPHER_MODE_NAMES[fi.CipherMode]);
+  Memo1.Lines.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode]);
+  Memo1.Lines.Add('Message Authentication: ' + INTEGRITY_CHECK_INFO[fi.Dc4FormatVersion]);
 end;
 
 { TDECHashExtendedAuthentication }
