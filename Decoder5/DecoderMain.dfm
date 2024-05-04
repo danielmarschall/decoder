@@ -37,27 +37,15 @@ object FormMain: TFormMain
     Left = 8
     Top = 184
     Width = 619
-    Height = 169
+    Height = 275
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Courier New'
+    Font.Style = []
     Lines.Strings = (
       'Memo1')
+    ParentFont = False
     TabOrder = 2
-  end
-  object Button2: TButton
-    Left = 216
-    Top = 96
-    Width = 145
-    Height = 49
-    Caption = 'Button2'
-    TabOrder = 3
-    OnClick = Button2Click
-  end
-  object Button3: TButton
-    Left = 384
-    Top = 96
-    Width = 137
-    Height = 49
-    Caption = 'Button3'
-    TabOrder = 4
-    OnClick = Button3Click
   end
 end
