@@ -454,7 +454,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '2.1 Magic Sequence (only version 4)'}
+      {$REGION '2.1 Magic Sequence (only version 4+)'}
       if MagicSeq <> '' then
       begin
         if ReadRaw(Length(MagicSeq)) <> MagicSeq then
@@ -493,16 +493,14 @@ begin
           // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
           OrigNameEncrypted := ReadRaw(ReadLong); // will be decrypted below (after we initialized hash/cipher)
         end
-        else if V = fvDc50Wip then
+        else if V >= fvDc50Wip then
         begin
           // Possible values:
           // - Original name in its entirety (example "foobar.txt")
           // - Just its extension (example "*.txt")
           // - Redacted (empty string "")
           OrigName := UTF8ToString(ReadRaw(ReadByte));
-        end
-        else
-          Assert(False);
+        end;
       end
       else
       begin
@@ -525,9 +523,9 @@ begin
         else
           CipherClass := DEC51_CipherById(idBase, ReadLong);
       end;
-      if (V <> fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
-      if (V <> fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
-      if (V <> fvDc50Wip) and (CipherClass = TCipher_Shark) then Cipherclass := TCipher_Shark_DEC52; // It didn't work in DEC 5.1c
+      if (V < fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
+      if (V < fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
+      if (V < fvDc50Wip) and (CipherClass = TCipher_Shark) then Cipherclass := TCipher_Shark_DEC52; // It didn't work in DEC 5.1c
       Cipher := CipherClass.Create;
       {$ENDREGION}
 
@@ -547,14 +545,14 @@ begin
       {$ENDREGION}
 
       {$REGION '7.5 IV (only version 4+)'}
-      if V = fvDc50Wip then
+      if V >= fvDc50Wip then
         IV := BytesOf(ReadRaw(ReadByte))
       else
         SetLength(IV, 0);
       {$ENDREGION}
 
       {$REGION '7.6 Cipher block filling mode (only version 4+)'}
-      if V = fvDc50Wip then
+      if V >= fvDc50Wip then
       begin
         iBlockFillMode := ReadByte;
         if integer(iBlockFillMode) > Ord(High(TBlockFillMode)) then
@@ -568,7 +566,7 @@ begin
       {$ENDREGION}
 
       {$REGION '7.7 Last-Block-Filler (only version 4+)'}
-      if V = fvDc50Wip then
+      if V >= fvDc50Wip then
         Filler := ReadByte
       else
         Filler := $FF;
@@ -584,7 +582,7 @@ begin
       {$REGION '8.5 KDF version (only version 4+)'}
       // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
       // For PBKDF2, a DWORD with the iterations follows
-      if V = fvDc50Wip then
+      if V >= fvDc50Wip then
         KdfVersion := TKdfVersion(ReadByte)
       else
         KdfVersion := kvKdfx;
@@ -629,7 +627,7 @@ begin
       {$ENDREGION}
 
       {$REGION 'Verify HMAC of whole file before decrypting (version 4+)'}
-      if not OnlyReadFileInfo and (V = fvDc50Wip) then
+      if not OnlyReadFileInfo and (V >= fvDc50Wip) then
       begin
         bakSourcePosEncryptedData := Source.Position;
         Source.Position := 0;
@@ -688,7 +686,7 @@ begin
 
       {$REGION '10. Checksum (version 0 on cipher, 1-3 hash on source, version 4+ hmac on encrypted file)'}
       // (For version 4, the HMAC was checked above, before encrypting)
-      if not OnlyReadFileInfo and (V <> fvDc50Wip) then
+      if not OnlyReadFileInfo and (V < fvDc50Wip) then
       begin
         if V = fvHagenReddmannExample then
         begin
