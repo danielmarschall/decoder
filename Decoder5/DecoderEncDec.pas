@@ -10,7 +10,7 @@ uses
   DECRandom;
 
 type
-  TDcFormatVersion = (fvUnknown, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
+  TDcFormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
 
   TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
 
@@ -371,46 +371,16 @@ begin
   IsFolder := false;
   try
     try
-      // Is it the Hagen Reddmann example file?
-      CipherClass := DEC51_CipherById(DC4_ID_BASES[fvUnknown], ReadLong, true);
+      // Is it the Hagen Reddmann example file format?
+      CipherClass := DEC51_CipherById(DC4_ID_BASES[fvHagenReddmannExample], ReadLong, true);
       if Assigned(CipherClass) then
-      begin
-        // 1. Cipher class
-        Cipher := CipherClass.Create;
-        // 2. Cipher Mode
-        Cipher.Mode := TCipherMode(ReadByte);
-        Cipher.FillMode := fmByte;
-        // 3. Hash class
-        HashClass := DEC51_HashById(DC4_ID_BASES[fvUnknown], ReadLong);
-        AHash := HashClass.Create;
-        // 4. Seed with length byte prefix
-        Seed := ReadRaw(ReadByte);
-        // 5. Data with length byte prefix
-        Key := TDECHashExtended(ahash).KDfx(APassword, Length(APassword), Seed, Length(Seed), Cipher.Context.KeySize);
-        Cipher.Init(Key, nil, $FF);
-        try
-          TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, ReadLong, OnProgressProc);
-        finally
-          Cipher.Done;
-        end;
-        // 6. CalcMac with length byte prefix
-        HashResult2 := ReadRaw(ReadByte);
-        if HashResult2 <> Cipher.CalcMAC then
-          raise Exception.Create('Invalid decryption');
-        // These vars are set for the result stats
-        V := fvUnknown;
-        IsCompressed := false;
-        IsFolder := false;
-        OrigName := '';
-        kdfVersion := kvKdfx;
-        KdfIterations := 0;
-        SetLength(IV, 0);
-      end
+        V := fvHagenReddmannExample
       else
-      begin
         Source.Position := 0;
 
-        // 1. Flags
+      {$REGION '1. Flags (version 1+)'}
+      if not Assigned(CipherClass) then // we need to check for CipherClass, because Version is ambigous
+      begin
         // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
         // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
         // Bit 2:    Reserved
@@ -422,59 +392,76 @@ begin
         F := ReadByte;
         IsFolder := (F and 1) <> 0;
         IsCompressed := (F and 2) <> 0;
+      end
+      else
+      begin
+        IsCompressed := false;
+        IsFolder := false;
+      end;
+      {$ENDREGION}
 
-        if IsCompressed then
-        begin
-          ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
-          if not OnlyReadFileInfo then
-            tempstream := TFileStream.Create(ATempFileName, fmOpenReadWrite or fmCreate);
-        end
-        else
-        begin
-          if not OnlyReadFileInfo then
-            tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
-        end;
+      {$REGION 'Create output stream'}
+      if IsCompressed then
+      begin
+        ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
         if not OnlyReadFileInfo then
-          tempstream.Size := 0;
+          tempstream := TFileStream.Create(ATempFileName, fmOpenReadWrite or fmCreate);
+      end
+      else
+      begin
+        if not OnlyReadFileInfo then
+          tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+      end;
+      if not OnlyReadFileInfo then
+        tempstream.Size := 0;
+      {$ENDREGION}
 
-        // 2. Version
+      {$REGION '2. Version (version 1+)'}
+      if not Assigned(CipherClass) then // we need to check for CipherClass, because Version is ambigous
+      begin
         // 01 = (De)Coder 4.0
         // 02 = (De)Coder 4.1 Beta
         // 03 = (De)Coder 4.1 Final Cancelled (never released)
         // 04 = (De)Coder 5.0 WorkInProgress
-        V := TDcFormatVersion(ReadByte); // if too big, it will automatically be set to 0
-        if V = fvUnknown then raise Exception.Create('DC Unsupported version');
+        V := TDcFormatVersion(ReadByte); // if too big, it will automatically be set to fvHagenReddmannExample
+        if V = fvHagenReddmannExample then raise Exception.Create('DC Unsupported version');
+      end;
+      {$ENDREGION}
 
-        // We need this later
-        if V = fvDc40 then
-        begin
-          MagicSeq := '';
-          FileTerminus := '';
-        end
-        else if V = fvDc41Beta then
-        begin
-          MagicSeq := '';
-          FileTerminus := 'RENURVJNSU5VUw=='; // (BASE64: "DCTERMINUS")
-        end
-        else if V = fvDc41FinalCancelled then
-        begin
-          MagicSeq := '';
-          FileTerminus := RawByteString(#$63#$F3#$DF#$89#$B7#$27#$20#$EA);
-        end
-        else
-        begin
-          MagicSeq := RawByteString(DC4_OID);
-          FileTerminus := '';
-        end;
+      {$REGION 'Device about magic sequence / file terminus'}
+      if (V = fvHagenReddmannExample) or (V = fvDc40) then
+      begin
+        MagicSeq := '';
+        FileTerminus := '';
+      end
+      else if V = fvDc41Beta then
+      begin
+        MagicSeq := '';
+        FileTerminus := 'RENURVJNSU5VUw=='; // (BASE64: "DCTERMINUS")
+      end
+      else if V = fvDc41FinalCancelled then
+      begin
+        MagicSeq := '';
+        FileTerminus := RawByteString(#$63#$F3#$DF#$89#$B7#$27#$20#$EA);
+      end
+      else
+      begin
+        MagicSeq := RawByteString(DC4_OID);
+        FileTerminus := '';
+      end;
+      {$ENDREGION}
 
-        // 2.1 Magic Sequence (only version 4)
-        if MagicSeq <> '' then
-        begin
-          if ReadRaw(Length(MagicSeq)) <> MagicSeq then
-            raise Exception.Create('Invalid magic sequence');
-        end;
+      {$REGION '2.1 Magic Sequence (only version 4)'}
+      if MagicSeq <> '' then
+      begin
+        if ReadRaw(Length(MagicSeq)) <> MagicSeq then
+          raise Exception.Create('Invalid magic sequence');
+      end;
+      {$ENDREGION}
 
-        // 3. Filename
+      {$REGION '3. Filename (version 1+)'}
+      if V <> fvHagenReddmannExample then
+      begin
         // Ver1: Clear text filename, terminated with "?"
         // Ver2: Base64 encoded filename, terminated with "?"
         // Ver3: Encrypted filename
@@ -513,207 +500,248 @@ begin
         end
         else
           Assert(False);
+      end
+      else
+      begin
+        OrigName := '';
+      end;
+      {$ENDREGION}
 
-        // 4. IdBase (only version 2+)
-        if V = fvDc40 then
-          idBase := DC4_ID_BASES[V]
-        else
-          idBase := ReadLong;
+      {$REGION '4. IdBase (only version 2+)'}
+      if (V = fvHagenReddmannExample) or (V = fvDc40) then
+        idBase := DC4_ID_BASES[V] // hardcoded
+      else
+        idBase := ReadLong;
+      {$ENDREGION}
 
-        // 5. Cipher identity (only version 2+)
+      {$REGION '5. Cipher identity (only version 0 or 2+)'}
+      if V <> fvHagenReddmannExample then // If V=fvHagenReddmannExample, then we already checked it and the stream position should be 4.
+      begin
         if V = fvDc40 then
           CipherClass := TCipher_AES
         else
           CipherClass := DEC51_CipherById(idBase, ReadLong);
-        if (V <> fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
-        if (V <> fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
-        if (V <> fvDc50Wip) and (CipherClass = TCipher_Shark) then Cipherclass := TCipher_Shark_DEC52; // It didn't work in DEC 5.1c
-        Cipher := CipherClass.Create;
+      end;
+      if (V <> fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
+      if (V <> fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
+      if (V <> fvDc50Wip) and (CipherClass = TCipher_Shark) then Cipherclass := TCipher_Shark_DEC52; // It didn't work in DEC 5.1c
+      Cipher := CipherClass.Create;
+      {$ENDREGION}
 
-        // 6. Cipher mode (only version 2+)
-        if V = fvDc40 then
-          Cipher.Mode := TCipherMode.cmCTSx
+      {$REGION '6. Cipher mode (only version 0 or 2+)'}
+      if V = fvDc40 then
+        Cipher.Mode := TCipherMode.cmCTSx
+      else
+        Cipher.Mode := TCipherMode(ReadByte);
+      {$ENDREGION}
+
+      {$REGION '7. Hash identity (only version 0 or version 2+)'}
+      if V = fvDc40 then
+        HashClass := THash_SHA512
+      else
+        HashClass := DEC51_HashById(idBase, ReadLong);
+      AHash := HashClass.Create;
+      {$ENDREGION}
+
+      {$REGION '7.5 IV (only version 4+)'}
+      if V = fvDc50Wip then
+        IV := BytesOf(ReadRaw(ReadByte))
+      else
+        SetLength(IV, 0);
+      {$ENDREGION}
+
+      {$REGION '7.6 Cipher block filling mode (only version 4+)'}
+      if V = fvDc50Wip then
+      begin
+        iBlockFillMode := ReadByte;
+        if integer(iBlockFillMode) > Ord(High(TBlockFillMode)) then
+          raise Exception.Create('Invalid block filling mode');
+        Cipher.FillMode := TBlockFillMode(iBlockFillMode);
+      end
+      else
+      begin
+        Cipher.FillMode := TBlockFillMode.fmByte;
+      end;
+      {$ENDREGION}
+
+      {$REGION '7.7 Last-Block-Filler (only version 4+)'}
+      if V = fvDc50Wip then
+        Filler := ReadByte
+      else
+        Filler := $FF;
+      {$ENDREGION}
+
+      {$REGION '8. Seed with length prefix (only version 0 or version 2+)'}
+      if V = fvDc40 then
+        Seed := ReadRaw(16)
+      else
+        Seed := ReadRaw(ReadByte);
+      {$ENDREGION}
+
+      {$REGION '8.5 KDF version (only version 4+)'}
+      // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
+      // For PBKDF2, a DWORD with the iterations follows
+      if V = fvDc50Wip then
+        KdfVersion := TKdfVersion(ReadByte)
+      else
+        KdfVersion := kvKdfx;
+      if KDFVersion = kvUnknown then {this will also be set if the value is too big}
+        raise Exception.Create('Invalid KDF version');
+      {$ENDREGION}
+
+      {$REGION '8.6 KDF Iterations (ONLY PRESENT for PBKDF2)'}
+      if KDFVersion = kvPbkdf2 then
+        KdfIterations := ReadLong
+      else
+        KdfIterations := 0;
+      {$ENDREGION}
+
+      {$REGION '9. Encrypted data'}
+      if not OnlyReadFileInfo then
+      begin
+        (* TODO:
+              Not implemented for version 3 (actually, I don't understand this description anymore):
+                    The "special-checksum" of a file can be used as the user password.
+                    The formula is:
+                       User-Password = Hash(File-Contents)
+                    Combined formula:
+                       Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
+              What I don't understand: How should the program know if the user password or the "hash" password is used??
+        *)
+        if KDFVersion = kvKdfx then
+          Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf1 then
+          Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf2 then
+          Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf3 then
+          Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvPbkdf2 then
+          Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
         else
-          Cipher.Mode := TCipherMode(ReadByte);
+          Assert(False);
 
-        // 7. Hash identity (only version 2+)
-        if V = fvDc40 then
-          HashClass := THash_SHA512
-        else
-          HashClass := DEC51_HashById(idBase, ReadLong);
-        AHash := HashClass.Create;
+        HMacKey := Key;
+      end;
 
-        // 7.5 IV (only version 4+)
-        if V = fvDc50Wip then
-          IV := BytesOf(ReadRaw(ReadByte));
+      // Verify HMAC before decrypting (the HMAC located below)
+      // TODO: VERIFY WHOLE FILE!!!
+      if not OnlyReadFileInfo and (V = fvDc50Wip) then
+      begin
+        bakSourcePosEncryptedData := Source.Position;
+        HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
+        Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
+        if ReadRaw(ahash.DigestSize) <> HashResult2 then
+          raise Exception.Create('HMAC mismatch');
+        Source.Position := bakSourcePosEncryptedData;
+      end;
 
-        // 7.6 Cipher block filling mode (only version 4+)
-        if V = fvDc50Wip then
-        begin
-          iBlockFillMode := ReadByte;
-          if integer(iBlockFillMode) > Ord(High(TBlockFillMode)) then
-            raise Exception.Create('Invalid block filling mode');
-          Cipher.FillMode := TBlockFillMode(iBlockFillMode);
-        end
-        else
-        begin
-          Cipher.FillMode := TBlockFillMode.fmByte;
-        end;
-
-        // 7.7 Last-Block-Filler (only version 4+)
-        if V = fvDc50Wip then
-          Filler := ReadByte
-        else
-          Filler := $FF;
-
-        // 8. Seed
-        if V = fvDc40 then
-          Seed := ReadRaw(16)
-        else
-          Seed := ReadRaw(ReadByte);
-
-        // 8.5 KDF version (only version 4+)
-        // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
-        // For PBKDF2, a DWORD with the iterations follows
-        if V = fvDc50Wip then
-          KdfVersion := TKdfVersion(ReadByte)
-        else
-          KdfVersion := kvKdfx;
-        if KDFVersion = kvUnknown then {this will also be set if the value is too big}
-          raise Exception.Create('Invalid KDF version');
-
-        // 8.6 KDF Iterations (ONLY PRESENT for PBKDF2)
-        if KDFVersion = kvPbkdf2 then
-          KdfIterations := ReadLong
-        else
-          KdfIterations := 0;
-
-        // 9. Encrypted data
-        if not OnlyReadFileInfo then
-        begin
-          (* TODO:
-                Not implemented for version 3 (actually, I don't understand this description anymore):
-                      The "special-checksum" of a file can be used as the user password.
-                      The formula is:
-                         User-Password = Hash(File-Contents)
-                      Combined formula:
-                         Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
-                What I don't understand: How should the program know if the user password or the "hash" password is used??
-          *)
-          if KDFVersion = kvKdfx then
-            Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-          else if KDFVersion = kvKdf1 then
-            Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-          else if KDFVersion = kvKdf2 then
-            Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-          else if KDFVersion = kvKdf3 then
-            Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
-          else if KDFVersion = kvPbkdf2 then
-            Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+      if not OnlyReadFileInfo then
+      begin
+        Cipher.Init(Key, IV, Filler);
+        try
+          if V = fvHagenReddmannExample then
+            TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, ReadLong, OnProgressProc)
           else
-            Assert(False);
-
-          HMacKey := Key;
-        end;
-
-        // Verify HMAC before decrypting (the HMAC located below)
-        if not OnlyReadFileInfo and (V = fvDc50Wip) then
-        begin
-          bakSourcePosEncryptedData := Source.Position;
-          HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
-          Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
-          if ReadRaw(ahash.DigestSize) <> HashResult2 then
-            raise Exception.Create('HMAC mismatch');
-          Source.Position := bakSourcePosEncryptedData;
-        end;
-
-        if not OnlyReadFileInfo then
-        begin
-          Cipher.Init(Key, IV, Filler);
-          try
             TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
-          finally
-            Cipher.Done;
-          end;
-        end;
-
-        // Decrypt filename (version 3 only)
-        if V = fvDc41FinalCancelled then
-        begin
-          if not FileNameUserPasswordEncrypted then
-          begin
-            FilenamePassword := RawByteString(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C);
-            if KDFVersion = kvKdfx then
-              Key := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-            else if KDFVersion = kvKdf1 then
-              Key := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-            else if KDFVersion = kvKdf2 then
-              Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-            else if KDFVersion = kvKdf3 then
-              Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
-            else if KDFVersion = kvPbkdf2 then
-              Key := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
-            else
-              Assert(False);
-          end;
-          Cipher.Init(Key, IV, Filler);
-          try
-            OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
-            if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
-            OrigName := WideString(PWideString(Pointer(OrigNameEncrypted)));
-          finally
-            Cipher.Done; // TODO: I don't understand, if Done() processes the last byte/block, it won't affect our string since we already got the result from DecodeRawByteString(). Asked here https://github.com/MHumm/DelphiEncryptionCompendium/issues/63
-          end;
-        end;
-
-        // 10. Checksum (version 1-3 hash on source, version 4+ hmac on ciphertext)
-        // (For version 4, the HMAC was checked above, before encrypting)
-        if not OnlyReadFileInfo and (V <> fvDc50Wip) then
-        begin
-          tempstream.position := 0;
-          if V = fvDc40 then
-          begin
-            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
-            HashResult2 := Convert(HashResult);
-          end
-          else if V = fvDc41Beta then
-          begin
-            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
-            HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
-          end
-          else if V = fvDc41FinalCancelled then
-          begin
-            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
-            HashResult2 := TDECHashExtended(ahash).CalcString(
-              Convert(HashResult) + Seed +
-                  TDECHashExtended(ahash).CalcString(
-                    Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
-                  , TFormat_Copy)
-            , TFormat_Copy);
-          end
-          else
-            Assert(False);
-          if ReadRaw(ahash.DigestSize) <> HashResult2 then
-            raise Exception.Create('Hash mismatch');
-        end;
-
-        // 11. Terminus (only version 2 and 3)
-        if OnlyReadFileInfo then Source.Position := Source.Size - Length(FileTerminus);
-        if (FileTerminus <> '') and (ReadRaw(Length(FileTerminus)) <> FileTerminus) then
-          raise Exception.Create('File terminus wrong');
-
-        if not OnlyReadFileInfo and IsCompressed then
-        begin
-          FreeAndNil(tempstream);
-          DeCoder4X_Decompress(ATempFileName, AOutput);
-        end;
-
-        if not OnlyReadFileInfo and IsFolder then
-        begin
-          // TODO: Extract ZIP (ver1-3) or 7zip (ver4) to folder
-          ShowMessage('Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool');
+        finally
+          Cipher.Done;
         end;
       end;
+      {$ENDREGION}
+
+      {$REGION 'Decrypt filename (version 3 only)'}
+      if V = fvDc41FinalCancelled then
+      begin
+        if not FileNameUserPasswordEncrypted then
+        begin
+          FilenamePassword := RawByteString(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C);
+          if KDFVersion = kvKdfx then
+            Key := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+          else if KDFVersion = kvKdf1 then
+            Key := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+          else if KDFVersion = kvKdf2 then
+            Key := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+          else if KDFVersion = kvKdf3 then
+            Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+          else if KDFVersion = kvPbkdf2 then
+            Key := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+          else
+            Assert(False);
+        end;
+        Cipher.Init(Key, IV, Filler);
+        try
+          OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
+          if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
+          OrigName := WideString(PWideString(Pointer(OrigNameEncrypted)));
+        finally
+          Cipher.Done; // TODO: I don't understand, if Done() processes the last byte/block, it won't affect our string since we already got the result from DecodeRawByteString(). Asked here https://github.com/MHumm/DelphiEncryptionCompendium/issues/63
+        end;
+      end;
+      {$ENDREGION}
+
+      {$REGION '10. Checksum (version 0 on cipher, 1-3 hash on source, version 4+ hmac on ciphertext)'}
+      // (For version 4, the HMAC was checked above, before encrypting)
+      if not OnlyReadFileInfo and (V <> fvDc50Wip) then
+      begin
+        if V = fvHagenReddmannExample then
+        begin
+          HashResult2 := Cipher.CalcMAC;
+        end
+        else if V = fvDc40 then
+        begin
+          tempstream.position := 0;
+          TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
+          HashResult2 := Convert(HashResult);
+        end
+        else if V = fvDc41Beta then
+        begin
+          tempstream.position := 0;
+          TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
+          HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
+        end
+        else if V = fvDc41FinalCancelled then
+        begin
+          tempstream.position := 0;
+          TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
+          HashResult2 := TDECHashExtended(ahash).CalcString(
+            Convert(HashResult) + Seed +
+                TDECHashExtended(ahash).CalcString(
+                  Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
+                , TFormat_Copy)
+          , TFormat_Copy);
+        end
+        else
+          Assert(False);
+
+        if (V= fvHagenReddmannExample) and (ReadRaw(ReadByte)         <> HashResult2) or
+           (V<>fvHagenReddmannExample) and (ReadRaw(ahash.DigestSize) <> HashResult2) then
+          raise Exception.Create('Hash mismatch');
+      end;
+      {$ENDREGION}
+
+      {$REGION '11. Terminus (only version 2 and 3)'}
+      if FileTerminus <> '' then
+      begin
+        if OnlyReadFileInfo then Source.Position := Source.Size - Length(FileTerminus);
+        if (ReadRaw(Length(FileTerminus)) <> FileTerminus) then
+          raise Exception.Create('File terminus wrong');
+      end;
+      {$ENDREGION}
+
+      {$REGION 'Decompress stuff'}
+      if not OnlyReadFileInfo and IsCompressed then
+      begin
+        FreeAndNil(tempstream);
+        DeCoder4X_Decompress(ATempFileName, AOutput);
+      end;
+
+      if not OnlyReadFileInfo and IsFolder then
+      begin
+        // TODO: Extract ZIP (ver1-3) or 7zip (ver4) to folder
+        ShowMessage('Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool');
+      end;
+      {$ENDREGION}
 
       ZeroMemory(@result, Sizeof(result));
       result.Dc4FormatVersion := V;
