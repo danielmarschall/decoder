@@ -486,7 +486,7 @@ Offset	Type	Size		Content/Description
 	Binary	var		With DEC 6.4 encrypted data (read until file end minus the size of the checksum)
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
 	Binary	var		HMAC checksum (Encrypt-then-HMAC)
-					= HMAC(HMacKey, EncryptedData)
+					= HMAC(HMacKey, Whole encrypted file)
 					with Key = Encryption-Password
 					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.

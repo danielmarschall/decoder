@@ -47,8 +47,9 @@ begin
   ShowMessage('ok');
 
   DeCoder4X_EncodeFile_Ver4('schloss_decoded.bmp', 'schloss.dc5', 'test', OnProgressProc);
+  ShowMessage('ok1');
   DeCoder4X_DecodeFile('schloss.dc5', 'schloss_decoded_dc5.bmp', 'test', false, OnProgressProc);
-  ShowMessage('ok');
+  ShowMessage('ok2');
 
 
 

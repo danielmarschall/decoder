@@ -373,13 +373,11 @@ begin
     try
       // Is it the Hagen Reddmann example file format?
       CipherClass := DEC51_CipherById(DC4_ID_BASES[fvHagenReddmannExample], ReadLong, true);
-      if Assigned(CipherClass) then
-        V := fvHagenReddmannExample
-      else
+      if not Assigned(CipherClass) then
         Source.Position := 0;
 
       {$REGION '1. Flags (version 1+)'}
-      if not Assigned(CipherClass) then // we need to check for CipherClass, because Version is ambigous
+      if not Assigned(CipherClass) then
       begin
         // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
         // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
@@ -417,7 +415,7 @@ begin
       {$ENDREGION}
 
       {$REGION '2. Version (version 1+)'}
-      if not Assigned(CipherClass) then // we need to check for CipherClass, because Version is ambigous
+      if not Assigned(CipherClass) then
       begin
         // 01 = (De)Coder 4.0
         // 02 = (De)Coder 4.1 Beta
@@ -425,10 +423,15 @@ begin
         // 04 = (De)Coder 5.0 WorkInProgress
         V := TDcFormatVersion(ReadByte); // if too big, it will automatically be set to fvHagenReddmannExample
         if V = fvHagenReddmannExample then raise Exception.Create('DC Unsupported version');
+      end
+      else
+      begin
+        V := fvHagenReddmannExample;
       end;
       {$ENDREGION}
 
       {$REGION 'Device about magic sequence / file terminus'}
+      // Note in re Hagen Redmann example: Now, V can be used to check it
       if (V = fvHagenReddmannExample) or (V = fvDc40) then
       begin
         MagicSeq := '';
@@ -460,6 +463,7 @@ begin
       {$ENDREGION}
 
       {$REGION '3. Filename (version 1+)'}
+      FileNameUserPasswordEncrypted := false;
       if V <> fvHagenReddmannExample then
       begin
         // Ver1: Clear text filename, terminated with "?"
@@ -467,7 +471,6 @@ begin
         // Ver3: Encrypted filename
         // Ver4: Clear text filename, with length byte in front of it
         OrigName := '';
-        FileNameUserPasswordEncrypted := false;
         if (V = fvDc40) or (V = fvDc41Beta) then
         begin
           ch := ReadRaw(1);
@@ -571,7 +574,7 @@ begin
         Filler := $FF;
       {$ENDREGION}
 
-      {$REGION '8. Seed with length prefix (only version 0 or version 2+)'}
+      {$REGION '8. Seed (only version 0 or version 2+)'}
       if V = fvDc40 then
         Seed := ReadRaw(16)
       else
@@ -596,7 +599,7 @@ begin
         KdfIterations := 0;
       {$ENDREGION}
 
-      {$REGION '9. Encrypted data'}
+      {$REGION 'Generate key used by HMAC and Cipher'}
       if not OnlyReadFileInfo then
       begin
         (* TODO:
@@ -623,19 +626,22 @@ begin
 
         HMacKey := Key;
       end;
+      {$ENDREGION}
 
-      // Verify HMAC before decrypting (the HMAC located below)
-      // TODO: VERIFY WHOLE FILE!!!
+      {$REGION 'Verify HMAC of whole file before decrypting (version 4+)'}
       if not OnlyReadFileInfo and (V = fvDc50Wip) then
       begin
         bakSourcePosEncryptedData := Source.Position;
+        Source.Position := 0;
         HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
         Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
         if ReadRaw(ahash.DigestSize) <> HashResult2 then
           raise Exception.Create('HMAC mismatch');
         Source.Position := bakSourcePosEncryptedData;
       end;
+      {$ENDREGION}
 
+      {$REGION '9. Encrypted data'}
       if not OnlyReadFileInfo then
       begin
         Cipher.Init(Key, IV, Filler);
@@ -680,7 +686,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '10. Checksum (version 0 on cipher, 1-3 hash on source, version 4+ hmac on ciphertext)'}
+      {$REGION '10. Checksum (version 0 on cipher, 1-3 hash on source, version 4+ hmac on encrypted file)'}
       // (For version 4, the HMAC was checked above, before encrypting)
       if not OnlyReadFileInfo and (V <> fvDc50Wip) then
       begin
@@ -834,7 +840,6 @@ var
   Filler: Byte;
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
-  bakTempStreamPosEncryptedData: Int64;
   tmp64: Int64;
   IsCompressed: boolean;
   IsFolder: boolean;
@@ -963,16 +968,15 @@ begin
     Cipher.Init(Key, IV, Filler);
     try
       Source.Position := 0;
-      bakTempStreamPosEncryptedData := tempstream.Position;
       TDECFormattedCipher(Cipher).EncodeStream(Source, tempstream, source.size, OnProgressProc);
     finally
       Cipher.Done;
     end;
 
-    // 10. Checksum (version 1-3 hash on source, version 4+ hmac on ciphertext)
+    // 10. Checksum (version 0 on cipher, 1-3 hash on source, version 4+ hmac on encrypted file)
     tmp64 := tempstream.Position;
-    tempstream.Position := bakTempStreamPosEncryptedData;
-    HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tempstream.size-tempstream.Position, OnProgressProc));
+    tempstream.Position := 0;
+    HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, OnProgressProc));
     tempstream.Position := tmp64;
     WriteRaw(HashResult2);
 
