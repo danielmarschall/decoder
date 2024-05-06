@@ -2,10 +2,6 @@ unit DecoderEncDec;
 
 interface
 
-// TODO: DC 5.0 Format:
-// - Hinzufügen  DEC C-MAC (optional)
-// - Hinzufügen  GCM MAC (optional)
-
 uses
   Windows, Dialogs, SysUtils, Classes, DECFormatBase, DECTypes,
   System.UITypes, DECCiphers, DECCipherBase, DECHash, DECHashBase,
@@ -86,7 +82,7 @@ procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString
 procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
 procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
 
-procedure DeCoder4X_EncodeFile_Ver4(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil; V:TDcFormatVersion=High(TDcFormatVersion));
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; const OnlyReadFileInfo: boolean=false; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
@@ -853,7 +849,7 @@ begin
     SameText(ExtractFileExt(AFileName), '.jpeg');
 end;
 
-procedure DeCoder4X_EncodeFile_Ver4(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil; V:TDcFormatVersion=High(TDcFormatVersion));
 var
   tempstream: TStream;
 
@@ -905,6 +901,12 @@ var
   ATempFileName: string;
   KdfIterations: long;
 begin
+  if V <> fvDc50Wip then
+  begin
+    // TODO: Maybe it would be nice if the user could decide which Format to choose!
+    raise Exception.Create('This sub-format can only be decoded but not encoded yet.');
+  end;
+
   tempstream := nil;
   Source := nil;
   cipher := nil;
@@ -950,12 +952,13 @@ begin
     if IsCompressed then F := F + 2;
     WriteByte(F);
 
-    // 2. Version
-    // 04 = (De)Coder 5.0 WorkInProgress
-    WriteByte(Ord(fvDc50Wip));
+    // 2. Version (version 1+)
+    if V>=fvDc40 then
+      WriteByte(Ord(V));
 
-    // 2.1 Magic Sequence (only version 4)
-    WriteRaw(DC4_OID);
+    // 2.1 Magic Sequence (only version 4+)
+    if (V>=fvDc50Wip) then
+      WriteRaw(DC4_OID);
 
     // 3. Filename
     // Ver4: Clear text filename, with length byte in front of it
@@ -968,21 +971,25 @@ begin
     WriteRaw(OrigName);
 
     // 4. IdBase (only version 2+)
-    idBase := DC4_ID_BASES[fvDc50Wip];
-    WriteLong(idBase);
+    idBase := DC4_ID_BASES[V];
+    if V >= fvDc41Beta then WriteLong(idBase);
 
-    // 5. Cipher identity (only version 2+)
+    // 5. Cipher identity (version 0 and 2+)
     CipherClass := TCipher_AES;
-    WriteLong(DEC51_Identity(idBase, CipherClass.ClassName));
+    if V <> fvDc40 then WriteLong(DEC51_Identity(idBase, CipherClass.ClassName));
     Cipher := CipherClass.Create;
 
-    // 6. Cipher mode (only version 2+)
+    // 6. Cipher mode (version 0 and 2+)
     Cipher.Mode := TCipherMode.cmCTSx;
-    WriteByte(Ord(Cipher.Mode));
+    if V <> fvDc40 then WriteByte(Ord(Cipher.Mode));
 
-    // 7. Hash identity (only version 2+)
-    HashClass := THash_SHA3_512;
-    WriteLong(DEC51_Identity(idBase, HashClass.ClassName));
+    // 7. Hash identity (version 0 and 2+)
+    HashClass := THash_SHA512;
+    if V <> fvDc40 then
+    begin
+      if V>=fvDc50Wip then HashClass := THash_SHA3_512;
+      WriteLong(DEC51_Identity(idBase, HashClass.ClassName));
+    end;
     AHash := HashClass.Create;
 
     // 7.5 IV (only version 4+)
@@ -1013,7 +1020,7 @@ begin
     if KdfVersion = kvPbkdf2 then WriteByte(KdfIterations);
 
     // 8.7 GCM Tag length (only if GCM mode)
-    if Cipher.Mode = cmGCM then
+    if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
     begin
       TDECFormattedCipher(Cipher).AuthenticationResultBitLength := 128 shr 3;
       WriteByte(TDECFormattedCipher(Cipher).AuthenticationResultBitLength);
@@ -1043,15 +1050,18 @@ begin
     end;
 
     // 9.1 DEC CalcMAC (not if ECB mode)
-    if Cipher.Mode <> cmECBx then
+    if ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode<>cmECBx) then
     begin
       HashResult2 := Cipher.CalcMAC;
-      Assert(Length(HashResult2) = Cipher.Context.BlockSize);
+      if V=fvHagenReddmannExample then
+        WriteByte(Length(HashResult2))
+      else
+        Assert(Length(HashResult2) = Cipher.Context.BlockSize);
       WriteRaw(HashResult2);
     end;
 
     // 9.2 GCM Tag (only if GCM mode)
-    if Cipher.Mode = cmGCM then
+    if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
     begin
       WriteRaw(Convert(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult));
     end;

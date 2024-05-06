@@ -51,9 +51,17 @@ begin
   DeCoder4X_DecodeFile('schloss.dc4', 'schloss_decoded.bmp', 'test', false, OnProgressProc);
   ShowMessage('ok');
 
-  DeCoder4X_EncodeFile_Ver4('schloss_decoded.bmp', 'schloss.dc5', 'test', OnProgressProc);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver0.dc5', 'test', OnProgressProc, fvHagenReddmannExample);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver1.dc5', 'test', OnProgressProc, fvDc40);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver2.dc5', 'test', OnProgressProc, fvDc41Beta);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', OnProgressProc, fvDc41FinalCancelled);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', OnProgressProc, fvDc50Wip);
   ShowMessage('ok1');
-  DeCoder4X_DecodeFile('schloss.dc5', 'schloss_decoded_dc5.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver0.dc5', 'schloss_decoded_dc5_ver0.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver1.dc5', 'schloss_decoded_dc5_ver1.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver2.dc5', 'schloss_decoded_dc5_ver2.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
   ShowMessage('ok2');
 
 
