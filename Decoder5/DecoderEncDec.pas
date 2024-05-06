@@ -43,7 +43,7 @@ const
   );
 
   INTEGRITY_CHECK_INFO: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of string = (
-    'CalcMac',
+    'DEC CalcMac',
     'Hash of source data',
     'Nested Hash of source data with password',
     'Nested Hash of source data with password',
@@ -385,6 +385,8 @@ var
   KdfIterations: Long;
   OrigNameEncrypted: RawByteString;
   iBlockFillMode: Byte;
+  cMac: RawByteString;
+  iTmp: integer;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   tempstream := nil;
@@ -662,18 +664,54 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '9. Encrypted data'}
+      {$REGION '8.7 GCM Tag Length (only version 4+)'}
+      if not OnlyReadFileInfo and (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then
+      begin
+        TDECFormattedCipher(Cipher).ExpectedAuthenticationResult := BytesOf(ReadRaw(ReadByte));
+      end;
+      {$ENDREGION}
+
+      {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
       if not OnlyReadFileInfo then
       begin
         Cipher.Init(Key, IV, Filler);
         try
           if V = fvHagenReddmannExample then
-            TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, ReadLong, OnProgressProc)
+          begin
+            TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, ReadLong, OnProgressProc);
+          end
           else
-            TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc);
+          begin
+            iTmp := source.size - source.Position;
+            if ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode <> cmECBx) then Dec(iTmp, Cipher.Context.BlockSize{CalcMac}); // field 9.1
+            if (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then Dec(iTmp, TDECFormattedCipher(Cipher).AuthenticationResultBitLength); // field 9.2
+            Dec(iTmp, ahash.DigestSize{Hash/HMAC}); // field 10
+            Dec(iTmp, Length(FileTerminus)); // field 11
+            TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, iTmp, OnProgressProc);
+          end;
         finally
           Cipher.Done;
         end;
+      end;
+      {$ENDREGION}
+
+      {$REGION '9.1 DEC CalcMAC (version 0 with length prefix, version 4+ without)'}
+      if not OnlyReadFileInfo and ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode <> cmECBx) then
+      begin
+        if V=fvHagenReddmannExample then
+          cMac := ReadRaw(ReadByte)
+        else
+          cMac := ReadRaw(Cipher.Context.BlockSize);
+        if cMac <> Cipher.CalcMAC then
+          raise Exception.Create('DEC CalcMAC mismatch');
+      end;
+      {$ENDREGION}
+
+      {$REGION '9.2 GCM Tag (only version 4+)'}
+      if not OnlyReadFileInfo and (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then
+      begin
+        if TDECFormattedCipher(Cipher).CalculatedAuthenticationResult <> BytesOf(ReadRaw(TDECFormattedCipher(Cipher).AuthenticationResultBitLength)) then
+          raise Exception.Create('GCM Auth Tag mismatch');
       end;
       {$ENDREGION}
 
@@ -707,15 +745,11 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '10. Checksum (version 0 on cipher, 1-3 hash on source, version 4+ hmac on encrypted file)'}
-      // (For version 4, the HMAC was checked above, before encrypting)
-      if not OnlyReadFileInfo and (V < fvDc50Wip) then
+      {$REGION '10. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
+      // (For version 4, the HMAC was checked above, before encrypting, so we exclude the check here)
+      if not OnlyReadFileInfo and (V >= fvDc40) and (V < fvDc50Wip) then
       begin
-        if V = fvHagenReddmannExample then
-        begin
-          HashResult2 := Cipher.CalcMAC;
-        end
-        else if V = fvDc40 then
+        if V = fvDc40 then
         begin
           tempstream.position := 0;
           TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
@@ -741,9 +775,13 @@ begin
         else
           Assert(False);
 
-        if (V= fvHagenReddmannExample) and (ReadRaw(ReadByte)         <> HashResult2) or
-           (V<>fvHagenReddmannExample) and (ReadRaw(ahash.DigestSize) <> HashResult2) then
-          raise Exception.Create('Hash mismatch');
+        if ReadRaw(ahash.DigestSize) <> HashResult2 then
+        begin
+          if V >= fvDc50Wip then
+            raise Exception.Create('HMAC mismatch')
+          else
+            raise Exception.Create('Hash mismatch');
+        end;
       end;
       {$ENDREGION}
 
@@ -969,7 +1007,17 @@ begin
     // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
     KdfVersion := kvKdfx;
     WriteByte(Ord(KdfVersion));
-    KdfIterations := 0; // only for KdfVersion=kvPbkdf2
+
+    // 8.6 PBKDF Iterations (only for KdfVersion=kvPbkdf2)
+    KdfIterations := 0;
+    if KdfVersion = kvPbkdf2 then WriteByte(KdfIterations);
+
+    // 8.7 GCM Tag length (only if GCM mode)
+    if Cipher.Mode = cmGCM then
+    begin
+      TDECFormattedCipher(Cipher).AuthenticationResultBitLength := 128 shr 3;
+      WriteByte(TDECFormattedCipher(Cipher).AuthenticationResultBitLength);
+    end;
 
     // 9. Encrypted data
     if KDFVersion = kvKdfx then
@@ -994,12 +1042,29 @@ begin
       Cipher.Done;
     end;
 
-    // 10. Checksum (version 0 on cipher, 1-3 hash on source, version 4+ hmac on encrypted file)
+    // 9.1 DEC CalcMAC (not if ECB mode)
+    if Cipher.Mode <> cmECBx then
+    begin
+      HashResult2 := Cipher.CalcMAC;
+      Assert(Length(HashResult2) = Cipher.Context.BlockSize);
+      WriteRaw(HashResult2);
+    end;
+
+    // 9.2 GCM Tag (only if GCM mode)
+    if Cipher.Mode = cmGCM then
+    begin
+      WriteRaw(Convert(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult));
+    end;
+
+    // 10. HMAC of whole encrypted file (except HMAC part)
     tmp64 := tempstream.Position;
     tempstream.Position := 0;
     HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, OnProgressProc));
     tempstream.Position := tmp64;
     WriteRaw(HashResult2);
+
+    // 11. File Terminus
+    // (not present)
 
   finally
     if Assigned(Source) then FreeAndNil(Source);

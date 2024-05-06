@@ -133,28 +133,29 @@ begin
   Cipher.Done;
 end;
 
-function Are2FilesEqual(const File1, File2: TFileName): Boolean;
-var
-  ms1, ms2: TMemoryStream;
-begin
-  Result := False;
-  ms1 := TMemoryStream.Create;
-  try
-    ms1.LoadFromFile(File1);
-    ms2 := TMemoryStream.Create;
-    try
-      ms2.LoadFromFile(File2);
-      if ms1.Size = ms2.Size then
-        Result := CompareMem(ms1.Memory, ms2.memory, ms1.Size);
-    finally
-      ms2.Free;
-    end;
-  finally
-    ms1.Free;
-  end
-end;
-
 procedure TFormMain.Button3Click(Sender: TObject);
+
+  function Are2FilesEqual(const File1, File2: TFileName): Boolean;
+  var
+    ms1, ms2: TMemoryStream;
+  begin
+    Result := False;
+    ms1 := TMemoryStream.Create;
+    try
+      ms1.LoadFromFile(File1);
+      ms2 := TMemoryStream.Create;
+      try
+        ms2.LoadFromFile(File2);
+        if ms1.Size = ms2.Size then
+          Result := CompareMem(ms1.Memory, ms2.memory, ms1.Size);
+      finally
+        ms2.Free;
+      end;
+    finally
+      ms1.Free;
+    end
+  end;
+
 begin
   DeCoder20_EncodeFile('TestData\dc20_256zero_in.txt', 'TestData\dc20_256zero_out.tmp', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc20_256zero_out.txt', 'TestData\dc20_256zero_out.tmp'));
@@ -164,6 +165,7 @@ begin
   Assert(Are2FilesEqual('TestData\dc20_test_out.txt', 'TestData\dc20_test_out.tmp'));
   DeleteFile('TestData\dc20_test_out.tmp');
 
+
   DeCoder22_EncodeFile('TestData\dc22_256zero_in.txt', 'TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc22_256zero_out_61.txt', 'TestData\dc22_256zero_out_61.tmp'));
   DeleteFile('TestData\dc22_256zero_out_61.tmp');
@@ -171,6 +173,7 @@ begin
   DeCoder22_EncodeFile('TestData\dc22_test_in.txt', 'TestData\dc22_test_out_61.tmp', 61, OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc22_test_out_61.txt', 'TestData\dc22_test_out_61.tmp'));
   DeleteFile('TestData\dc22_test_out_61.tmp');
+
 
   DeCoder30_EncodeFile('TestData\dc30_256zero_in.txt', 'TestData\dc30_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc30_256zero_out_foobar.txt', 'TestData\dc30_256zero_out_foobar.tmp'));
@@ -180,17 +183,19 @@ begin
   Assert(Are2FilesEqual('TestData\dc30_test_out_foobar.txt', 'TestData\dc30_test_out_foobar.tmp'));
   DeleteFile('TestData\dc30_test_out_foobar.tmp');
 
+
   DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc32_256zero_out_foobar.txt', 'TestData\dc32_256zero_out_foobar.tmp'));
   DeleteFile('TestData\dc32_256zero_out_foobar.tmp');
+
+  DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc32_256zero_out_abcdefg.txt', 'TestData\dc32_256zero_out_abcdefg.tmp'));
+  DeleteFile('TestData\dc32_256zero_out_abcdefg.tmp');
 
   DeCoder32_EncodeFile('TestData\dc32_test_in.txt', 'TestData\dc32_test_out_foobar.tmp', 'foobar', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc32_test_out_foobar.txt', 'TestData\dc32_test_out_foobar.tmp'));
   DeleteFile('TestData\dc32_test_out_foobar.tmp');
 
-  DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc32_256zero_out_abcdefg.txt', 'TestData\dc32_256zero_out_abcdefg.tmp'));
-  DeleteFile('TestData\dc32_256zero_out_abcdefg.tmp');
 
   ShowMessage('Alles OK');
 end;
