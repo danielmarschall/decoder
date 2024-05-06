@@ -11,7 +11,11 @@ type
     Button1: TButton;
     ProgressBar1: TProgressBar;
     Memo1: TMemo;
+    Button2: TButton;
+    Button3: TButton;
     procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   end;
 
 var
@@ -20,7 +24,8 @@ var
 implementation
 
 uses
-  DecoderEncDec, DECTypes;
+  DecoderEncDec, DECTypes, DecoderOldCiphers, DECCipherBase, DECCiphers,
+  DECCipherFormats;
 
 {$R *.dfm}
 
@@ -109,5 +114,59 @@ begin
   end;
 end;
 *)
+
+procedure TFormMain.Button2Click(Sender: TObject);
+var
+  Cipher: TDECCipher;
+  s: RawByteString;
+begin
+  Cipher := TCipher_Dc30.Create;
+  Cipher.Init('', '', $FF);
+  Cipher.Mode := cmECBx;
+  s := Cipher.EncodeRawByteString('Hello');
+  memo1.Lines.Add(s);
+  Cipher.Done;
+
+  Cipher.Init('', '', $FF);
+  Cipher.Mode := cmECBx;
+  memo1.Lines.Add(Cipher.DecodeRawByteString(s));
+  Cipher.Done;
+
+end;
+
+function Convert(const Bytes: TBytes): RawByteString;
+begin
+  SetLength(Result, Length(Bytes));
+  Move(Bytes[0], Result[1], Length(Bytes))
+end;
+
+procedure TFormMain.Button3Click(Sender: TObject);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\test_in.txt', fmOpenRead);
+  ssOut := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\test_out_foobar_2.txt', fmCreate);
+  Cipher := TCipher_Dc30.Create;
+  Cipher.Init(AnsiString('foobar'), AnsiString(''), $FF);
+  Cipher.Mode := cmECBx;
+  TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size);
+  Cipher.Done;
+  ssIn.Free;
+  ssOut.Free;
+
+  ssIn := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\256zero_in.txt', fmOpenRead);
+  ssOut := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\256zero_out_foobar_2.txt', fmCreate);
+//  Cipher := TCipher_Dc30.Create;
+//  Cipher.Init(AnsiString('foobar'), AnsiString(''), $FF);
+  Cipher.Mode := cmECBx;
+  TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size);
+  Cipher.Done;
+  ssIn.Free;
+  ssOut.Free;
+
+  Cipher.Free;
+end;
 
 end.

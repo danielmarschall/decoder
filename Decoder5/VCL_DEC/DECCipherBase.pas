@@ -694,7 +694,7 @@ type
     ///   Exception raised if the length of the data passed as <c>Source</c>
     ///   is not a multiple of the algorithm's block size.
     /// </exception>
-    function DecodeBytes(const Source: TBytes; Format: TDECFormatClass): TBytes;
+    function DecodeBytes(const Source: TBytes; Format: TDECFormatClass = nil): TBytes;
 
     // CalcMACBytes deferred since the current implementation would neither be
     // performant (that would require another TFormatBase.Encode variant from
@@ -1047,7 +1047,9 @@ procedure TDECCipher.Init(const Key, IVector: WideString; IFiller: Byte);
 begin
   // GCM allows empty key as the authentication still works
   if (Length(Key) = 0) and (not (ctNull in Context.CipherType)) and
-     (not (FMode = cmGCM)) then
+     (not (FMode = cmGCM)) and
+     (Context.KeySize > 0) // added Daniel Marschall 06.05.2024, PR https://github.com/MHumm/DelphiEncryptionCompendium/pull/68
+  then
     raise EDECCipherException.CreateRes(@sNoKeyMaterialGiven);
 
   if Length(IVector) > 0 then
@@ -1137,6 +1139,8 @@ begin
     // https://quality.embarcadero.com/browse/RSP-20574
     // This has been fixed in 10.3.0 Rio
     b := ValidFormat(Format).Decode(BytesOf(Source));
+
+    SetLength(Result, Length(b)); // PR https://github.com/MHumm/DelphiEncryptionCompendium/pull/69
 
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     DoDecode(@b[0], @Result[Low(Result)], Length(Result) * SizeOf(Result[Low(Result)]));

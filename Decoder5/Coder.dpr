@@ -16,7 +16,8 @@ uses
   DECUtilRawByteStringHelper in '..\..\Source\DECUtilRawByteStringHelper.pas',
   DECFormatBase in '..\..\Source\DECFormatBase.pas',
   DECData in '..\..\Source\DECData.pas',
-  DecoderEncDec in 'DecoderEncDec.pas';
+  DecoderEncDec in 'DecoderEncDec.pas',
+  DecoderOldCiphers in 'DecoderOldCiphers.pas';
 
 {$R *.res}
 

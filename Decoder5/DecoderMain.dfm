@@ -48,4 +48,22 @@ object FormMain: TFormMain
     ParentFont = False
     TabOrder = 2
   end
+  object Button2: TButton
+    Left = 248
+    Top = 104
+    Width = 153
+    Height = 49
+    Caption = 'Button2'
+    TabOrder = 3
+    OnClick = Button2Click
+  end
+  object Button3: TButton
+    Left = 432
+    Top = 96
+    Width = 145
+    Height = 65
+    Caption = 'Button3'
+    TabOrder = 4
+    OnClick = Button3Click
+  end
 end

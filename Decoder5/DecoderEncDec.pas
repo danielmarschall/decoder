@@ -189,6 +189,7 @@ begin
   if cn = 'THash_SHA0'{DEC6.0} then cn := 'THash_SHA'{DEC5.1};
   if cn = 'THash_Whirlpool0'{DEC6.0} then cn := 'THash_Whirlpool'{DEC5.1};
   if cn = 'TCipher_AES'{DEC6.0} then cn := 'TCipher_Rijndael'{DEC5.1};
+  if cn = 'TCipher_Magma' then cn := 'TCipher_Gost'; // TCipher_Magma is an alias for TCipher_Gost
   Signature := AnsiString(StringOfChar(#$5A, 256 - Length(cn)) + AnsiUpperCase(cn));
   Result := CRC32(IdentityBase, Signature[1], Length(Signature));
 end;
@@ -679,7 +680,7 @@ begin
           if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
           OrigName := WideString(PWideString(Pointer(OrigNameEncrypted)));
         finally
-          Cipher.Done; // TODO: I don't understand, if Done() processes the last byte/block, it won't affect our string since we already got the result from DecodeRawByteString(). Asked here https://github.com/MHumm/DelphiEncryptionCompendium/issues/63
+          Cipher.Done;
         end;
       end;
       {$ENDREGION}
