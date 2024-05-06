@@ -120,7 +120,7 @@ var
   Cipher: TDECCipher;
   s: RawByteString;
 begin
-  Cipher := TCipher_Dc30.Create;
+  Cipher := TCipher_VtsDeCoder30.Create;
   Cipher.Init('', '', $FF);
   Cipher.Mode := cmECBx;
   s := Cipher.EncodeRawByteString('Hello');
@@ -131,42 +131,68 @@ begin
   Cipher.Mode := cmECBx;
   memo1.Lines.Add(Cipher.DecodeRawByteString(s));
   Cipher.Done;
-
 end;
 
-function Convert(const Bytes: TBytes): RawByteString;
+function Are2FilesEqual(const File1, File2: TFileName): Boolean;
+var
+  ms1, ms2: TMemoryStream;
 begin
-  SetLength(Result, Length(Bytes));
-  Move(Bytes[0], Result[1], Length(Bytes))
+  Result := False;
+  ms1 := TMemoryStream.Create;
+  try
+    ms1.LoadFromFile(File1);
+    ms2 := TMemoryStream.Create;
+    try
+      ms2.LoadFromFile(File2);
+      if ms1.Size = ms2.Size then
+        Result := CompareMem(ms1.Memory, ms2.memory, ms1.Size);
+    finally
+      ms2.Free;
+    end;
+  finally
+    ms1.Free;
+  end
 end;
 
 procedure TFormMain.Button3Click(Sender: TObject);
-var
-  ssIn: TFileStream;
-  ssOut: TFileStream;
-  Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\test_in.txt', fmOpenRead);
-  ssOut := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\test_out_foobar_2.txt', fmCreate);
-  Cipher := TCipher_Dc30.Create;
-  Cipher.Init(AnsiString('foobar'), AnsiString(''), $FF);
-  Cipher.Mode := cmECBx;
-  TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size);
-  Cipher.Done;
-  ssIn.Free;
-  ssOut.Free;
+  DeCoder20_EncodeFile('TestData\dc20_256zero_in.txt', 'TestData\dc20_256zero_out.tmp', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc20_256zero_out.txt', 'TestData\dc20_256zero_out.tmp'));
+  DeleteFile('TestData\dc20_256zero_out.tmp');
 
-  ssIn := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\256zero_in.txt', fmOpenRead);
-  ssOut := TFileStream.Create('c:\SVN\Decoder\trunk\History\Decoder30\256zero_out_foobar_2.txt', fmCreate);
-//  Cipher := TCipher_Dc30.Create;
-//  Cipher.Init(AnsiString('foobar'), AnsiString(''), $FF);
-  Cipher.Mode := cmECBx;
-  TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size);
-  Cipher.Done;
-  ssIn.Free;
-  ssOut.Free;
+  DeCoder20_EncodeFile('TestData\dc20_test_in.txt', 'TestData\dc20_test_out.tmp', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc20_test_out.txt', 'TestData\dc20_test_out.tmp'));
+  DeleteFile('TestData\dc20_test_out.tmp');
 
-  Cipher.Free;
+  DeCoder22_EncodeFile('TestData\dc22_256zero_in.txt', 'TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc22_256zero_out_61.txt', 'TestData\dc22_256zero_out_61.tmp'));
+  DeleteFile('TestData\dc22_256zero_out_61.tmp');
+
+  DeCoder22_EncodeFile('TestData\dc22_test_in.txt', 'TestData\dc22_test_out_61.tmp', 61, OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc22_test_out_61.txt', 'TestData\dc22_test_out_61.tmp'));
+  DeleteFile('TestData\dc22_test_out_61.tmp');
+
+  DeCoder30_EncodeFile('TestData\dc30_256zero_in.txt', 'TestData\dc30_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc30_256zero_out_foobar.txt', 'TestData\dc30_256zero_out_foobar.tmp'));
+  DeleteFile('TestData\dc30_256zero_out_foobar.tmp');
+
+  DeCoder30_EncodeFile('TestData\dc30_test_in.txt', 'TestData\dc30_test_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc30_test_out_foobar.txt', 'TestData\dc30_test_out_foobar.tmp'));
+  DeleteFile('TestData\dc30_test_out_foobar.tmp');
+
+  DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc32_256zero_out_foobar.txt', 'TestData\dc32_256zero_out_foobar.tmp'));
+  DeleteFile('TestData\dc32_256zero_out_foobar.tmp');
+
+  DeCoder32_EncodeFile('TestData\dc32_test_in.txt', 'TestData\dc32_test_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc32_test_out_foobar.txt', 'TestData\dc32_test_out_foobar.tmp'));
+  DeleteFile('TestData\dc32_test_out_foobar.tmp');
+
+  DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc32_256zero_out_abcdefg.txt', 'TestData\dc32_256zero_out_abcdefg.tmp'));
+  DeleteFile('TestData\dc32_256zero_out_abcdefg.tmp');
+
+  ShowMessage('Alles OK');
 end;
 
 end.

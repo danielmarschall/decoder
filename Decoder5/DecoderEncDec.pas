@@ -2,6 +2,10 @@ unit DecoderEncDec;
 
 interface
 
+// TODO: DC 5.0 Format:
+// - Hinzufügen  DEC C-MAC (optional)
+// - Hinzufügen  GCM MAC (optional)
+
 uses
   Windows, Dialogs, SysUtils, Classes, DECFormatBase, DECTypes,
   System.UITypes, DECCiphers, DECCipherBase, DECHash, DECHashBase,
@@ -67,11 +71,29 @@ const
     'Bytes'
   );
 
+procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+
+procedure DeCoder21_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder21_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+
+procedure DeCoder22_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder22_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+
+procedure DeCoder30_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+
+procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+
 procedure DeCoder4X_EncodeFile_Ver4(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil);
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; const OnlyReadFileInfo: boolean=false; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
 implementation
+
+uses
+  DecoderOldCiphers;
 
 type
   // https://github.com/MHumm/DelphiEncryptionCompendium/issues/62
@@ -1018,6 +1040,246 @@ begin
   sl.Add('Cipher Mode: ' + CIPHER_MODE_NAMES[fi.CipherMode]);
   sl.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode]);
   sl.Add('Message Authentication: ' + INTEGRITY_CHECK_INFO[fi.Dc4FormatVersion]);
+end;
+
+procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder20.Create;
+      Cipher.Init(AnsiString(''), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder20.Create;
+      Cipher.Init(AnsiString(''), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder21_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder21.Create;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder21_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder21.Create;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder22_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder22.Create;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder22_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder22.Create;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder30_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder30.Create;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder30.Create;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder32.Create;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
+end;
+
+procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+var
+  ssIn: TFileStream;
+  ssOut: TFileStream;
+  Cipher: TDECCipher;
+begin
+  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    ssOut := TFileStream.Create(AOutput, fmCreate);
+    try
+      Cipher := TCipher_VtsDeCoder32.Create;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+      Cipher.Mode := cmECBx;
+      TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+      Cipher.Done;
+      Cipher.Free;
+    finally
+      ssOut.Free;
+    end;
+  finally
+    ssIn.Free;
+  end;
 end;
 
 initialization

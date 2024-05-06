@@ -998,7 +998,7 @@ procedure TDECCipher.Init(const Key     : RawByteString;
 begin
   // GCM allows empty key as the authentication still works
   if (Length(Key) = 0) and (not (ctNull in Context.CipherType)) and
-     (not (FMode = cmGCM)) then
+     (not (FMode = cmGCM)) and (Context.KeySize<>0) then
     raise EDECCipherException.CreateRes(@sNoKeyMaterialGiven);
 
   if Length(IVector) > 0 then
