@@ -43,7 +43,7 @@ begin
   inherited;
   SetLength(FKey, Size);
   Move(Key, FKey[0], Size);
-  FKeyPos := -1; // first byte is garbage, because there is one DoEncode round for IV in TDECCipher.Init, even if IV is empty
+  FKeyPos := Length(FKey)-1; // Use "-1", not 0, because there is one DoEncode round for IV in TDECCipher.Init, even if IV is empty
 end;
 
 procedure TCipher_Dc30.DoEncode(Source, Dest: Pointer; Size: Integer);
