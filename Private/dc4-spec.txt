@@ -87,7 +87,7 @@ Offset	Type	Size		Content/Description
 					0x7E3889A5	THash_SHA1 (DigestSize: 20, BlockSize: 64, default)
  					0x9BFE22E7	THash_SHA256 (DigestSize: 32, BlockSize: 64)
 					0xC19C57B1	THash_SHA384 (DigestSize: 48, BlockSize: 128)
-					0xFDB0357F	THash_SHA512 (DigestSize: 64, BlockSize: 128, default)
+					0xFDB0357F	THash_SHA512 (DigestSize: 64, BlockSize: 128)
 					0x815B1495	THash_Sapphire (DigestSize: 64, BlockSize: 1)
 					0x3729E306	THash_Panama (DigestSize: 32, BlockSize: 32)
 					0x0B148DEE	THash_Tiger (DigestSize: 24, BlockSize: 64)
@@ -107,7 +107,7 @@ Offset	Type	Size		Content/Description
 					0x4C91953A	THash_Snefru256 (DigestSize: 32, BlockSize: 32)
 09h	Byte	1		Size of seed (Default value: 16 Bytes)
 0Ah	Binary	0-255		Seed (Random data)
-	Long	4		Size of data
+	Long	4		Size of source data
 	Binary	var		DEC 5.1c encrypted data; Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 	Byte	1		Size of DEC CalcMAC
 	Binary	0-255		DEC's "CalcMAC"; This is a C-MAC which is the encryption of the last block concatention feedback.
