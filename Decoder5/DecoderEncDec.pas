@@ -725,13 +725,20 @@ begin
           else
             Assert(False);
         end;
-        Cipher.Init(Key, IV, Filler);
-        try
-          OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
-          if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
-          OrigName := WideString(PWideString(Pointer(OrigNameEncrypted)));
-        finally
-          Cipher.Done;
+        if OnlyReadFileInfo and (Length(Key)=0) then
+        begin
+          OrigName := '(Encrypted)';
+        end
+        else
+        begin
+          Cipher.Init(Key, IV, Filler);
+          try
+            OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
+            if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
+            OrigName := WideString(PWideString(Pointer(OrigNameEncrypted)));
+          finally
+            Cipher.Done;
+          end;
         end;
       end;
       {$ENDREGION}
@@ -958,7 +965,7 @@ begin
     else
       Seed := Convert(RandomBytes(16));
 
-    FileNameUserPasswordEncrypted := true; // only version 3
+    FileNameUserPasswordEncrypted := true; // only used in version 3
     {$ENDREGION}
 
     {$REGION 'Generate key used by HMAC and Cipher'}
