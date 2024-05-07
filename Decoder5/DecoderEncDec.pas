@@ -107,7 +107,7 @@ class function TDECHashExtendedAuthentication.HMACFile(const Key: TBytes;
 var
   fs: TFileStream;
 begin
-  fs := TFileStream.Create(FileName, fmOpenRead);
+  fs := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     HMACStream(Key, fs, fs.Size, OnProgress);
   finally
@@ -270,7 +270,7 @@ var
   CompressOutputStream: TFileStream;
   CompressionStream: TCompressionStream;
 begin
-  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead);
+  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
@@ -296,7 +296,7 @@ var
   CompressOutputStream: TFileStream;
   DecompressionStream: TDecompressionStream;
 begin
-  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead);
+  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
@@ -384,7 +384,7 @@ var
   cMac: RawByteString;
   iTmp: integer;
 begin
-  Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+  Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   tempstream := nil;
   cipher := nil;
   ahash := nil;
@@ -411,11 +411,6 @@ begin
         F := ReadByte;
         IsFolder := (F and 1) <> 0;
         IsCompressed := (F and 2) <> 0;
-      end
-      else
-      begin
-        IsCompressed := false;
-        IsFolder := false;
       end;
       {$ENDREGION}
 
@@ -424,12 +419,12 @@ begin
       begin
         ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
         if not OnlyReadFileInfo then
-          tempstream := TFileStream.Create(ATempFileName, fmOpenReadWrite or fmCreate);
+          tempstream := TFileStream.Create(ATempFileName, fmCreate);
       end
       else
       begin
         if not OnlyReadFileInfo then
-          tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+          tempstream := TFileStream.Create(AOutput, fmCreate);
       end;
       if not OnlyReadFileInfo then
         tempstream.Size := 0;
@@ -451,7 +446,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION 'Device about magic sequence / file terminus'}
+      {$REGION 'Decide about magic sequence / file terminus'}
       // Note in re Hagen Redmann example: Now, V can be used to check it
       if (V = fvHagenReddmannExample) or (V = fvDc40) then
       begin
@@ -461,7 +456,7 @@ begin
       else if V = fvDc41Beta then
       begin
         MagicSeq := '';
-        FileTerminus := 'RENURVJNSU5VUw=='; // (BASE64: "DCTERMINUS")
+        FileTerminus := RawByteString(TNetEncoding.Base64.Encode('DCTERMINUS'));
       end
       else if V = fvDc41FinalCancelled then
       begin
@@ -502,7 +497,7 @@ begin
           end;
           if V = fvDc41Beta then
           begin
-            OrigName := string(Convert(DecodeBase64(AnsiString(OrigName))));
+            OrigName := TNetEncoding.Base64.Decode(OrigName);
           end;
         end
         else if V = fvDc41FinalCancelled then
@@ -852,6 +847,11 @@ end;
 procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil; V:TDcFormatVersion=High(TDcFormatVersion));
 var
   tempstream: TStream;
+  FileNameKey: TBytes;
+  FilenamePassword: RawByteString;
+  OrigNameEncrypted: RawByteString;
+  HashResult: TBytes;
+  FileNameUserPasswordEncrypted: Boolean;
 
   procedure Write(var Value; Size: Integer);
   begin
@@ -901,20 +901,13 @@ var
   ATempFileName: string;
   KdfIterations: long;
 begin
-  if V <> fvDc50Wip then
-  begin
-    // TODO: Maybe it would be nice if the user could decide which Format to choose!
-    raise Exception.Create('This sub-format can only be decoded but not encoded yet.');
-  end;
-
   tempstream := nil;
   Source := nil;
   cipher := nil;
   ahash := nil;
   IsCompressed := false;
-  IsFolder := false;
+  IsFolder := DirectoryExists(AFileName);
   try
-    IsFolder := DirectoryExists(AFileName);
     if IsFolder then
     begin
       // TODO: Implement Zipping
@@ -923,110 +916,52 @@ begin
       raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
     end;
 
+    {$REGION 'Compress stream if the file type is not already compressed'}
     IsCompressed := not IsCompressedFileType(AFileName);
-    if IsCompressed then
+    if IsCompressed and (V>=fvDc40) then
     begin
       ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
       DeCoder4X_Compress(AFileName, ATempFileName);
-      Source := TFileStream.Create(ATempFileName, fmOpenRead or fmShareDenyNone);
+      Source := TFileStream.Create(ATempFileName, fmOpenRead or fmShareDenyWrite);
     end
     else
     begin
-      Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+      Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
     end;
+    {$ENDREGION}
 
-    tempstream := TFileStream.Create(AOutput, fmOpenReadWrite or fmCreate);
+    tempstream := TFileStream.Create(AOutput, fmCreate);
     tempstream.Size := 0;
 
-    // 1. Flags
-    // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
-    // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
-    // Bit 2:    Reserved
-    // Bit 3:    Reserved
-    // Bit 4:    Reserved
-    // Bit 5:    Reserved
-    // Bit 6:    Reserved
-    // Bit 7:    Reserved
-    F := 0;
-    if IsFolder then F := F + 1;
-    if IsCompressed then F := F + 2;
-    WriteByte(F);
-
-    // 2. Version (version 1+)
-    if V>=fvDc40 then
-      WriteByte(Ord(V));
-
-    // 2.1 Magic Sequence (only version 4+)
-    if (V>=fvDc50Wip) then
-      WriteRaw(DC4_OID);
-
-    // 3. Filename
-    // Ver4: Clear text filename, with length byte in front of it
-    // Possible values:
-    // - Original name in its entirety (example "foobar.txt")
-    // - Just its extension (example "*.txt")
-    // - Redacted (empty string "")
-    OrigName := UTF8Encode(ExtractFileName(AFileName));
-    WriteByte(Length(OrigName));
-    WriteRaw(OrigName);
-
-    // 4. IdBase (only version 2+)
-    idBase := DC4_ID_BASES[V];
-    if V >= fvDc41Beta then WriteLong(idBase);
-
-    // 5. Cipher identity (version 0 and 2+)
+    {$REGION 'Set default cipher/hash parameters'}
     CipherClass := TCipher_AES;
-    if V <> fvDc40 then WriteLong(DEC51_Identity(idBase, CipherClass.ClassName));
     Cipher := CipherClass.Create;
-
-    // 6. Cipher mode (version 0 and 2+)
     Cipher.Mode := TCipherMode.cmCTSx;
-    if V <> fvDc40 then WriteByte(Ord(Cipher.Mode));
-
-    // 7. Hash identity (version 0 and 2+)
-    HashClass := THash_SHA512;
-    if V <> fvDc40 then
-    begin
-      if V>=fvDc50Wip then HashClass := THash_SHA3_512;
-      WriteLong(DEC51_Identity(idBase, HashClass.ClassName));
-    end;
-    AHash := HashClass.Create;
-
-    // 7.5 IV (only version 4+)
-    WriteByte(16);
-    IV := RandomBytes(16);
-    WriteRaw(Convert(IV));
-
-    // 7.6 Cipher block filling mode (only version 4+)
     Cipher.FillMode := TBlockFillMode.fmByte;
-    WriteByte(Ord(Cipher.FillMode));
-
-    // 7.7 Last-Block-Filler (only version 4+)
+    if V >= fvDc50Wip then
+      IV := RandomBytes(16)
+    else
+      SetLength(IV, 0);
     Filler := $FF;
-    WriteByte(Filler);
 
-    // 8. Seed
-    WriteByte(32);
-    Seed := Convert(RandomBytes(32));
-    WriteRaw(Seed);
-
-    // 8.5 KDF version (only version 4+)
-    // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
+    if V = fvHagenReddmannExample then
+      HashClass := THash_SHA1
+    else if V<fvDc50Wip then
+      HashClass := THash_SHA512
+    else
+      HashClass := THash_SHA3_512;
+    AHash := HashClass.Create;
     KdfVersion := kvKdfx;
-    WriteByte(Ord(KdfVersion));
+    KdfIterations := 0; // only for KdfVersion=kvPbkdf2
+    if V >= fvDc41Beta then
+      Seed := Convert(RandomBytes(32))
+    else
+      Seed := Convert(RandomBytes(16));
 
-    // 8.6 PBKDF Iterations (only for KdfVersion=kvPbkdf2)
-    KdfIterations := 0;
-    if KdfVersion = kvPbkdf2 then WriteByte(KdfIterations);
+    FileNameUserPasswordEncrypted := true; // only version 3
+    {$ENDREGION}
 
-    // 8.7 GCM Tag length (only if GCM mode)
-    if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
-    begin
-      TDECFormattedCipher(Cipher).AuthenticationResultBitLength := 128 shr 3;
-      WriteByte(TDECFormattedCipher(Cipher).AuthenticationResultBitLength);
-    end;
-
-    // 9. Encrypted data
+    {$REGION 'Generate key used by HMAC and Cipher'}
     if KDFVersion = kvKdfx then
       Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
     else if KDFVersion = kvKdf1 then
@@ -1040,16 +975,183 @@ begin
     else
       Assert(False);
     HMacKey := Key;
+    {$ENDREGION}
 
+    {$REGION '1. Flags (version 1+)'}
+    if V >= fvDc40 then
+    begin
+      // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
+      // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
+      // Bit 2:    Reserved
+      // Bit 3:    Reserved
+      // Bit 4:    Reserved
+      // Bit 5:    Reserved
+      // Bit 6:    Reserved
+      // Bit 7:    Reserved
+      F := 0;
+      if IsFolder then F := F + 1;
+      if IsCompressed then F := F + 2;
+      WriteByte(F);
+    end;
+    {$ENDREGION}
+
+    {$REGION '2. Version (version 1+)'}
+    if V>=fvDc40 then
+      WriteByte(Ord(V));
+    {$ENDREGION}
+
+    {$REGION '2.1 Magic Sequence (only version 4+)'}
+    if (V>=fvDc50Wip) then
+      WriteRaw(DC4_OID);
+    {$ENDREGION}
+
+    {$REGION '3. Filename (version 1+)'}
+    if V = fvDc40 then
+    begin
+      // Ver1: Clear text filename, terminated with "?"
+      OrigName := RawByteString(ExtractFileName(AFileName)); // ANSI
+      WriteRaw(OrigName + '?');
+    end
+    else if V = fvDc41Beta then
+    begin
+      // Ver2: Base64 encoded filename, terminated with "?"
+      OrigName := RawByteString(TNetEncoding.Base64.Encode(ExtractFileName(AFileName))); // ANSI
+      WriteRaw(OrigName + '?');
+    end
+    else if V = fvDc41FinalCancelled then
+    begin
+      // Ver3: Encrypted filename
+      // Filename encrypted with DEC
+      // Encryption-Password = Hash->KDfx(User-Password, Seed)
+      // if not encrypted with user-password, otherwise:
+      // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
+      if FileNameUserPasswordEncrypted then WriteByte($01) else WriteByte($00);
+      OrigName := RawByteString(PAnsiString(PWideString(WideString(ExtractFileName(AFileName))))); // UTF-16
+      {$REGION 'Decide about filename key'}
+      if FileNameUserPasswordEncrypted then
+      begin
+        FileNameKey := Key;
+      end
+      else
+      begin
+        FilenamePassword := RawByteString(#$5E#$D1#$6B#$12#$7D#$B4#$C4#$3C);
+        if KDFVersion = kvKdfx then
+          FileNameKey := TDECHashExtended(ahash).KDFx(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf1 then
+          FileNameKey := TDECHashExtended(ahash).KDF1(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf2 then
+          FileNameKey := TDECHashExtended(ahash).KDF2(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvKdf3 then
+          FileNameKey := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
+        else if KDFVersion = kvPbkdf2 then
+          FileNameKey := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+        else
+          Assert(False);
+      end;
+      {$ENDREGION}
+      Cipher.Init(Key, IV, Filler);
+      try
+        if Length(OrigName) mod 2 <> 0 then OrigName := OrigName + #0; // should not happen, otherwise it is no valid UTF-16!
+        OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).EncodeBytes(BytesOf(OrigName)));
+      finally
+        Cipher.Done;
+      end;
+      WriteLong(Length(OrigNameEncrypted));
+      WriteRaw(OrigNameEncrypted);
+    end
+    else if V >= fvDc50Wip then
+    begin
+      // Ver4: Clear text filename, with length byte in front of it
+      // Possible values:
+      // - Original name in its entirety (example "foobar.txt")    <-- we choose this
+      // - Just its extension (example "*.txt")
+      // - Redacted (empty string "")
+      OrigName := UTF8Encode(ExtractFileName(AFileName));
+      WriteByte(Length(OrigName));
+      WriteRaw(OrigName);
+    end;
+    {$ENDREGION}
+
+    {$REGION '4. IdBase (only version 2+)'}
+    idBase := DC4_ID_BASES[V];
+    if V >= fvDc41Beta then WriteLong(idBase);
+    {$ENDREGION}
+
+    {$REGION '5. Cipher identity (version 0 and 2+)'}
+    if V <> fvDc40 then WriteLong(DEC51_Identity(idBase, CipherClass.ClassName));
+    {$ENDREGION}
+
+    {$REGION '6. Cipher mode (version 0 and 2+)'}
+    if V <> fvDc40 then WriteByte(Ord(Cipher.Mode));
+    {$ENDREGION}
+
+    {$REGION '7. Hash identity (version 0 and 2+)'}
+    if V <> fvDc40 then
+    begin
+      WriteLong(DEC51_Identity(idBase, HashClass.ClassName));
+    end;
+    {$ENDREGION}
+
+    {$REGION '7.5 IV (only version 4+)'}
+    if V >= fvDc50Wip then
+    begin
+      WriteByte(Length(IV));
+      WriteRaw(Convert(IV));
+    end;
+    {$ENDREGION}
+
+    {$REGION '7.6 Cipher block filling mode (only version 4+)'}
+    if V >= fvDc50Wip then
+    begin
+      WriteByte(Ord(Cipher.FillMode));
+    end;
+    {$ENDREGION}
+
+    {$REGION '7.7 Last-Block-Filler (only version 4+)'}
+    if V >= fvDc50Wip then
+    begin
+      WriteByte(Filler);
+    end;
+    {$ENDREGION}
+
+    {$REGION '8. Seed (only version 0 or version 2+)'}
+    if V <> fvDc40 then WriteByte(Length(Seed));
+    WriteRaw(Seed);
+    {$ENDREGION}
+
+    {$REGION '8.5 KDF version (only version 4+)'}
+    if V >= fvDc50Wip then
+    begin
+      // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
+      WriteByte(Ord(KdfVersion));
+    end;
+    {$ENDREGION}
+
+    {$REGION '8.6 PBKDF Iterations (only for KdfVersion=kvPbkdf2)'}
+    if KdfVersion = kvPbkdf2 then WriteByte(KdfIterations);
+    {$ENDREGION}
+
+    {$REGION '8.7 GCM Tag length (only if GCM mode)'}
+    if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
+    begin
+      TDECFormattedCipher(Cipher).AuthenticationResultBitLength := 128 shr 3;
+      WriteByte(TDECFormattedCipher(Cipher).AuthenticationResultBitLength);
+    end;
+    {$ENDREGION}
+
+    {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
     Cipher.Init(Key, IV, Filler);
     try
       Source.Position := 0;
+      if V = fvHagenReddmannExample then
+        WriteLong(Source.Size);
       TDECFormattedCipher(Cipher).EncodeStream(Source, tempstream, source.size, OnProgressProc);
     finally
       Cipher.Done;
     end;
+    {$ENDREGION}
 
-    // 9.1 DEC CalcMAC (not if ECB mode)
+    {$REGION '9.1 DEC CalcMAC (not if ECB mode)'}
     if ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode<>cmECBx) then
     begin
       HashResult2 := Cipher.CalcMAC;
@@ -1059,22 +1161,61 @@ begin
         Assert(Length(HashResult2) = Cipher.Context.BlockSize);
       WriteRaw(HashResult2);
     end;
+    {$ENDREGION}
 
-    // 9.2 GCM Tag (only if GCM mode)
+    {$REGION '9.2 GCM Tag (only if GCM mode)'}
     if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
     begin
       WriteRaw(Convert(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult));
     end;
+    {$ENDREGION}
 
-    // 10. HMAC of whole encrypted file (except HMAC part)
-    tmp64 := tempstream.Position;
-    tempstream.Position := 0;
-    HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, OnProgressProc));
-    tempstream.Position := tmp64;
-    WriteRaw(HashResult2);
+    {$REGION '10. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
+    if V = fvDc40 then
+    begin
+      Source.Position := 0;
+      TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
+      WriteRaw(Convert(HashResult));
+    end
+    else if V = fvDc41Beta then
+    begin
+      Source.position := 0;
+      TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
+      HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
+      WriteRaw(HashResult2);
+    end
+    else if V = fvDc41FinalCancelled then
+    begin
+      Source.position := 0;
+      TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
+      HashResult2 := TDECHashExtended(ahash).CalcString(
+        Convert(HashResult) + Seed +
+            TDECHashExtended(ahash).CalcString(
+              Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
+            , TFormat_Copy)
+      , TFormat_Copy);
+      WriteRaw(HashResult2);
+    end
+    else if V >= fvDc50Wip then
+    begin
+      tmp64 := tempstream.Position;
+      tempstream.Position := 0;
+      HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, OnProgressProc));
+      tempstream.Position := tmp64;
+      WriteRaw(HashResult2);
+    end;
+    {$ENDREGION}
 
-    // 11. File Terminus
-    // (not present)
+    {$REGION '11. File Terminus (readonly version 2 and 3)'}
+    if V = fvDc41Beta then
+    begin
+      WriteRaw(RawByteString(TNetEncoding.Base64.Encode('DCTERMINUS')));
+    end
+    else if V = fvDc41FinalCancelled then
+    begin
+      WriteRaw(RawByteString(#$63#$F3#$DF#$89#$B7#$27#$20#$EA));
+    end;
+    {$ENDREGION}
 
   finally
     if Assigned(Source) then FreeAndNil(Source);
@@ -1123,7 +1264,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1147,7 +1288,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1171,7 +1312,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1195,7 +1336,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1219,7 +1360,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1243,7 +1384,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1267,7 +1408,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1291,7 +1432,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1315,7 +1456,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
@@ -1339,7 +1480,7 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
 begin
-  ssIn := TFileStream.Create(AFileName, fmOpenRead);
+  ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   try
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try

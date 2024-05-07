@@ -45,31 +45,10 @@ var
   fi: TDC4FileInfo;
 begin
 
-
-  DeleteFile('schloss_decoded.bmp');
-
-  DeCoder4X_DecodeFile('schloss.dc4', 'schloss_decoded.bmp', 'test', false, OnProgressProc);
-  ShowMessage('ok');
-
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver0.dc5', 'test', OnProgressProc, fvHagenReddmannExample);
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver1.dc5', 'test', OnProgressProc, fvDc40);
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver2.dc5', 'test', OnProgressProc, fvDc41Beta);
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', OnProgressProc, fvDc41FinalCancelled);
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', OnProgressProc, fvDc50Wip);
-  ShowMessage('ok1');
-  DeCoder4X_DecodeFile('schloss_ver0.dc5', 'schloss_decoded_dc5_ver0.bmp', 'test', false, OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver1.dc5', 'schloss_decoded_dc5_ver1.bmp', 'test', false, OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver2.dc5', 'schloss_decoded_dc5_ver2.bmp', 'test', false, OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', false, OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
-  ShowMessage('ok2');
-
-
-
   fi := DeCoder4X_DecodeFile('schloss.dc4', '', '', true);
   ShowMessage('ok');
 
-  fi := DeCoder4X_DecodeFile('schloss.dc5', '', '', true);
+  fi := DeCoder4X_DecodeFile('schloss_ver0.dc5', '', '', true);
   ShowMessage('ok');
 
   Memo1.Lines.Clear;
@@ -165,45 +144,82 @@ procedure TFormMain.Button3Click(Sender: TObject);
   end;
 
 begin
+  Memo1.Lines.Clear;
+
   DeCoder20_EncodeFile('TestData\dc20_256zero_in.txt', 'TestData\dc20_256zero_out.tmp', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc20_256zero_out.txt', 'TestData\dc20_256zero_out.tmp'));
   DeleteFile('TestData\dc20_256zero_out.tmp');
-
   DeCoder20_EncodeFile('TestData\dc20_test_in.txt', 'TestData\dc20_test_out.tmp', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc20_test_out.txt', 'TestData\dc20_test_out.tmp'));
   DeleteFile('TestData\dc20_test_out.tmp');
-
+  Memo1.Lines.Add('DC20 OK');
 
   DeCoder22_EncodeFile('TestData\dc22_256zero_in.txt', 'TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc22_256zero_out_61.txt', 'TestData\dc22_256zero_out_61.tmp'));
   DeleteFile('TestData\dc22_256zero_out_61.tmp');
-
   DeCoder22_EncodeFile('TestData\dc22_test_in.txt', 'TestData\dc22_test_out_61.tmp', 61, OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc22_test_out_61.txt', 'TestData\dc22_test_out_61.tmp'));
   DeleteFile('TestData\dc22_test_out_61.tmp');
-
+  Memo1.Lines.Add('DC22 OK');
 
   DeCoder30_EncodeFile('TestData\dc30_256zero_in.txt', 'TestData\dc30_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc30_256zero_out_foobar.txt', 'TestData\dc30_256zero_out_foobar.tmp'));
   DeleteFile('TestData\dc30_256zero_out_foobar.tmp');
-
   DeCoder30_EncodeFile('TestData\dc30_test_in.txt', 'TestData\dc30_test_out_foobar.tmp', 'foobar', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc30_test_out_foobar.txt', 'TestData\dc30_test_out_foobar.tmp'));
   DeleteFile('TestData\dc30_test_out_foobar.tmp');
-
+  Memo1.Lines.Add('DC30 OK');
 
   DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc32_256zero_out_foobar.txt', 'TestData\dc32_256zero_out_foobar.tmp'));
   DeleteFile('TestData\dc32_256zero_out_foobar.tmp');
-
   DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc32_256zero_out_abcdefg.txt', 'TestData\dc32_256zero_out_abcdefg.tmp'));
   DeleteFile('TestData\dc32_256zero_out_abcdefg.tmp');
-
   DeCoder32_EncodeFile('TestData\dc32_test_in.txt', 'TestData\dc32_test_out_foobar.tmp', 'foobar', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc32_test_out_foobar.txt', 'TestData\dc32_test_out_foobar.tmp'));
   DeleteFile('TestData\dc32_test_out_foobar.tmp');
+  Memo1.Lines.Add('DC32 OK');
 
+  DeCoder4X_DecodeFile('TestData\schloss.dc4', 'schloss_decoded.bmp', 'test', false, OnProgressProc);
+  Memo1.Lines.Add('Decode DC41 Beta OK');
+
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver0.dc5', 'test', OnProgressProc, fvHagenReddmannExample);
+  DeCoder4X_DecodeFile('schloss_ver0.dc5', 'schloss_decoded_dc5_ver0.bmp', 'test', false, OnProgressProc);
+  Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver0.bmp'));
+  DeleteFile('schloss_decoded_dc5_ver0.bmp');
+  DeleteFile('schloss_ver0.dc5');
+  Memo1.Lines.Add('Hagen OK');
+
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver1.dc5', 'test', OnProgressProc, fvDc40);
+  DeCoder4X_DecodeFile('schloss_ver1.dc5', 'schloss_decoded_dc5_ver1.bmp', 'test', false, OnProgressProc);
+  Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver1.bmp'));
+  DeleteFile('schloss_decoded_dc5_ver1.bmp');
+  DeleteFile('schloss_ver1.dc5');
+  Memo1.Lines.Add('DC40 OK');
+
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver2.dc5', 'test', OnProgressProc, fvDc41Beta);
+  DeCoder4X_DecodeFile('schloss_ver2.dc5', 'schloss_decoded_dc5_ver2.bmp', 'test', false, OnProgressProc);
+  Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver2.bmp'));
+  DeleteFile('schloss_decoded_dc5_ver2.bmp');
+  DeleteFile('schloss_ver2.dc5');
+  Memo1.Lines.Add('DC41 Beta OK');
+
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', OnProgressProc, fvDc41FinalCancelled);
+  DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', false, OnProgressProc);
+  Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
+  DeleteFile('schloss_decoded_dc5_ver3.bmp');
+  DeleteFile('schloss_ver3.dc5');
+  Memo1.Lines.Add('DC41 Final OK');
+
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', OnProgressProc, fvDc50Wip);
+  DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
+  Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
+  DeleteFile('schloss_decoded_dc5_ver4.bmp');
+  DeleteFile('schloss_ver4.dc5');
+  Memo1.Lines.Add('DC50 OK');
+
+  DeleteFile('schloss_decoded.bmp');
 
   ShowMessage('Alles OK');
 end;
