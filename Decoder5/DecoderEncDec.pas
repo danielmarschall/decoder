@@ -14,19 +14,24 @@ type
 
   TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
 
+  TYesNoAuto = (Yes, No, Auto);
+
   TDC4FileInfo = record
     Dc4FormatVersion: TDcFormatVersion;
-    IsZLibCompressed: boolean;
+    IsZLibCompressed: TYesNoAuto;
     IsCompressedFolder: boolean;
     OrigFileName: string;
     KDF: TKdfVersion;
-    KDF_Iterations: Integer;
+    PBKDF_Iterations: Integer;
     IVSize: integer;
     SeedSize: integer;
     HashClass: TDECHashClass;
     CipherClass: TDECCipherClass;
     CipherMode: TCipherMode;
     FillMode: TBlockFillMode;
+    Filler: byte;
+    FileNameUserPasswordEncrypted: boolean; // only used in version 3
+    GCMAuthTagSizeInBytes: byte;
   end;
 
 const
@@ -82,7 +87,9 @@ procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString
 procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
 procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
 
-procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil; V:TDcFormatVersion=High(TDcFormatVersion));
+function DeCoder4X_GetDefaultParameters(V: TDcFormatVersion): TDC4FileInfo;
+procedure DeCoder4X_ValidateParameterBlock(fi: TDC4FileInfo);
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; AParameters: TDC4FileInfo; OnProgressProc: TDECProgressEvent=nil);
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; const OnlyReadFileInfo: boolean=false; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
@@ -194,7 +201,7 @@ end;
 
 procedure SecureDeleteFile(AFileName: string);
 begin
-  // TODO: Implement
+  // TODO: Implement SecureDeleteFile()
   DeleteFile(AFileName);
 end;
 
@@ -344,7 +351,7 @@ var
   function ReadRaw(leng: integer): RawByteString;
   begin
     SetLength(Result, leng);
-    Read(Result[1], Length(Result));
+    Read(Result[Low(Result)], Length(Result));
   end;
 
   function Convert(const Bytes: TBytes): RawByteString; inline;
@@ -375,10 +382,10 @@ var
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
   bakSourcePosEncryptedData: Int64;
-  IsCompressed: boolean;
+  IsZLibCompressed: boolean;
   IsFolder: boolean;
   ATempFileName: string;
-  KdfIterations: Long;
+  PbkdfIterations: Long;
   OrigNameEncrypted: RawByteString;
   iBlockFillMode: Byte;
   cMac: RawByteString;
@@ -388,7 +395,7 @@ begin
   tempstream := nil;
   cipher := nil;
   ahash := nil;
-  IsCompressed := false;
+  IsZLibCompressed := false;
   IsFolder := false;
   try
     try
@@ -410,12 +417,12 @@ begin
         // Bit 7:    Reserved
         F := ReadByte;
         IsFolder := (F and 1) <> 0;
-        IsCompressed := (F and 2) <> 0;
+        IsZLibCompressed := (F and 2) <> 0;
       end;
       {$ENDREGION}
 
       {$REGION 'Create output stream'}
-      if IsCompressed then
+      if IsZLibCompressed then
       begin
         ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
         if not OnlyReadFileInfo then
@@ -608,16 +615,15 @@ begin
 
       {$REGION '8.6 KDF Iterations (ONLY PRESENT for PBKDF2)'}
       if KDFVersion = kvPbkdf2 then
-        KdfIterations := ReadLong
+        PbkdfIterations := ReadLong
       else
-        KdfIterations := 0;
+        PbkdfIterations := 0;
       {$ENDREGION}
 
       {$REGION 'Generate key used by HMAC and Cipher'}
       if not OnlyReadFileInfo then
       begin
-        (* TODO:
-              Not implemented for version 3 (actually, I don't understand this description anymore):
+        (* TODO: Not implemented for version 3 (actually, I don't understand this description anymore):
                     The "special-checksum" of a file can be used as the user password.
                     The formula is:
                        User-Password = Hash(File-Contents)
@@ -634,7 +640,7 @@ begin
         else if KDFVersion = kvKdf3 then
           Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
         else if KDFVersion = kvPbkdf2 then
-          Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+          Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
         else
           Assert(False);
 
@@ -721,7 +727,7 @@ begin
           else if KDFVersion = kvKdf3 then
             Key := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
           else if KDFVersion = kvPbkdf2 then
-            Key := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+            Key := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
           else
             Assert(False);
         end;
@@ -793,7 +799,7 @@ begin
       {$ENDREGION}
 
       {$REGION 'Decompress stuff'}
-      if not OnlyReadFileInfo and IsCompressed then
+      if not OnlyReadFileInfo and IsZLibCompressed then
       begin
         FreeAndNil(tempstream);
         DeCoder4X_Decompress(ATempFileName, AOutput);
@@ -801,24 +807,34 @@ begin
 
       if not OnlyReadFileInfo and IsFolder then
       begin
-        // TODO: Extract ZIP (ver1-3) or 7zip (ver4) to folder
+        // TODO: Implement unzipping (ver1-3) or 7zip (ver4) to folder
         ShowMessage('Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool');
       end;
       {$ENDREGION}
 
       ZeroMemory(@result, Sizeof(result));
       result.Dc4FormatVersion := V;
-      result.IsZLibCompressed := IsCompressed;
+      if IsZLibCompressed then
+        result.IsZLibCompressed := Yes
+      else
+        result.IsZLibCompressed := No;
       result.IsCompressedFolder := IsFolder;
       result.OrigFileName := OrigName;
       result.KDF := KdfVersion;
-      result.KDF_Iterations := KdfIterations;
+      result.PBKDF_Iterations := PbkdfIterations;
       result.IVSize := Length(IV);
       result.SeedSize := Length(Seed);
       result.HashClass := HashClass;
       result.CipherClass := CipherClass;
       result.CipherMode := Cipher.Mode;
       result.FillMode := Cipher.FillMode;
+      result.Filler := Filler;
+      result.FileNameUserPasswordEncrypted := FileNameUserPasswordEncrypted;
+      if (V >= fvDc50Wip) and (result.CipherMode = cmGCM) then
+        result.GCMAuthTagSizeInBytes := Length(TDECFormattedCipher(Cipher).ExpectedAuthenticationResult)
+      else
+        result.GCMAuthTagSizeInBytes := 0;
+      DeCoder4X_ValidateParameterBlock(result); // Should always pass
     except
       if Assigned(tempstream) then ProtectStream(tempstream);
       raise;
@@ -828,7 +844,7 @@ begin
     if Assigned(tempstream) then FreeAndNil(tempstream);
     if Assigned(Cipher) then FreeAndNil(Cipher);
     if Assigned(ahash) then FreeAndNil(ahash);
-    if IsCompressed and (ATempFileName<>'') then
+    if IsZLibCompressed and (ATempFileName<>'') then
     begin
       SecureDeleteFile(ATempFileName);
     end;
@@ -848,10 +864,95 @@ begin
     SameText(ExtractFileExt(AFileName), '.png') or
     SameText(ExtractFileExt(AFileName), '.gif') or
     SameText(ExtractFileExt(AFileName), '.jpg') or
-    SameText(ExtractFileExt(AFileName), '.jpeg');
+    SameText(ExtractFileExt(AFileName), '.jpeg') or
+    SameText(ExtractFileExt(AFileName), '.docx') or
+    SameText(ExtractFileExt(AFileName), '.xlsx') or
+    SameText(ExtractFileExt(AFileName), '.pptx');
 end;
 
-procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil; V:TDcFormatVersion=High(TDcFormatVersion));
+function DeCoder4X_GetDefaultParameters(V: TDcFormatVersion): TDC4FileInfo;
+begin
+  result.Dc4FormatVersion := V;
+  if V < fvDc41Beta then
+    result.IsZLibCompressed := No
+  else if V >= fvDc41Beta then
+    result.IsZLibCompressed := Yes
+  else
+    result.IsZLibCompressed := Auto;
+  result.IsCompressedFolder := false;  // note: this is just an output and will be ignored as input
+  result.OrigFileName := '';           // note: this is just an output and will be ignored as input
+  result.KDF := kvKdfx;
+  result.PBKDF_Iterations := 0; // only for KdfVersion=kvPbkdf2
+  if V >= fvDc50Wip then
+    result.IVSize := 16
+  else
+    result.IVSize := 0;
+  if V >= fvDc41Beta then
+    result.SeedSize := 32
+  else
+    result.SeedSize := 16;
+  if V = fvHagenReddmannExample then
+    result.HashClass := THash_SHA1
+  else if V<fvDc50Wip then
+    result.HashClass := THash_SHA512
+  else
+    result.HashClass := THash_SHA3_512;
+  result.CipherClass := TCipher_AES;
+  result.CipherMode := TCipherMode.cmCTSx;
+  result.FillMode := TBlockFillMode.fmByte;
+  result.Filler := $FF;
+  result.FileNameUserPasswordEncrypted := V = fvDc41FinalCancelled; // only used in version 3
+  if (V >= fvDc50Wip) and (result.CipherMode = cmGCM) then
+    result.GCMAuthTagSizeInBytes := 128 shr 3
+  else
+    result.GCMAuthTagSizeInBytes := 0;
+end;
+
+procedure DeCoder4X_ValidateParameterBlock(fi: TDC4FileInfo);
+begin
+  if (fi.Dc4FormatVersion < fvDc40) and (fi.IsCompressedFolder) then
+    raise Exception.Create('ZIP folder requires DC41beta+ version');
+
+  if (fi.Dc4FormatVersion = fvDc40) and (fi.HashClass <> THash_SHA512) then
+    raise Exception.Create('Hash not accepted in DC40 version');
+  if (fi.Dc4FormatVersion = fvDc40) and (fi.CipherClass <> TCipher_Rijndael) and (fi.CipherClass <> TCipher_AES) then
+     raise Exception.Create('Cipher not accepted in DC40 version');
+  if (fi.Dc4FormatVersion = fvDc40) and (fi.KDF <> kvKdfx) then
+    raise Exception.Create('KDF version not accepted in DC40 version');
+  if (fi.Dc4FormatVersion = fvDc40) and (fi.SeedSize <> 16) then
+    raise Exception.Create('Seed size not accepted in DC40 version');
+  if (fi.Dc4FormatVersion = fvDc40) and (fi.CipherMode <> cmCTSx) then
+    raise Exception.Create('CiperMode not accepted in DC40 version');
+
+  if (fi.Dc4FormatVersion < fvDc41Beta) and (fi.IsZLibCompressed <> No) then
+    raise Exception.Create('ZLib requires DC41beta+ version');
+
+  if (fi.Dc4FormatVersion <> fvDc41FinalCancelled) and fi.FileNameUserPasswordEncrypted then
+    raise Exception.Create('EncPwd only accepted in DC41Final version');
+
+  if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.Filler <> $FF) then
+    raise Exception.Create('Indiv Filler only accepted format version 4+');
+  if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.IVSize <> 0) then
+    raise Exception.Create('Indiv IV only accepted format version 4+');
+  if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.KDF <> kvKdfx) then
+    raise Exception.Create('Indiv KDF only accepted format version 4+');
+
+  if (fi.CipherMode <> cmGCM) and (fi.GCMAuthTagSizeInBytes <> 0) then
+    raise Exception.Create('GCM Auth Tag only allowed for cipher mode GCM');
+  if (fi.CipherMode = cmGCM) and (fi.GCMAuthTagSizeInBytes = 0) then
+    raise Exception.Create('GCM Auth Tag required for cipher mode GCM');
+  if (fi.CipherMode = cmGCM) and (fi.GCMAuthTagSizeInBytes < 4) then
+    raise Exception.Create('GCM Auth Tag too small (choose at least 32 bits = 4 bytes)');
+  if (fi.CipherMode = cmGCM) and (fi.GCMAuthTagSizeInBytes > 16) then
+    raise Exception.Create('GCM Auth Tag too large (max 128 bits = 16 bytes)'); // This is the output size of CalcGaloisHash
+
+  if (fi.KDF <> kvPbkdf2) and (fi.PBKDF_Iterations <> 0) then
+    raise Exception.Create('PBKDF Iterations must be >0');
+  if (fi.KDF = kvPbkdf2) and (fi.PBKDF_Iterations = 0) then
+    raise Exception.Create('PBKDF Iterations must be =0');
+end;
+
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; AParameters: TDC4FileInfo; OnProgressProc: TDECProgressEvent=nil);
 var
   tempstream: TStream;
   FileNameKey: TBytes;
@@ -903,29 +1004,60 @@ var
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
   tmp64: Int64;
-  IsCompressed: boolean;
+  IsZLibCompressed: boolean;
   IsFolder: boolean;
   ATempFileName: string;
-  KdfIterations: long;
+  PbkdfIterations: long;
+  V: TDcFormatVersion;
+  GCMAuthTagSizeInBytes: byte;
 begin
+  DeCoder4X_ValidateParameterBlock(AParameters);
+
   tempstream := nil;
   Source := nil;
   cipher := nil;
   ahash := nil;
-  IsCompressed := false;
+  IsZLibCompressed := false;
   IsFolder := DirectoryExists(AFileName);
+
   try
     if IsFolder then
     begin
-      // TODO: Implement Zipping
-      // For ver1-3: ZIP (attention: 4 GiB limitation!)
-      // For ver4: 7zip
+      // TODO: Implement Zipping (ver1-3 zip, ver4: 7zip)
+      // For ZIP, do not continue if the file size is 4GB+!!!
       raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
     end;
 
+    V := AParameters.Dc4FormatVersion;
+    case AParameters.IsZLibCompressed of
+      Yes:   IsZLibCompressed := true;
+      No:    IsZLibCompressed := false;
+      Auto:  IsZLibCompressed := not IsCompressedFileType(AFileName); // TODO: Maybe also try to calc the entropy to see if compress will work good or bad?
+    end;
+    // AParameters.IsCompressedFolder    (this is just an output and will be ignored as input)
+    // AParameters.OrigFileName          (this is just an output and will be ignored as input)
+    KdfVersion := AParameters.KDF;
+    PbkdfIterations := AParameters.PBKDF_Iterations;
+    if AParameters.IVSize > 0 then
+      IV := RandomBytes(AParameters.IVSize)
+    else
+      SetLength(IV, 0);
+    Seed := Convert(RandomBytes(AParameters.SeedSize));
+
+    HashClass := AParameters.HashClass;
+    AHash := HashClass.Create;
+
+    CipherClass := AParameters.CipherClass;
+    Cipher := CipherClass.Create;
+    Cipher.Mode := AParameters.CipherMode;
+    Cipher.FillMode := AParameters.FillMode;
+
+    Filler := AParameters.Filler;
+    FileNameUserPasswordEncrypted := AParameters.FileNameUserPasswordEncrypted;
+    GCMAuthTagSizeInBytes := AParameters.GCMAuthTagSizeInBytes;
+
     {$REGION 'Compress stream if the file type is not already compressed'}
-    IsCompressed := not IsCompressedFileType(AFileName);
-    if IsCompressed and (V>=fvDc40) then
+    if IsZLibCompressed and (V>=fvDc40) then
     begin
       ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
       DeCoder4X_Compress(AFileName, ATempFileName);
@@ -940,34 +1072,6 @@ begin
     tempstream := TFileStream.Create(AOutput, fmCreate);
     tempstream.Size := 0;
 
-    {$REGION 'Set default cipher/hash parameters'}
-    CipherClass := TCipher_AES;
-    Cipher := CipherClass.Create;
-    Cipher.Mode := TCipherMode.cmCTSx;
-    Cipher.FillMode := TBlockFillMode.fmByte;
-    if V >= fvDc50Wip then
-      IV := RandomBytes(16)
-    else
-      SetLength(IV, 0);
-    Filler := $FF;
-
-    if V = fvHagenReddmannExample then
-      HashClass := THash_SHA1
-    else if V<fvDc50Wip then
-      HashClass := THash_SHA512
-    else
-      HashClass := THash_SHA3_512;
-    AHash := HashClass.Create;
-    KdfVersion := kvKdfx;
-    KdfIterations := 0; // only for KdfVersion=kvPbkdf2
-    if V >= fvDc41Beta then
-      Seed := Convert(RandomBytes(32))
-    else
-      Seed := Convert(RandomBytes(16));
-
-    FileNameUserPasswordEncrypted := true; // only used in version 3
-    {$ENDREGION}
-
     {$REGION 'Generate key used by HMAC and Cipher'}
     if KDFVersion = kvKdfx then
       Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
@@ -978,7 +1082,7 @@ begin
     else if KDFVersion = kvKdf3 then
       Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
     else if KDFVersion = kvPbkdf2 then
-      Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+      Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
     else
       Assert(False);
     HMacKey := Key;
@@ -997,7 +1101,7 @@ begin
       // Bit 7:    Reserved
       F := 0;
       if IsFolder then F := F + 1;
-      if IsCompressed then F := F + 2;
+      if IsZLibCompressed then F := F + 2;
       WriteByte(F);
     end;
     {$ENDREGION}
@@ -1051,7 +1155,7 @@ begin
         else if KDFVersion = kvKdf3 then
           FileNameKey := TDECHashExtended(ahash).KDF3(BytesOf(FilenamePassword), BytesOf(Seed), Cipher.Context.KeySize)
         else if KDFVersion = kvPbkdf2 then
-          FileNameKey := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), KdfIterations, Cipher.Context.KeySize)
+          FileNameKey := TDECHashExtended(ahash).PBKDF2(BytesOf(FilenamePassword), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
         else
           Assert(False);
       end;
@@ -1135,13 +1239,14 @@ begin
     {$ENDREGION}
 
     {$REGION '8.6 PBKDF Iterations (only for KdfVersion=kvPbkdf2)'}
-    if KdfVersion = kvPbkdf2 then WriteByte(KdfIterations);
+    if KdfVersion = kvPbkdf2 then WriteByte(PbkdfIterations);
     {$ENDREGION}
 
     {$REGION '8.7 GCM Tag length (only if GCM mode)'}
     if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
     begin
-      TDECFormattedCipher(Cipher).AuthenticationResultBitLength := 128 shr 3;
+      if GCMAuthTagSizeInBytes > 128 then GCMAuthTagSizeInBytes := 128; // this is the size of CalcGaloisHash()
+      TDECFormattedCipher(Cipher).AuthenticationResultBitLength := GCMAuthTagSizeInBytes * 8;
       WriteByte(TDECFormattedCipher(Cipher).AuthenticationResultBitLength);
     end;
     {$ENDREGION}
@@ -1229,28 +1334,39 @@ begin
     if Assigned(tempstream) then FreeAndNil(tempstream);
     if Assigned(Cipher) then FreeAndNil(Cipher);
     if Assigned(ahash) then FreeAndNil(ahash);
-    if IsCompressed and (ATempFileName<>'') then
+    if IsZLibCompressed and (ATempFileName<>'') then
     begin
       SecureDeleteFile(ATempFileName);
     end;
   end;
 end;
 
-function YesNo(b: boolean): string;
-begin
-  if b then exit('Yes') else exit('No');
-end;
-
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
+
+  function YesNo(b: boolean): string; overload;
+  begin
+    if b then exit('Yes') else exit('No');
+  end;
+
+  function YesNo(b: TYesNoAuto): string; overload;
+  begin
+    case b of
+      Yes:   exit('Yes');
+      No:    exit('No');
+      Auto:  exit('Auto');
+    end;
+  end;
+
 begin
   sl.Add('File Format: (De)Coder 4.x/5.x Encrypted File');
   sl.Add('Sub-Format: ' + DC4_SUBFORMAT_VERSION[fi.Dc4FormatVersion]);
   sl.Add('Is compressed folder: ' + YesNo(fi.IsCompressedFolder));
   sl.Add('Data additionally ZLib-compressed: ' + YesNo(fi.IsZLibCompressed));
   sl.Add('Original filename: ' + fi.OrigFileName);
+  sl.Add('Encrypted File Password: ' + YesNo(fi.FileNameUserPasswordEncrypted));
   sl.Add('Key Derivation Algorithm: ' + KDF_VERSION_NAMES[fi.KDF]);
   if fi.KDF = kvPbkdf2 then
-    sl.Add('PBKDF Iterations: ' + IntToStr(fi.KDF_Iterations));
+    sl.Add('PBKDF Iterations: ' + IntToStr(fi.PBKDF_Iterations));
   sl.Add('Hashing Algorithm: ' + StringReplace(fi.HashClass.ClassName, 'THash_', '', []));
   sl.Add('Hash Digest Size: ' + IntToStr(fi.HashClass.DigestSize));
   sl.Add('Hash Block Size: ' + IntToStr(fi.HashClass.BlockSize));
@@ -1261,7 +1377,9 @@ begin
   sl.Add('Cipher Buffer Size: ' + IntToStr(fi.CipherClass.Context.BufferSize));
   sl.Add('Cipher IV Size: ' + IntToStr(fi.IVSize));
   sl.Add('Cipher Mode: ' + CIPHER_MODE_NAMES[fi.CipherMode]);
-  sl.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode]);
+  sl.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode] + ' (0x'+IntToHex(fi.Filler,2)+')');
+  if fi.CipherMode = cmGCM then
+    sl.Add('GCM Auth Tag Size: ' + IntToStr(fi.GCMAuthTagSizeInBytes*8) + ' bits');
   sl.Add('Message Authentication: ' + INTEGRITY_CHECK_INFO[fi.Dc4FormatVersion]);
 end;
 

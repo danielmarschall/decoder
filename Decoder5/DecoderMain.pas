@@ -11,10 +11,8 @@ type
     Button1: TButton;
     ProgressBar1: TProgressBar;
     Memo1: TMemo;
-    Button2: TButton;
     Button3: TButton;
     procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
   end;
 
@@ -25,7 +23,7 @@ implementation
 
 uses
   DecoderEncDec, DECTypes, DecoderOldCiphers, DECCipherBase, DECCiphers,
-  DECCipherFormats;
+  DECCipherFormats, Math;
 
 {$R *.dfm}
 
@@ -40,8 +38,84 @@ begin
     FormMain.ProgressBar1.Position := Pos;
 end;
 
-procedure TFormMain.Button1Click(Sender: TObject);
+function CalcEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
+var
+  fs: TFileStream;
+
+  procedure Read(var Value; Size: Integer);
+  begin
+    fs.ReadBuffer(Value, Size);
+  end;
+
+  function ReadRaw(leng: integer): RawByteString;
+  begin
+    SetLength(Result, leng);
+    Read(Result[Low(Result)], Length(Result));
+  end;
+
+var
+  p: Extended;
+  i: int64;
+  counts: array[0..255] of int64;
+  filesize: int64;
+  rbs: RawByteString;
+  ProgrSize, ProgrPos: Int64;
+const
+  chunksize = 4096; // bigger = faster
 begin
+  for i := Low(counts) to High(counts) do
+    Counts[i] := 0;
+
+  fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+  try
+    filesize := fs.Size;
+    ProgrPos := 0;
+    ProgrSize := Filesize div chunksize;
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, Started);
+    while fs.Position < fs.Size do
+    begin
+      rbs := ReadRaw(Max(chunksize,fs.Size-fs.Position));
+      for i := Low(rbs) to High(rbs) do
+        Inc(counts[Ord(rbs[i])]);
+      Inc(ProgrPos);
+      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, Processing);
+      Application.ProcessMessages;
+      if Application.Terminated then Abort;
+    end;
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, Finished);
+
+    // Shannon's entropy
+    // https://stackoverflow.com/questions/990477/how-to-calculate-the-entropy-of-a-file
+    result := 0;
+    for i := Low(counts) to High(counts) do
+    begin
+      p := Counts[i] / filesize;
+      if p > 0 then result := result - p*Log2(p)
+    end;
+  finally
+    FreeAndNil(fs);
+  end;
+end;
+
+procedure TFormMain.Button1Click(Sender: TObject);
+var
+  entropy: Extended;
+begin
+  // EXE          5,7816594231572
+  // PAS          5,15501756140616
+  // DC4          7,98892287038652
+  // Pure Random  7,98539387290228
+  // Same Byte    0
+  entropy := CalcEntropy('Coder.exe', OnProgressProc);
+  memo1.Lines.Add(FloatTostr(entropy));
+  entropy := CalcEntropy('DecoderEncDec.pas', OnProgressProc);
+  memo1.Lines.Add(FloatTostr(entropy));
+  entropy := CalcEntropy('TestData\schloss.dc4', OnProgressProc);
+  memo1.Lines.Add(FloatTostr(entropy));
+  entropy := CalcEntropy('random.bin', OnProgressProc);
+  memo1.Lines.Add(FloatTostr(entropy));
+  entropy := CalcEntropy('zeroent.bin', OnProgressProc);
+  memo1.Lines.Add(FloatTostr(entropy));
 end;
 
 (*
@@ -91,24 +165,6 @@ begin
 end;
 *)
 
-procedure TFormMain.Button2Click(Sender: TObject);
-var
-  Cipher: TDECCipher;
-  s: RawByteString;
-begin
-  Cipher := TCipher_VtsDeCoder30.Create;
-  Cipher.Init('', '', $FF);
-  Cipher.Mode := cmECBx;
-  s := Cipher.EncodeRawByteString('Hello');
-  memo1.Lines.Add(s);
-  Cipher.Done;
-
-  Cipher.Init('', '', $FF);
-  Cipher.Mode := cmECBx;
-  memo1.Lines.Add(Cipher.DecodeRawByteString(s));
-  Cipher.Done;
-end;
-
 procedure TFormMain.Button3Click(Sender: TObject);
 
   function Are2FilesEqual(const File1, File2: TFileName): Boolean;
@@ -136,6 +192,14 @@ var
 
 begin
   Memo1.Lines.Clear;
+
+  DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvHagenReddmannExample));
+  DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc40));
+  DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc41Beta));
+  DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled));
+  DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc50Wip));
+  Memo1.Lines.Add('DeCoder4X_ValidateParameterBlock OK');
+  Memo1.Lines.Add('');
 
   DeCoder20_EncodeFile('TestData\dc20_256zero_in.txt', 'TestData\dc20_256zero_out.tmp', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc20_256zero_out.txt', 'TestData\dc20_256zero_out.tmp'));
@@ -180,7 +244,7 @@ begin
   Memo1.Lines.Add('Decode DC41 Beta OK');
   Memo1.Lines.Add('');
 
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver0.dc5', 'test', OnProgressProc, fvHagenReddmannExample);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver0.dc5', 'test', DeCoder4X_GetDefaultParameters(fvHagenReddmannExample), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver0.dc5', 'schloss_decoded_dc5_ver0.bmp', 'test', false, OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver0.bmp'));
   fi := DeCoder4X_DecodeFile('schloss_ver0.dc5', '', '', true);
@@ -190,7 +254,7 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver1.dc5', 'test', OnProgressProc, fvDc40);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver1.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc40), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver1.dc5', 'schloss_decoded_dc5_ver1.bmp', 'test', false, OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver1.bmp'));
   fi := DeCoder4X_DecodeFile('schloss_ver1.dc5', '', '', true);
@@ -200,7 +264,7 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver2.dc5', 'test', OnProgressProc, fvDc41Beta);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver2.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc41Beta), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver2.dc5', 'schloss_decoded_dc5_ver2.bmp', 'test', false, OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver2.bmp'));
   fi := DeCoder4X_DecodeFile('schloss_ver2.dc5', '', '', true);
@@ -210,7 +274,7 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', OnProgressProc, fvDc41FinalCancelled);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', false, OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
   fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', true);
@@ -220,7 +284,7 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', OnProgressProc, fvDc50Wip);
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc50Wip), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
   fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', '', '', true);

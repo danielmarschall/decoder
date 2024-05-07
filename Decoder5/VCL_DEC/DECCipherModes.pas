@@ -386,7 +386,7 @@ type
     procedure Done; override;
 
     /// <summary>
-    ///   Returns a list of CalculatedAuthenticationResult lengs explicitely
+    ///   Returns a list of CalculatedAuthenticationResult lenghts explicitely
     ///   specified by the official specification of the standard.
     /// </summary>
     /// <returns>

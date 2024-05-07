@@ -6,8 +6,9 @@ Type:		Encrypted file
 Contents:	Binary information
 Used by:	ViaThinkSoft (De)Coder 4.0
 		ViaThinkSoft (De)Coder 4.1
+		ViaThinkSoft (De)Coder 5.0
 Author:		Daniel Marschall
-Last update:    May, 6th 2024
+Last update:    May, 7th 2024
 
 
 CONTENTS
