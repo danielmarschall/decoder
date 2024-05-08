@@ -90,7 +90,7 @@ procedure TCipher_RepeatingXorSequence.DoInit(const Key; Size: Integer);
 begin
   inherited;
   SetLength(FKey, Size);
-  Move(Key, FKey[0], Size);
+  Move(Key, FKey[Low(FKey)], Size);
   FKeyPos := Length(FKey)-1; // Point to last character, not the first character, because there is one DoEncode round for IV in TDECCipher.Init, even if IV is empty
 end;
 
@@ -145,6 +145,7 @@ begin
     inherited DoInit(b[0], 256);
   finally
     ProtectBuffer(b[0], 256);
+    SetLength(b,0);
   end;
 end;
 
@@ -172,6 +173,7 @@ begin
     inherited DoInit(b[0], 256);
   finally
     ProtectBuffer(b[0], 256);
+    SetLength(b,0);
   end;
 end;
 
@@ -199,6 +201,7 @@ begin
     inherited DoInit(b[0], 256);
   finally
     ProtectBuffer(b[0], 256);
+    SetLength(b,0);
   end;
 end;
 
@@ -224,6 +227,7 @@ begin
     inherited DoInit(b[0], Size);
   finally
     ProtectBuffer(b[0], Size);
+    SetLength(b,0);
   end;
 end;
 

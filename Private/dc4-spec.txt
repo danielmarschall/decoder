@@ -474,7 +474,7 @@ Offset	Type	Size		Content/Description
 	Binary	var		IV (Random Data)
 	Byte	1		Blocking filling mode (default: 0x00)
 					0x00	Byte filling mode
-	Byte	1		Filler byte of last block (default: 0xFF)
+	Byte	1		Filler byte of last block (default: 0xFF), actually filler for IV buffer
 	Byte	1		Size of seed (default 32 = 0x20)
 	Binary	0-255		Seed (Random data)
 	Byte	1		KDF version

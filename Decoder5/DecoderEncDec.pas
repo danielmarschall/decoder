@@ -23,7 +23,7 @@ type
     OrigFileName: string;
     KDF: TKdfVersion;
     PBKDF_Iterations: Integer;
-    IVSize: integer;
+    IVSizeInBytes: integer;
     SeedSize: integer;
     HashClass: TDECHashClass;
     CipherClass: TDECCipherClass;
@@ -65,7 +65,7 @@ const
     'CFS8 = 8Bit CFS, double CFB',
     'CFSx = CFS on Blocksize bytes',
     'ECBx = Electronic Code Book',
-    'GCM  = Galois Counter Mode'
+    'GCM = Galois Counter Mode'
   );
 
   CIPHER_FILLMODE_NAMES: array[Low(TBlockFillMode)..High(TBlockFillMode)] of string = (
@@ -433,8 +433,6 @@ begin
         if not OnlyReadFileInfo then
           tempstream := TFileStream.Create(AOutput, fmCreate);
       end;
-      if not OnlyReadFileInfo then
-        tempstream.Size := 0;
       {$ENDREGION}
 
       {$REGION '2. Version (version 1+)'}
@@ -664,7 +662,7 @@ begin
       {$REGION '8.7 GCM Tag Length (only version 4+)'}
       if not OnlyReadFileInfo and (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then
       begin
-        TDECFormattedCipher(Cipher).ExpectedAuthenticationResult := BytesOf(ReadRaw(ReadByte));
+        TDECFormattedCipher(Cipher).AuthenticationResultBitLength := ReadByte * 8;
       end;
       {$ENDREGION}
 
@@ -681,7 +679,7 @@ begin
           begin
             iTmp := source.size - source.Position;
             if ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode <> cmECBx) then Dec(iTmp, Cipher.Context.BlockSize{CalcMac}); // field 9.1
-            if (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then Dec(iTmp, TDECFormattedCipher(Cipher).AuthenticationResultBitLength); // field 9.2
+            if (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then Dec(iTmp, TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3); // field 9.2
             Dec(iTmp, ahash.DigestSize{Hash/HMAC}); // field 10
             Dec(iTmp, Length(FileTerminus)); // field 11
             TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, iTmp, OnProgressProc);
@@ -707,7 +705,7 @@ begin
       {$REGION '9.2 GCM Tag (only version 4+)'}
       if not OnlyReadFileInfo and (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then
       begin
-        if TDECFormattedCipher(Cipher).CalculatedAuthenticationResult <> BytesOf(ReadRaw(TDECFormattedCipher(Cipher).AuthenticationResultBitLength)) then
+        if Convert(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult) <> ReadRaw(TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3) then
           raise Exception.Create('GCM Auth Tag mismatch');
       end;
       {$ENDREGION}
@@ -733,7 +731,7 @@ begin
         end;
         if OnlyReadFileInfo and (Length(Key)=0) then
         begin
-          OrigName := '(Encrypted)';
+          OrigName := '';
         end
         else
         begin
@@ -822,7 +820,7 @@ begin
       result.OrigFileName := OrigName;
       result.KDF := KdfVersion;
       result.PBKDF_Iterations := PbkdfIterations;
-      result.IVSize := Length(IV);
+      result.IVSizeInBytes := Length(IV);
       result.SeedSize := Length(Seed);
       result.HashClass := HashClass;
       result.CipherClass := CipherClass;
@@ -831,7 +829,7 @@ begin
       result.Filler := Filler;
       result.FileNameUserPasswordEncrypted := FileNameUserPasswordEncrypted;
       if (V >= fvDc50Wip) and (result.CipherMode = cmGCM) then
-        result.GCMAuthTagSizeInBytes := Length(TDECFormattedCipher(Cipher).ExpectedAuthenticationResult)
+        result.GCMAuthTagSizeInBytes := TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3
       else
         result.GCMAuthTagSizeInBytes := 0;
       DeCoder4X_ValidateParameterBlock(result); // Should always pass
@@ -884,9 +882,9 @@ begin
   result.KDF := kvKdfx;
   result.PBKDF_Iterations := 0; // only for KdfVersion=kvPbkdf2
   if V >= fvDc50Wip then
-    result.IVSize := 16
+    result.IVSizeInBytes := 16
   else
-    result.IVSize := 0;
+    result.IVSizeInBytes := 0;
   if V >= fvDc41Beta then
     result.SeedSize := 32
   else
@@ -932,7 +930,7 @@ begin
 
   if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.Filler <> $FF) then
     raise Exception.Create('Indiv Filler only accepted format version 4+');
-  if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.IVSize <> 0) then
+  if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.IVSizeInBytes <> 0) then
     raise Exception.Create('Indiv IV only accepted format version 4+');
   if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.KDF <> kvKdfx) then
     raise Exception.Create('Indiv KDF only accepted format version 4+');
@@ -1010,6 +1008,7 @@ var
   PbkdfIterations: long;
   V: TDcFormatVersion;
   GCMAuthTagSizeInBytes: byte;
+  tmpWS: WideString;
 begin
   DeCoder4X_ValidateParameterBlock(AParameters);
 
@@ -1028,6 +1027,7 @@ begin
       raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
     end;
 
+    {$REGION 'Transfer parameters from AParameters to the working variables'}
     V := AParameters.Dc4FormatVersion;
     case AParameters.IsZLibCompressed of
       Yes:   IsZLibCompressed := true;
@@ -1038,8 +1038,8 @@ begin
     // AParameters.OrigFileName          (this is just an output and will be ignored as input)
     KdfVersion := AParameters.KDF;
     PbkdfIterations := AParameters.PBKDF_Iterations;
-    if AParameters.IVSize > 0 then
-      IV := RandomBytes(AParameters.IVSize)
+    if AParameters.IVSizeInBytes > 0 then
+      IV := RandomBytes(AParameters.IVSizeInBytes)
     else
       SetLength(IV, 0);
     Seed := Convert(RandomBytes(AParameters.SeedSize));
@@ -1055,6 +1055,7 @@ begin
     Filler := AParameters.Filler;
     FileNameUserPasswordEncrypted := AParameters.FileNameUserPasswordEncrypted;
     GCMAuthTagSizeInBytes := AParameters.GCMAuthTagSizeInBytes;
+    {$ENDREGION}
 
     {$REGION 'Compress stream if the file type is not already compressed'}
     if IsZLibCompressed and (V>=fvDc40) then
@@ -1070,7 +1071,6 @@ begin
     {$ENDREGION}
 
     tempstream := TFileStream.Create(AOutput, fmCreate);
-    tempstream.Size := 0;
 
     {$REGION 'Generate key used by HMAC and Cipher'}
     if KDFVersion = kvKdfx then
@@ -1137,7 +1137,9 @@ begin
       // if not encrypted with user-password, otherwise:
       // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
       if FileNameUserPasswordEncrypted then WriteByte($01) else WriteByte($00);
-      OrigName := RawByteString(PAnsiString(PWideString(WideString(ExtractFileName(AFileName))))); // UTF-16
+      tmpWS := WideString(ExtractFileName(AFileName));
+      SetLength(OrigName, Length(tmpWS)*SizeOf(WideChar));
+      Move(tmpWS[Low(tmpWS)], OrigName[Low(OrigName)], Length(tmpWS)*SizeOf(WideChar));
       {$REGION 'Decide about filename key'}
       if FileNameUserPasswordEncrypted then
       begin
@@ -1160,7 +1162,7 @@ begin
           Assert(False);
       end;
       {$ENDREGION}
-      Cipher.Init(Key, IV, Filler);
+      Cipher.Init(FileNameKey, IV, Filler);
       try
         if Length(OrigName) mod 2 <> 0 then OrigName := OrigName + #0; // should not happen, otherwise it is no valid UTF-16!
         OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).EncodeBytes(BytesOf(OrigName)));
@@ -1245,9 +1247,9 @@ begin
     {$REGION '8.7 GCM Tag length (only if GCM mode)'}
     if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
     begin
-      if GCMAuthTagSizeInBytes > 128 then GCMAuthTagSizeInBytes := 128; // this is the size of CalcGaloisHash()
+      if GCMAuthTagSizeInBytes > 16 then GCMAuthTagSizeInBytes := 16; // 128 bits this is the size of CalcGaloisHash()
       TDECFormattedCipher(Cipher).AuthenticationResultBitLength := GCMAuthTagSizeInBytes * 8;
-      WriteByte(TDECFormattedCipher(Cipher).AuthenticationResultBitLength);
+      WriteByte(GCMAuthTagSizeInBytes);
     end;
     {$ENDREGION}
 
@@ -1375,7 +1377,7 @@ begin
   sl.Add('Cipher Key Size: ' + IntToStr(fi.CipherClass.Context.KeySize));
   sl.Add('Cipher Block Size: ' + IntToStr(fi.CipherClass.Context.BlockSize));
   sl.Add('Cipher Buffer Size: ' + IntToStr(fi.CipherClass.Context.BufferSize));
-  sl.Add('Cipher IV Size: ' + IntToStr(fi.IVSize));
+  sl.Add('Cipher IV Size: ' + IntToStr(fi.IVSizeInBytes));
   sl.Add('Cipher Mode: ' + CIPHER_MODE_NAMES[fi.CipherMode]);
   sl.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode] + ' (0x'+IntToHex(fi.Filler,2)+')');
   if fi.CipherMode = cmGCM then
@@ -1394,8 +1396,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder20.Create;
-      Cipher.Init(AnsiString(''), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(''), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1418,8 +1420,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder20.Create;
-      Cipher.Init(AnsiString(''), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(''), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1442,8 +1444,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder21.Create;
-      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1466,8 +1468,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder21.Create;
-      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1490,8 +1492,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder22.Create;
-      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1514,8 +1516,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder22.Create;
-      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1538,8 +1540,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder30.Create;
-      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1562,8 +1564,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder30.Create;
-      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1586,8 +1588,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder32.Create;
-      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
@@ -1610,8 +1612,8 @@ begin
     ssOut := TFileStream.Create(AOutput, fmCreate);
     try
       Cipher := TCipher_VtsDeCoder32.Create;
-      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       Cipher.Mode := cmECBx;
+      Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
       TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
       Cipher.Done;
       Cipher.Free;
