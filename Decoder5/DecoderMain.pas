@@ -247,16 +247,16 @@ procedure TFormMain.Button2Click(Sender: TObject);
           if (searchResult.Attr and faDirectory)=0 then begin
             //if SameText(ExtractFileExt(searchResult.Name), '.ini') then begin
             try
-              AnalyzeFile(IncludeTrailingBackSlash(dirName)+searchResult.Name);
+              AnalyzeFile(IncludeTrailingPathDelimiter(dirName)+searchResult.Name);
             except
               on E: Exception do
               begin
-                Memo1.Lines.Add(IncludeTrailingBackSlash(dirName)+searchResult.Name+#9+E.Message);
+                Memo1.Lines.Add(IncludeTrailingPathDelimiter(dirName)+searchResult.Name+#9+E.Message);
               end;
             end;
             //end;
           end else if (searchResult.Name<>'.') and (searchResult.Name<>'..') then begin
-            AnalyzeDir(IncludeTrailingBackSlash(dirName)+searchResult.Name);
+            AnalyzeDir(IncludeTrailingPathDelimiter(dirName)+searchResult.Name);
           end;
         until FindNext(searchResult)<>0
       finally
@@ -321,8 +321,6 @@ begin
   Memo1.Lines.Add('DeCoder4X_ValidateParameterBlock OK');
   Memo1.Lines.Add('');
 
-// TODO: 64 bit windows, here is some memory corruption in the DC2x and DC3x ciphers!!!
-(*
   DeCoder20_EncodeFile('TestData\dc20_256zero_in.txt', 'TestData\dc20_256zero_out.tmp', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc20_256zero_out.txt', 'TestData\dc20_256zero_out.tmp'));
   DeleteFile('TestData\dc20_256zero_out.tmp');
@@ -331,7 +329,6 @@ begin
   DeleteFile('TestData\dc20_test_out.tmp');
   Memo1.Lines.Add('DC20 Encode OK');
   Memo1.Lines.Add('');
-  exit;
 
   DeCoder22_EncodeFile('TestData\dc22_256zero_in.txt', 'TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc22_256zero_out_61.txt', 'TestData\dc22_256zero_out_61.tmp'));
@@ -362,7 +359,6 @@ begin
   DeleteFile('TestData\dc32_test_out_foobar.tmp');
   Memo1.Lines.Add('DC32 Encode OK');
   Memo1.Lines.Add('');
-*)
 
   DeCoder4X_DecodeFile('TestData\schloss.dc4', 'schloss_decoded.bmp', 'test', false, OnProgressProc);
   Memo1.Lines.Add('Decode DC41 Beta OK');
@@ -398,7 +394,6 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  (*
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', false, OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
@@ -420,7 +415,6 @@ begin
   Memo1.Lines.Add('DC41 Final OK (Filename not encrypted):');
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
-  *)
 
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc50Wip), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);

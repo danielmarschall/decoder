@@ -3,12 +3,13 @@ unit DecoderOldCiphers;
 interface
 
 uses
-  SysUtils, DECCipherBase, DECCipherFormats;
+  SysUtils, DECCipherBase, DECCipherFormats, DECTypes;
 
 type
   TCipher_RepeatingXorSequence = class abstract (TDECFormattedCipher)
   strict private
-    FKey: TBytes;
+    FKey: PUInt8Array;
+    FKeySize: Integer;
     FKeyPos: Integer;
   strict protected
     procedure DoInit(const Key; Size: Integer); override;
@@ -70,7 +71,7 @@ type
 implementation
 
 uses
-  DECTypes, DECUtil;
+  DECUtil;
 
 { TCipher_RepeatingXorSequence }
 
@@ -89,9 +90,10 @@ end;
 procedure TCipher_RepeatingXorSequence.DoInit(const Key; Size: Integer);
 begin
   inherited;
-  SetLength(FKey, Size);
-  Move(Key, FKey[Low(FKey)], Size);
-  FKeyPos := Length(FKey)-1; // Point to last character, not the first character, because there is one DoEncode round for IV in TDECCipher.Init, even if IV is empty
+  FKey := ReallocMemory(FKey, Size);
+  Move(Key, FKey^, Size);
+  FKeySize := Size;
+  FKeyPos := FKeySize-1; // Point to last character, not the first character, because there is one DoEncode round for IV in TDECCipher.Init, even if IV is empty
 end;
 
 procedure TCipher_RepeatingXorSequence.DoEncode(Source, Dest: Pointer; Size: Integer);
@@ -101,23 +103,24 @@ begin
   if State = csDone then FKeyPos := 0;
   for i := 0 to Size-1 do
   begin
-    if Length(FKey) = 0 then
+    if FKeySize = 0 then
     begin
       // Without key, this is a null cipher
       PByte(Dest)[i] := PByte(Source)[i];
     end
     else
     begin
-      PByte(Dest)[i] := PByte(Source)[i] xor FKey[FKeyPos];
-      FKeyPos := (FKeyPos+1) mod Length(FKey);
+      PByte(Dest)[i] := PByte(Source)[i] xor FKey^[FKeyPos];
+      FKeyPos := (FKeyPos+1) mod FKeySize;
     end;
   end;
 end;
 
 procedure TCipher_RepeatingXorSequence.SecureErase;
 begin
-  ProtectBuffer(FKey, Length(FKey));
-  SetLength(FKey, 0);
+  ProtectBuffer(FKey^[0], FKeySize);
+  FreeMem(FKey);
+  FKeySize := 0;
   inherited;
 end;
 
