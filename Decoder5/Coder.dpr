@@ -1,11 +1,11 @@
 program Coder;
 
 uses
-  FastMMMemLeakMonitor,
   Vcl.Forms,
   DecoderMain in 'DecoderMain.pas' {FormMain},
   DecoderEncDec in 'DecoderEncDec.pas',
-  DecoderOldCiphers in 'DecoderOldCiphers.pas';
+  DecoderOldCiphers in 'DecoderOldCiphers.pas',
+  DecoderFuncs in 'DecoderFuncs.pas';
 
 {$R *.res}
 

@@ -25,7 +25,8 @@ implementation
 
 uses
   DecoderEncDec, DECTypes, DecoderOldCiphers, DECCipherBase, DECCiphers,
-  DECCipherFormats, Math, ZLib, System.Generics.Collections;
+  DECCipherFormats, Math, ZLib, System.Generics.Collections,
+  DecoderFuncs;
 
 {$R *.dfm}
 
@@ -40,65 +41,6 @@ begin
     FormMain.ProgressBar1.Position := Pos;
 end;
 
-function CalcEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
-var
-  fs: TFileStream;
-
-  procedure Read(var Value; Size: Integer);
-  begin
-    fs.ReadBuffer(Value, Size);
-  end;
-
-  function ReadRaw(leng: integer): RawByteString;
-  begin
-    SetLength(Result, leng);
-    Read(Result[Low(Result)], Length(Result));
-  end;
-
-var
-  p: Extended;
-  i: int64;
-  counts: array[0..255] of int64;
-  filesize: int64;
-  rbs: RawByteString;
-  ProgrSize, ProgrPos: Int64;
-const
-  chunksize = 4096; // bigger = faster
-begin
-  for i := Low(counts) to High(counts) do
-    Counts[i] := 0;
-
-  fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
-  try
-    filesize := fs.Size;
-    ProgrPos := 0;
-    ProgrSize := Filesize div chunksize;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, Started);
-    while fs.Position < fs.Size do
-    begin
-      rbs := ReadRaw(Min(chunksize,fs.Size-fs.Position));
-      for i := Low(rbs) to High(rbs) do
-        Inc(counts[Ord(rbs[i])]);
-      Inc(ProgrPos);
-      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, Processing);
-      Application.ProcessMessages;
-      if Application.Terminated then Abort;
-    end;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, Finished);
-
-    // Shannon's entropy
-    // https://stackoverflow.com/questions/990477/how-to-calculate-the-entropy-of-a-file
-    result := 0;
-    for i := Low(counts) to High(counts) do
-    begin
-      p := Counts[i] / filesize;
-      if p > 0 then result := result - p*Log2(p)
-    end;
-  finally
-    FreeAndNil(fs);
-  end;
-end;
-
 procedure TFormMain.Button1Click(Sender: TObject);
 var
   entropy: Extended;
@@ -109,15 +51,15 @@ begin
   // DC4          7,98892287038652
   // Pure Random  7,98539387290228
   // Same Byte    0
-  entropy := CalcEntropy('Coder.exe', OnProgressProc);
+  entropy := ShannonEntropy('Coder.exe', OnProgressProc);
   memo1.Lines.Add(FloatTostr(entropy));
-  entropy := CalcEntropy('DecoderEncDec.pas', OnProgressProc);
+  entropy := ShannonEntropy('DecoderEncDec.pas', OnProgressProc);
   memo1.Lines.Add(FloatTostr(entropy));
-  entropy := CalcEntropy('TestData\schloss.dc4', OnProgressProc);
+  entropy := ShannonEntropy('TestData\schloss.dc4', OnProgressProc);
   memo1.Lines.Add(FloatTostr(entropy));
-  entropy := CalcEntropy('random.bin', OnProgressProc);
+  entropy := ShannonEntropy('random.bin', OnProgressProc);
   memo1.Lines.Add(FloatTostr(entropy));
-  entropy := CalcEntropy('zeroent.bin', OnProgressProc);
+  entropy := ShannonEntropy('zeroent.bin', OnProgressProc);
   memo1.Lines.Add(FloatTostr(entropy));
 end;
 
@@ -196,7 +138,7 @@ procedure TFormMain.Button2Click(Sender: TObject);
         finally
           FreeAndNil(CompressionStream);
         end;
-        result := CompressInputStream.Size / CompressOutputStream.Size;
+        result := CompressOutputStream.Size / CompressInputStream.Size;
       finally
         FreeAndNil(CompressOutputStream);
       end;
@@ -213,9 +155,9 @@ procedure TFormMain.Button2Click(Sender: TObject);
   begin
     Caption := AFileName;
     Application.ProcessMessages;
-    entropy := CalcEntropy(AFileName, OnProgressProc);
+    entropy := ShannonEntropy(AFileName, OnProgressProc);
     ratio := ZLibCompressRatio(AFileName);
-    FileExt := ExtractFileExt(AFileName);
+    FileExt := AnsiUpperCase(ExtractFileExt(AFileName));
     if not FileExtAnalysis.ContainsKey(FileExt) then
     begin
       FileExtAnalysis.Add(FileExt, er);
@@ -270,7 +212,7 @@ begin
   FileExtAnalysis := TDictionary<string, TEntropyRatio>.Create;
   try
     // AnalyzeFile('Coder.exe');
-    AnalyzeDir('T:\');
+    AnalyzeDir('C:\');
 
     Memo1.Lines.Clear;
     Memo1.Lines.Add('File Ext'+#9+'EntropyAvg'+#9+'RatioAvg'+#9+'Num');

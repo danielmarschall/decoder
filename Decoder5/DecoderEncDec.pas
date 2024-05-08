@@ -24,12 +24,12 @@ type
     KDF: TKdfVersion;
     PBKDF_Iterations: Integer;
     IVSizeInBytes: integer;
+    IVFillByte: byte;
     SeedSize: integer;
     HashClass: TDECHashClass;
     CipherClass: TDECCipherClass;
     CipherMode: TCipherMode;
-    FillMode: TBlockFillMode;
-    Filler: byte;
+    BlockFillMode: TBlockFillMode;
     FileNameUserPasswordEncrypted: boolean; // only used in version 3
     GCMAuthTagSizeInBytes: byte;
   end;
@@ -96,7 +96,7 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 implementation
 
 uses
-  DecoderOldCiphers;
+  DecoderOldCiphers, DecoderFuncs;
 
 type
   // https://github.com/MHumm/DelphiEncryptionCompendium/issues/62
@@ -197,12 +197,6 @@ begin
   finally
     HashInstance.Free;
   end;
-end;
-
-procedure SecureDeleteFile(AFileName: string);
-begin
-  // TODO: Implement SecureDeleteFile()
-  DeleteFile(AFileName);
 end;
 
 function DEC51_Identity(IdentityBase: Int64; ClassName: string): Int64;
@@ -378,7 +372,7 @@ var
   KdfVersion: TKdfVersion;
   HMacKey: TBytes;
   IV: TBytes;
-  Filler: Byte;
+  IvFillByte: Byte;
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
   bakSourcePosEncryptedData: Int64;
@@ -572,7 +566,14 @@ begin
         SetLength(IV, 0);
       {$ENDREGION}
 
-      {$REGION '7.6 Cipher block filling mode (only version 4+)'}
+      {$REGION '7.6 IV Fill Byte (only version 4+)'}
+      if V >= fvDc50Wip then
+        IvFillByte := ReadByte
+      else
+        IvFillByte := $FF;
+      {$ENDREGION}
+
+      {$REGION '7.7 Cipher block filling mode (only version 4+; currently unused by DEC)'}
       if V >= fvDc50Wip then
       begin
         iBlockFillMode := ReadByte;
@@ -584,13 +585,6 @@ begin
       begin
         Cipher.FillMode := TBlockFillMode.fmByte;
       end;
-      {$ENDREGION}
-
-      {$REGION '7.7 Last-Block-Filler (only version 4+)'}
-      if V >= fvDc50Wip then
-        Filler := ReadByte
-      else
-        Filler := $FF;
       {$ENDREGION}
 
       {$REGION '8. Seed (only version 0 or version 2+)'}
@@ -669,7 +663,7 @@ begin
       {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
       if not OnlyReadFileInfo then
       begin
-        Cipher.Init(Key, IV, Filler);
+        Cipher.Init(Key, IV, IvFillByte);
         try
           if V = fvHagenReddmannExample then
           begin
@@ -735,7 +729,7 @@ begin
         end
         else
         begin
-          Cipher.Init(Key, IV, Filler);
+          Cipher.Init(Key, IV, IvFillByte);
           try
             OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
             if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
@@ -821,12 +815,12 @@ begin
       result.KDF := KdfVersion;
       result.PBKDF_Iterations := PbkdfIterations;
       result.IVSizeInBytes := Length(IV);
+      result.IVFillByte := IvFillByte;
       result.SeedSize := Length(Seed);
       result.HashClass := HashClass;
       result.CipherClass := CipherClass;
       result.CipherMode := Cipher.Mode;
-      result.FillMode := Cipher.FillMode;
-      result.Filler := Filler;
+      result.BlockFillMode := Cipher.FillMode;
       result.FileNameUserPasswordEncrypted := FileNameUserPasswordEncrypted;
       if (V >= fvDc50Wip) and (result.CipherMode = cmGCM) then
         result.GCMAuthTagSizeInBytes := TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3
@@ -849,25 +843,6 @@ begin
   end;
 end;
 
-function IsCompressedFileType(AFileName: string): boolean;
-begin
-  result :=
-    SameText(ExtractFileExt(AFileName), '.zip') or
-    SameText(ExtractFileExt(AFileName), '.7z') or
-    SameText(ExtractFileExt(AFileName), '.rar') or
-    SameText(ExtractFileExt(AFileName), '.gz') or
-    SameText(ExtractFileExt(AFileName), '.xz') or
-    SameText(ExtractFileExt(AFileName), '.mp3') or
-    SameText(ExtractFileExt(AFileName), '.mp4') or
-    SameText(ExtractFileExt(AFileName), '.png') or
-    SameText(ExtractFileExt(AFileName), '.gif') or
-    SameText(ExtractFileExt(AFileName), '.jpg') or
-    SameText(ExtractFileExt(AFileName), '.jpeg') or
-    SameText(ExtractFileExt(AFileName), '.docx') or
-    SameText(ExtractFileExt(AFileName), '.xlsx') or
-    SameText(ExtractFileExt(AFileName), '.pptx');
-end;
-
 function DeCoder4X_GetDefaultParameters(V: TDcFormatVersion): TDC4FileInfo;
 begin
   result.Dc4FormatVersion := V;
@@ -885,6 +860,7 @@ begin
     result.IVSizeInBytes := 16
   else
     result.IVSizeInBytes := 0;
+  result.IVFillByte := $FF;
   if V >= fvDc41Beta then
     result.SeedSize := 32
   else
@@ -897,8 +873,7 @@ begin
     result.HashClass := THash_SHA3_512;
   result.CipherClass := TCipher_AES;
   result.CipherMode := TCipherMode.cmCTSx;
-  result.FillMode := TBlockFillMode.fmByte;
-  result.Filler := $FF;
+  result.BlockFillMode := TBlockFillMode.fmByte;
   result.FileNameUserPasswordEncrypted := V = fvDc41FinalCancelled; // only used in version 3
   if (V >= fvDc50Wip) and (result.CipherMode = cmGCM) then
     result.GCMAuthTagSizeInBytes := 128 shr 3
@@ -928,8 +903,8 @@ begin
   if (fi.Dc4FormatVersion <> fvDc41FinalCancelled) and fi.FileNameUserPasswordEncrypted then
     raise Exception.Create('EncPwd only accepted in DC41Final version');
 
-  if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.Filler <> $FF) then
-    raise Exception.Create('Indiv Filler only accepted format version 4+');
+  if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.IvFillByte <> $FF) then
+    raise Exception.Create('Indiv IvFillByte only accepted format version 4+');
   if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.IVSizeInBytes <> 0) then
     raise Exception.Create('Indiv IV only accepted format version 4+');
   if (fi.Dc4FormatVersion < fvDc50Wip) and (fi.KDF <> kvKdfx) then
@@ -998,7 +973,7 @@ var
   KdfVersion: TKdfVersion;
   HMacKey: TBytes;
   IV: TBytes;
-  Filler: Byte;
+  IvFillByte: Byte;
   CipherClass: TDECCipherClass;
   HashClass: TDECHashClass;
   tmp64: Int64;
@@ -1032,7 +1007,20 @@ begin
     case AParameters.IsZLibCompressed of
       Yes:   IsZLibCompressed := true;
       No:    IsZLibCompressed := false;
-      Auto:  IsZLibCompressed := not IsCompressedFileType(AFileName); // TODO: Maybe also try to calc the entropy to see if compress will work good or bad?
+
+      // Measurement of 21367	files
+      // Entropy      AvgComprRatio
+      // 0,00–0,99		0,99908
+      // 1,00–1,99		0,21721
+      // 2,00–2,99		0,23161
+      // 3,00–3,99		0,20000
+      // 4,00–4,99		0,21339
+      // 5,00–5,99		0,35107
+      // 6,00–6,99		0,55397
+      // 7,00–7,49		0,73129
+      // 7,50–7,99		0,87920
+      Auto:  IsZLibCompressed := not IsCompressedFileType(AFileName)
+                                  or (ShannonEntropy(AFileName, OnProgressProc) < 7.5);
     end;
     // AParameters.IsCompressedFolder    (this is just an output and will be ignored as input)
     // AParameters.OrigFileName          (this is just an output and will be ignored as input)
@@ -1042,6 +1030,7 @@ begin
       IV := RandomBytes(AParameters.IVSizeInBytes)
     else
       SetLength(IV, 0);
+    IvFillByte := AParameters.IvFillByte;
     Seed := Convert(RandomBytes(AParameters.SeedSize));
 
     HashClass := AParameters.HashClass;
@@ -1050,11 +1039,10 @@ begin
     CipherClass := AParameters.CipherClass;
     Cipher := CipherClass.Create;
     Cipher.Mode := AParameters.CipherMode;
-    Cipher.FillMode := AParameters.FillMode;
-
-    Filler := AParameters.Filler;
-    FileNameUserPasswordEncrypted := AParameters.FileNameUserPasswordEncrypted;
+    Cipher.FillMode := AParameters.BlockFillMode;
     GCMAuthTagSizeInBytes := AParameters.GCMAuthTagSizeInBytes;
+
+    FileNameUserPasswordEncrypted := AParameters.FileNameUserPasswordEncrypted;
     {$ENDREGION}
 
     {$REGION 'Compress stream if the file type is not already compressed'}
@@ -1162,7 +1150,7 @@ begin
           Assert(False);
       end;
       {$ENDREGION}
-      Cipher.Init(FileNameKey, IV, Filler);
+      Cipher.Init(FileNameKey, IV, IvFillByte);
       try
         if Length(OrigName) mod 2 <> 0 then OrigName := OrigName + #0; // should not happen, otherwise it is no valid UTF-16!
         OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).EncodeBytes(BytesOf(OrigName)));
@@ -1213,17 +1201,17 @@ begin
     end;
     {$ENDREGION}
 
-    {$REGION '7.6 Cipher block filling mode (only version 4+)'}
+    {$REGION '7.6 IV Fill Byte (only version 4+)'}
     if V >= fvDc50Wip then
     begin
-      WriteByte(Ord(Cipher.FillMode));
+      WriteByte(IvFillByte);
     end;
     {$ENDREGION}
 
-    {$REGION '7.7 Last-Block-Filler (only version 4+)'}
+    {$REGION '7.7 Cipher block filling mode (only version 4+; currently unused by DEC)'}
     if V >= fvDc50Wip then
     begin
-      WriteByte(Filler);
+      WriteByte(Ord(Cipher.FillMode));
     end;
     {$ENDREGION}
 
@@ -1254,7 +1242,7 @@ begin
     {$ENDREGION}
 
     {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
-    Cipher.Init(Key, IV, Filler);
+    Cipher.Init(Key, IV, IvFillByte);
     try
       Source.Position := 0;
       if V = fvHagenReddmannExample then
@@ -1378,8 +1366,10 @@ begin
   sl.Add('Cipher Block Size: ' + IntToStr(fi.CipherClass.Context.BlockSize));
   sl.Add('Cipher Buffer Size: ' + IntToStr(fi.CipherClass.Context.BufferSize));
   sl.Add('Cipher IV Size: ' + IntToStr(fi.IVSizeInBytes));
+  sl.Add('Cipher IV Fill Byte: 0x'+IntToHex(fi.IvFillByte,2));
   sl.Add('Cipher Mode: ' + CIPHER_MODE_NAMES[fi.CipherMode]);
-  sl.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode] + ' (0x'+IntToHex(fi.Filler,2)+')');
+  // Commented out, because DEC currently doesn't use it
+  //sl.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode]);
   if fi.CipherMode = cmGCM then
     sl.Add('GCM Auth Tag Size: ' + IntToStr(fi.GCMAuthTagSizeInBytes*8) + ' bits');
   sl.Add('Message Authentication: ' + INTEGRITY_CHECK_INFO[fi.Dc4FormatVersion]);

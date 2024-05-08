@@ -8,7 +8,7 @@ Used by:	ViaThinkSoft (De)Coder 4.0
 		ViaThinkSoft (De)Coder 4.1
 		ViaThinkSoft (De)Coder 5.0
 Author:		Daniel Marschall
-Last update:    May, 7th 2024
+Last update:    May, 8th 2024
 
 
 CONTENTS
@@ -472,9 +472,9 @@ Offset	Type	Size		Content/Description
 					0x372A123A	THash_RipeMD128 (DigestSize: 16, BlockSize: 64)
 	Byte	1		IV Size (default: 16 = 0x10)
 	Binary	var		IV (Random Data)
-	Byte	1		Blocking filling mode (default: 0x00)
+	Byte	1		IV filler byte (default: 0xFF)
+	Byte	1		Blocking filling mode (default: 0x00), currently not used by DEC
 					0x00	Byte filling mode
-	Byte	1		Filler byte of last block (default: 0xFF), actually filler for IV buffer
 	Byte	1		Size of seed (default 32 = 0x20)
 	Binary	0-255		Seed (Random data)
 	Byte	1		KDF version
