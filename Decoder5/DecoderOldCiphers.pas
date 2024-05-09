@@ -6,7 +6,7 @@ uses
   SysUtils, DECCipherBase, DECCipherFormats, DECTypes;
 
 type
-  TCipher_RepeatingXorSequence = class abstract (TDECFormattedCipher)
+  TCipher_RepeatingXorSequence = class (TDECFormattedCipher)
   strict private
     FKey: PUInt8Array;
     FKeySize: Integer;
@@ -84,7 +84,7 @@ begin
   Result.NeedsAdditionalBufferBackup := False;
   Result.MinRounds                   := 1;
   Result.MaxRounds                   := 1;
-  Result.CipherType                  := [ctBlock, ctSymmetric];
+  Result.CipherType                  := [ctSymmetric, ctStream];
 end;
 
 procedure TCipher_RepeatingXorSequence.DoInit(const Key; Size: Integer);

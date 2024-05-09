@@ -3,7 +3,13 @@ unit DecoderFuncs;
 interface
 
 uses
-  DECTypes, Classes, SysUtils, Math, Forms;
+  Windows, DECTypes, Classes, SysUtils, Math, Forms,
+
+
+
+
+
+  dialogs;
 
 procedure SecureDeleteFile(AFileName: string);
 function IsCompressedFileType(AFileName: string): boolean;
@@ -11,9 +17,94 @@ function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEven
 
 implementation
 
+uses
+  DECUtil, DECRandom;
+
+{$IFDEF Unicode}
+function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
+  external 'shlwapi.dll' name 'PathCanonicalizeW';
+{$ELSE}
+function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
+  external 'shlwapi.dll' name 'PathCanonicalizeA';
+{$ENDIF}
+
 procedure SecureDeleteFile(AFileName: string);
+
+  function GetClusterSize(Drive: String): integer;
+  var
+    SectorsPerCluster, BytesPerSector, dummy: Cardinal;
+  begin
+    SectorsPerCluster := 0;
+    BytesPerSector := 0;
+    GetDiskFreeSpace(PChar(Drive), SectorsPerCluster, BytesPerSector, dummy, dummy);
+
+    Result := SectorsPerCluster * BytesPerSector;
+  end;
+
+  function RandFileName(len: integer): string;
+  const
+    str = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  var
+    i: UInt32;
+  begin
+    Result := '';
+    repeat
+      i := RandomLong mod UInt32(Length(str));
+      Result := Result + str[Low(str) + i];
+    until Length(Result) = len;
+  end;
+
+  function RelToAbs(const RelPath, BasePath: string): string;
+  var
+    Dst: array[0..MAX_PATH-1] of char;
+  begin
+    PathCanonicalize(@Dst[0], PChar(IncludeTrailingPathDelimiter(BasePath) + RelPath));
+    result := Dst;
+  end;
+
+var
+  drive: string;
+  fs: TFileStream;
+  AFileName2: string;
+  ClusterSize: integer;
 begin
-  // TODO: Implement SecureDeleteFile()
+  ClusterSize := 32000; // max available in Windows format dialog
+  try
+    drive := ExtractFileDrive(RelToAbs(AFileName, GetCurrentDir));
+    if drive <> '' then
+      ClusterSize := GetClusterSize(drive);
+  except
+    // If we can't get it, that's not a problem
+  end;
+
+  fs := TFileStream.Create(AFileName, fmOpenReadWrite);
+  try
+    try
+      // Try to grow the file to avoid guessing the file size by looking at the rest of the block
+      // Also erases information at the rest of the block
+      fs.Size := Ceil(fs.Size / ClusterSize) * ClusterSize;
+    except
+      // We might be out of disk space
+    end;
+
+    // secure wipe contents
+    ProtectStream(fs, fs.Size-fs.Position);
+
+    // avoid that undelete tools see file size
+    fs.Size := 0;
+  finally
+    FreeAndNil(fs);
+  end;
+
+  // Avoid that undelete tools see file name...
+  AFileName2 := IncludeTrailingPathDelimiter(ExtractFileDir(AFileName))+RandFileName(Length(ExtractFileName(AFileName)));
+  if RenameFile(AFileName, AFileName2) then AFileName := AFileName2;
+
+  // ... or the size of the name
+  AFileName2 := IncludeTrailingPathDelimiter(ExtractFileDir(AFileName))+'_';
+  if RenameFile(AFileName, AFileName2) then AFileName := AFileName2;
+
+  // now delete the file
   DeleteFile(AFileName);
 end;
 

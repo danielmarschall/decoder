@@ -250,6 +250,7 @@ procedure TFormMain.Button3Click(Sender: TObject);
     end
   end;
 var
+  fp: TDC4Parameters;
   fi: TDC4FileInfo;
 
 begin
@@ -302,14 +303,14 @@ begin
   Memo1.Lines.Add('DC32 Encode OK');
   Memo1.Lines.Add('');
 
-  DeCoder4X_DecodeFile('TestData\schloss.dc4', 'schloss_decoded.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('TestData\schloss.dc4', 'schloss_decoded.bmp', 'test', OnProgressProc);
   Memo1.Lines.Add('Decode DC41 Beta OK');
   Memo1.Lines.Add('');
 
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver0.dc5', 'test', DeCoder4X_GetDefaultParameters(fvHagenReddmannExample), OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver0.dc5', 'schloss_decoded_dc5_ver0.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver0.dc5', 'schloss_decoded_dc5_ver0.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver0.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver0.dc5', '', '', true);
+  fi := DeCoder4X_DecodeFile('schloss_ver0.dc5', '', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver0.bmp');
   DeleteFile('schloss_ver0.dc5');
   Memo1.Lines.Add('Hagen Example OK:');
@@ -317,9 +318,9 @@ begin
   Memo1.Lines.Add('');
 
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver1.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc40), OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver1.dc5', 'schloss_decoded_dc5_ver1.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver1.dc5', 'schloss_decoded_dc5_ver1.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver1.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver1.dc5', '', '', true);
+  fi := DeCoder4X_DecodeFile('schloss_ver1.dc5', '', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver1.bmp');
   DeleteFile('schloss_ver1.dc5');
   Memo1.Lines.Add('DC40 OK:');
@@ -327,9 +328,9 @@ begin
   Memo1.Lines.Add('');
 
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver2.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc41Beta), OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver2.dc5', 'schloss_decoded_dc5_ver2.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver2.dc5', 'schloss_decoded_dc5_ver2.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver2.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver2.dc5', '', '', true);
+  fi := DeCoder4X_DecodeFile('schloss_ver2.dc5', '', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver2.bmp');
   DeleteFile('schloss_ver2.dc5');
   Memo1.Lines.Add('DC41 Beta OK:');
@@ -337,21 +338,21 @@ begin
   Memo1.Lines.Add('');
 
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled), OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', true);
+  fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver3.bmp');
   DeleteFile('schloss_ver3.dc5');
   Memo1.Lines.Add('DC41 Final OK (Filename encrypted):');
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  fi := DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled);
-  fi.FileNameUserPasswordEncrypted := false;
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', fi, OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', false, OnProgressProc);
+  fp := DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled);
+  fp.FileNameUserPasswordEncrypted := false;
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', fp, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', true);
+  fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver3.bmp');
   DeleteFile('schloss_ver3.dc5');
   Memo1.Lines.Add('DC41 Final OK (Filename not encrypted):');
@@ -359,21 +360,21 @@ begin
   Memo1.Lines.Add('');
 
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc50Wip), OnProgressProc);
-  DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', '', '', true);
+  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', '', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver4.bmp');
   DeleteFile('schloss_ver4.dc5');
   Memo1.Lines.Add('DC50 OK:');
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  fi := DeCoder4X_GetDefaultParameters(fvDc50Wip);
-  fi.CipherClass := TCipher_AES128;
-  fi.CipherMode := cmGCM;
-  fi.GCMAuthTagSizeInBytes := 16;
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fi, OnProgressProc);
-  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp.CipherClass := TCipher_AES128;
+  fp.CipherMode := cmGCM;
+  fp.GCMAuthTagSizeInBytes := 16;
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);
+  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
   DeleteFile('schloss_decoded_dc5_ver4.bmp');
   DeleteFile('schloss_ver4.dc5');
@@ -381,11 +382,11 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  fi := DeCoder4X_GetDefaultParameters(fvDc50Wip);
-  fi.CipherClass := TCipher_Blowfish;
-  fi.IVSizeInBytes := fi.CipherClass.Context.BufferSize;
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fi, OnProgressProc);
-  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp.CipherClass := TCipher_Blowfish;
+  fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);
+  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
   DeleteFile('schloss_decoded_dc5_ver4.bmp');
   DeleteFile('schloss_ver4.dc5');
@@ -393,12 +394,12 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  fi := DeCoder4X_GetDefaultParameters(fvDc50Wip);
-  fi.CipherClass := TCipher_Blowfish;
-  fi.CipherMode := cmECBx;
-  fi.IVSizeInBytes := fi.CipherClass.Context.BufferSize;
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fi, OnProgressProc);  // works only because ZLib provided a size that can be divided by 8.
-  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', false, OnProgressProc);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp.CipherClass := TCipher_Blowfish;
+  fp.CipherMode := cmECBx;
+  fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);  // works only because ZLib provided a size that can be divided by 8.
+  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
   DeleteFile('schloss_decoded_dc5_ver4.bmp');
   DeleteFile('schloss_ver4.dc5');
