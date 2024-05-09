@@ -3,22 +3,34 @@ unit DecoderFuncs;
 interface
 
 uses
-  Windows, DECTypes, Classes, SysUtils, Math, Forms,
+  Windows, DECTypes, Classes, SysUtils, Math, Forms;
 
+type
+  TStreamHelper = class helper for TStream
+  public
+    procedure Read(var Value; Size: Integer);
+    function ReadByte: Byte;
+    function ReadLong: LongWord;
+    function ReadRawByteString(len: integer): RawByteString;
+    function ReadRawBytes(len: integer): TBytes;
+    procedure Write(var Value; Size: Integer);
+    procedure WriteByte(b: Byte);
+    procedure WriteLong(lw: LongWord);
+    procedure WriteRawByteString(rb: RawByteString);
+    procedure WriteRawBytes(b: TBytes);
+  end;
 
-
-
-
-  dialogs;
-
+procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 procedure SecureDeleteFile(AFileName: string);
 function IsCompressedFileType(AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
+function Convert(const Bytes: TBytes): RawByteString; inline;
 
 implementation
 
 uses
-  DECUtil, DECRandom;
+  DECUtil, DECRandom, ZLib;
 
 {$IFDEF Unicode}
 function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
@@ -27,6 +39,65 @@ function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
 function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
   external 'shlwapi.dll' name 'PathCanonicalizeA';
 {$ENDIF}
+
+procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+var
+  CompressInputStream: TFileStream;
+  CompressOutputStream: TFileStream;
+  CompressionStream: TCompressionStream;
+begin
+  // TODO: Make use of OnProgressProc
+  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
+  try
+    CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
+    try
+      CompressionStream:=TCompressionStream.Create(clMax, CompressOutputStream);
+      try
+        CompressionStream.CopyFrom(CompressInputStream, CompressInputStream.Size);
+      finally
+        FreeAndNil(CompressionStream);
+      end;
+    finally
+      FreeAndNil(CompressOutputStream);
+    end;
+  finally
+    FreeAndNil(CompressInputStream);
+  end;
+end;
+
+procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+var
+  Buf: array[0..4095] of Byte;
+  Count: Integer;
+  CompressInputStream: TFileStream;
+  CompressOutputStream: TFileStream;
+  DecompressionStream: TDecompressionStream;
+begin
+  // TODO: Make use of OnProgressProc
+  CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
+  try
+    CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
+    try
+      DecompressionStream := TDecompressionStream.Create(CompressInputStream);
+      try
+        while true do
+        begin
+          Count := DecompressionStream.Read(Buf[0], SizeOf(Buf));
+          if Count = 0 then
+            break
+          else
+            CompressOutputStream.Write(Buf[0], Count);
+        end;
+      finally
+        FreeAndNil(DecompressionStream);
+      end;
+    finally
+      FreeAndNil(CompressOutputStream);
+    end;
+  finally
+    FreeAndNil(CompressInputStream);
+  end;
+end;
 
 procedure SecureDeleteFile(AFileName: string);
 
@@ -50,7 +121,7 @@ procedure SecureDeleteFile(AFileName: string);
     Result := '';
     repeat
       i := RandomLong mod UInt32(Length(str));
-      Result := Result + str[Low(str) + i];
+      Result := Result + str[UInt32(Low(str)) + i];
     until Length(Result) = len;
   end;
 
@@ -184,6 +255,66 @@ begin
   finally
     FreeAndNil(fs);
   end;
+end;
+
+function Convert(const Bytes: TBytes): RawByteString; inline;
+begin
+  SetString(Result, PAnsiChar(pointer(Bytes)), length(Bytes));
+end;
+
+{ TStreamHelper }
+
+procedure TStreamHelper.Read(var Value; Size: Integer);
+begin
+  Self.ReadBuffer(Value, Size);
+end;
+
+function TStreamHelper.ReadByte: Byte;
+begin
+  Read(Result, SizeOf(Result));
+end;
+
+function TStreamHelper.ReadLong: LongWord;
+begin
+  Read(Result, SizeOf(Result));
+  Result := Result shl 24 or Result shr 24 or Result shl 8 and $00FF0000 or Result shr 8 and $0000FF00;
+end;
+
+function TStreamHelper.ReadRawByteString(len: integer): RawByteString;
+begin
+  SetLength(Result, len);
+  Read(Result[Low(Result)], Length(Result));
+end;
+
+function TStreamHelper.ReadRawBytes(len: integer): TBytes;
+begin
+  result := BytesOf(ReadRawByteString(len));
+end;
+
+procedure TStreamHelper.Write(var Value; Size: Integer);
+begin
+  Self.WriteBuffer(Value, Size);
+end;
+
+procedure TStreamHelper.WriteByte(b: Byte);
+begin
+  Write(b, SizeOf(b));
+end;
+
+procedure TStreamHelper.WriteLong(lw: LongWord);
+begin
+  lw := lw shl 24 or lw shr 24 or lw shl 8 and $00FF0000 or lw shr 8 and $0000FF00;
+  Write(lw, SizeOf(lw));
+end;
+
+procedure TStreamHelper.WriteRawByteString(rb: RawByteString);
+begin
+  Write(rb[1], Length(rb));
+end;
+
+procedure TStreamHelper.WriteRawBytes(b: TBytes);
+begin
+  WriteRawByteString(Convert(b));
 end;
 
 end.

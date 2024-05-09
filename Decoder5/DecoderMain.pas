@@ -264,6 +264,18 @@ begin
   Memo1.Lines.Add('DeCoder4X_ValidateParameterBlock OK');
   Memo1.Lines.Add('');
 
+  DeCoder10_EncodeFile('TestData\dc10_example_in.txt', 'TestData\dc10_example_out.tmp', True, OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc10_example_out.tmp', 'TestData\dc10_example_out.txt'));
+  DeleteFile('TestData\dc10_example_out.tmp');
+  Memo1.Lines.Add('DC10 Encode OK');
+  Memo1.Lines.Add('');
+
+  DeCoder10_DecodeFile('TestData\dc10_example_out.txt', 'TestData\dc10_example_in.tmp', OnProgressProc);
+  Assert(Are2FilesEqual('TestData\dc10_example_in.tmp', 'TestData\dc10_example_in.txt'));
+  DeleteFile('TestData\dc10_example_in.tmp');
+  Memo1.Lines.Add('DC10 Decode OK');
+  Memo1.Lines.Add('');
+
   DeCoder20_EncodeFile('TestData\dc20_256zero_in.txt', 'TestData\dc20_256zero_out.tmp', OnProgressProc);
   Assert(Are2FilesEqual('TestData\dc20_256zero_out.txt', 'TestData\dc20_256zero_out.tmp'));
   DeleteFile('TestData\dc20_256zero_out.tmp');
