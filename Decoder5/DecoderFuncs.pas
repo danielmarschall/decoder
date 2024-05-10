@@ -39,11 +39,13 @@ function IsCompressedFileType(AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
 function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
 function FileSizeHumanReadable(Bytes: Int64): string;
+function GetBuildTimestamp(const ExeFile: string): TDateTime;
+function GetOwnBuildTimestamp: TDateTime;
 
 implementation
 
 uses
-  DECUtil, DECRandom, ZLib;
+  DECUtil, DECRandom, ZLib, DateUtils;
 
 {$IFDEF Unicode}
 function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
@@ -305,6 +307,37 @@ begin
   while Bytes > Power(1024, i + 1) do
     Inc(i);
   Result := FormatFloat('###0.##', Bytes / IntPower(1024, i)) + ' ' + Description[i];
+end;
+
+function GetBuildTimestamp(const ExeFile: string): TDateTime;
+var
+  fs: TFileStream;
+  unixTime: integer;
+  peOffset: Integer;
+begin
+  try
+    fs := TFileStream.Create(ExeFile, fmOpenRead or fmShareDenyNone);
+    try
+      fs.Seek($3C, soFromBeginning);
+      fs.Read(peOffset, 4);
+
+      fs.Seek(peOffset+8, soFromBeginning);
+      fs.Read(unixTime, 4);
+
+      result := UnixToDateTime(unixTime, false);
+    finally
+      FreeAndNil(fs);
+    end;
+  except
+    // Sollte nicht passieren
+    if not FileAge(ExeFile, result) then
+      raise Exception.CreateFmt('GetBuildTimestamp(%s) fehlgeschlagen', [ExeFile]);
+  end;
+end;
+
+function GetOwnBuildTimestamp: TDateTime;
+begin
+  result := GetBuildTimestamp(ParamStr(0));
 end;
 
 { TStreamHelper }

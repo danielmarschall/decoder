@@ -22,6 +22,7 @@ type
 
   // TCipher_VtsDeCoder10 does not exist as DEC Cipher,
   // because this is a cipher that changes the size of the blocks
+  // It is implemented in DecoderEncDec.pas
 
   // XOR-Stream 00 01 02 03 ... FF 00 01 ...
   // No key provided

@@ -28,12 +28,22 @@ begin
 end;
 
 const
-  Cmd_DC10_Crypt = 'DC10_Crypt';
+  Cmd_DC10_EnCrypt = 'DC10_EnCrypt';
   Cmd_DC10_DeCrypt = 'DC10_DeCrypt';
+  Cmd_DC20_EnCrypt = 'DC20_EnCrypt';
+  Cmd_DC20_DeCrypt = 'DC20_DeCrypt';
+  Cmd_DC21_EnCrypt = 'DC21_EnCrypt';
+  Cmd_DC21_DeCrypt = 'DC21_DeCrypt';
+  Cmd_DC22_EnCrypt = 'DC22_EnCrypt';
+  Cmd_DC22_DeCrypt = 'DC22_DeCrypt';
+
+var
+  iKey: integer;
 
 begin
   try
-    if SameText(ParamStr(1), Cmd_DC10_Crypt) then
+    {$REGION '(De)Coder 1.0'}
+    if SameText(ParamStr(1), Cmd_DC10_EnCrypt) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder10_EncodeFile(ParamStr(2), ParamStr(3), false, OnProgressProc);
@@ -45,19 +55,70 @@ begin
       DeCoder10_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
       ExitCode := 0;
     end
+    {$ENDREGION}
+    {$REGION '(De)Coder 2.0'}
+    else if SameText(ParamStr(1), Cmd_DC20_EnCrypt) then
+    begin
+      CheckFileExists(ParamStr(2));
+      DeCoder20_EncodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC20_DeCrypt) then
+    begin
+      CheckFileExists(ParamStr(2));
+      DeCoder20_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC21_EnCrypt) then
+    begin
+      CheckFileExists(ParamStr(2));
+      if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
+      DeCoder21_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC21_DeCrypt) then
+    begin
+      CheckFileExists(ParamStr(2));
+      if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
+      DeCoder21_DecodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC22_EnCrypt) then
+    begin
+      CheckFileExists(ParamStr(2));
+      if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
+      DeCoder22_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC22_DeCrypt) then
+    begin
+      CheckFileExists(ParamStr(2));
+      if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
+      DeCoder22_DecodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      ExitCode := 0;
+    end
+    {$ENDREGION}
+    {$REGION 'Help page'}
     else
     begin
       WriteLn('ViaThinkSoft (De)Coder 5.0');
+      WriteLn('Built ' + DateTimeToStr(GetOwnBuildTimestamp));
       WriteLn('');
       WriteLn('Parameters:');
-      // DC10_DeCrypt TestData\dc10_example_in.txt TestData\dc10_example_out.tmp
-      WriteLn(Format('- %s %s <InFile> <OutFile>', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_Crypt]));
-      WriteLn(Format('- %s %s <InFile> <OutFile>', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_DeCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> -- Encrypts files using the (De)Coder 1.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_EnCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> -- Decrypts files using the (De)Coder 1.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_DeCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> -- Encrypts files using the (De)Coder 2.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC20_EnCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> -- Decrypts files using the (De)Coder 2.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC20_DeCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> <Key> -- Encrypts files using the (De)Coder 2.1 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC21_EnCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> <Key> -- Decrypts files using the (De)Coder 2.1 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC21_DeCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> <Key> -- Encrypts files using the (De)Coder 2.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC22_EnCrypt]));
+      WriteLn(Format('- %s %s <InFile> <OutFile> <Key> -- Decrypts files using the (De)Coder 2.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC22_DeCrypt]));
       ExitCode := 0;
     end;
+    {$ENDREGION}
 
     WriteLn('Done');
-    Readln;
+    Readln; // TODO: remove
     { TODO -oUser -cConsole Main : Code hier einfügen }
   except
     on E: Exception do
