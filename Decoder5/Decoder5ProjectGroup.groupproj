@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{73BC218A-8BD8-4759-9C76-844A649DFB91}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Coder.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="CoderCLI.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Coder">
+        <MSBuild Projects="Coder.dproj"/>
+    </Target>
+    <Target Name="Coder:Clean">
+        <MSBuild Projects="Coder.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Coder:Make">
+        <MSBuild Projects="Coder.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CoderCLI">
+        <MSBuild Projects="CoderCLI.dproj"/>
+    </Target>
+    <Target Name="CoderCLI:Clean">
+        <MSBuild Projects="CoderCLI.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CoderCLI:Make">
+        <MSBuild Projects="CoderCLI.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Coder;CoderCLI"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Coder:Clean;CoderCLI:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Coder:Make;CoderCLI:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

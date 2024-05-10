@@ -3,8 +3,7 @@ unit DecoderFuncs;
 interface
 
 uses
-  Windows, DECTypes, Classes, SysUtils, Math, Forms,
-  DECHashBase, DECHashAuthentication;
+  Windows, {$IFNDEF Console}Forms, {$ENDIF} DECTypes, Classes, SysUtils, Math, DECHashBase, DECHashAuthentication;
 
 type
   TStreamHelper = class helper for TStream
@@ -270,8 +269,10 @@ begin
         Inc(counts[Ord(rbs[i])]);
       Inc(ProgrPos);
       if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, Processing);
+      {$IFNDEF Console}
       Application.ProcessMessages;
       if Application.Terminated then Abort;
+      {$ENDIF}
     end;
     if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, Finished);
 

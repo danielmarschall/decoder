@@ -437,7 +437,7 @@ begin
 
   DeleteFile('schloss_decoded.bmp');
 
-  ShowMessage('Alles OK');
+  ShowMessage('All testcases passed');
 end;
 
 end.
