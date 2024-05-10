@@ -410,7 +410,7 @@ Offset	Type	Size		Content/Description
 					0x6D7C97E9	TCipher_3TDES (KeySize: 24, BlockSize: 24, BufferSize: 24)
 					0x71DF3DA6	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
 					0x746053B7	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
-					0x988B2D75	TCipher_AES (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x988B2D75	TCipher_AES (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
 					0x9DB9BBFE	TCipher_Cast128 (KeySize: 16, BlockSize: 8, BufferSize: 8)
 					0xA2EC8332	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
 					0xB83DBC1A	TCipher_AES128 (KeySize: 16, BlockSize: 16, BufferSize: 16)

@@ -35,6 +35,7 @@ type
 procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 procedure SecureDeleteFile(AFileName: string);
+procedure SecureDeleteFolder(ADirName: string);
 function IsCompressedFileType(AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
 function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
@@ -209,6 +210,11 @@ begin
 
   // now delete the file
   DeleteFile(AFileName);
+end;
+
+procedure SecureDeleteFolder(ADirName: string);
+begin
+  raise Exception.Create('Not implemented'); // TODO: Implement secure delete folder
 end;
 
 function IsCompressedFileType(AFileName: string): boolean;

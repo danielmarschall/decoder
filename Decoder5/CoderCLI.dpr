@@ -489,6 +489,8 @@ end;
 var
   iKey: integer;
   fp: TDC4Parameters;
+  fi: TDC4FileInfo;
+  sl: TStringList;
 
 begin
   try
@@ -604,7 +606,14 @@ begin
     else if SameText(ParamStr(1), Cmd_DC4X_FileInfo) and (ParamCount = 2) then
     begin
       CheckFileExists(ParamStr(2));
-      DeCoder4X_DecodeFile(ParamStr(2), '', '', OnProgressProc);
+      fi := DeCoder4X_DecodeFile(ParamStr(2), '', '', OnProgressProc);
+      sl := TStringList.Create;
+      try
+        DeCoder4X_PrintFileInfo(fi, sl);
+        WriteLn(sl.Text);
+      finally
+        FreeAndNil(sl);
+      end;
       ExitCode := 0;
     end
     {$ENDREGION}
@@ -643,7 +652,7 @@ begin
     else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) and (ParamCount = 2) then
     begin
       CheckDirectoryExists(ParamStr(2));
-      raise Exception.Create('Not implemented'); // TODO: Implement secure delete folder
+      SecureDeleteFolder(ParamStr(2));
       ExitCode := 0;
     end
     {$ENDREGION}

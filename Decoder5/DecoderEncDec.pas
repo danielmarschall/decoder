@@ -94,26 +94,61 @@ const
 
 function DC_DEC_ClassExistedInDEC51(cn: string): boolean;
 begin
-  // TODO: Wouldn't be an inclusion-list better than an exclusion-list?
-  result :=
-       (cn<>'THash_SHA224') and
-       (cn<>'THash_SHA3_224') and
-       (cn<>'THash_SHA3_256') and
-       (cn<>'THash_SHA3_384') and
-       (cn<>'THash_SHA3_512') and
-       (cn<>'THash_Shake128') and
-       (cn<>'THash_Shake256') and
-       (cn<>'THash_Keccak_224') and
-       (cn<>'THash_Keccak_256') and
-       (cn<>'THash_Keccak_384') and
-       (cn<>'THash_Keccak_512') and
-       (cn<>'THash_BCrypt') and
-       (cn<>'THash_WhirlpoolT') and
-       (cn<>'TCipher_Null') and
-       (cn<>'TCipher_AES256') and
-       (cn<>'TCipher_XTEA') and
-       (cn<>'TCipher_AES128') and
-       (cn<>'TCipher_AES192');
+  result := (cn = 'TCipher_1DES') or
+            (cn = 'TCipher_2DDES') or
+            (cn = 'TCipher_2DES') or
+            (cn = 'TCipher_3DDES') or
+            (cn = 'TCipher_3DES') or
+            (cn = 'TCipher_3TDES') or
+            (cn = 'TCipher_3Way') or
+            (cn = 'TCipher_Blowfish') or
+            (cn = 'TCipher_Cast128') or
+            (cn = 'TCipher_Cast256') or
+            (cn = 'TCipher_Gost') or
+            (cn = 'TCipher_IDEA') or
+            (cn = 'TCipher_Mars') or
+            (cn = 'TCipher_Misty') or
+            (cn = 'TCipher_NewDES') or
+            (cn = 'TCipher_Q128') or
+            (cn = 'TCipher_RC2') or
+            (cn = 'TCipher_RC4') or
+            (cn = 'TCipher_RC5') or
+            (cn = 'TCipher_RC6') or
+            (cn = 'TCipher_Rijndael') or
+            (cn = 'TCipher_SAFER') or
+            (cn = 'TCipher_SCOP') or
+            (cn = 'TCipher_Sapphire') or
+            (cn = 'TCipher_Shark') or
+            (cn = 'TCipher_Skipjack') or
+            (cn = 'TCipher_Square') or
+            (cn = 'TCipher_TEA') or
+            (cn = 'TCipher_TEAN') or
+            (cn = 'TCipher_Twofish') or
+            (cn = 'THash_Haval128') or
+            (cn = 'THash_Haval160') or
+            (cn = 'THash_Haval192') or
+            (cn = 'THash_Haval224') or
+            (cn = 'THash_Haval256') or
+            (cn = 'THash_MD2') or
+            (cn = 'THash_MD4') or
+            (cn = 'THash_MD5') or
+            (cn = 'THash_Panama') or
+            (cn = 'THash_RipeMD128') or
+            (cn = 'THash_RipeMD160') or
+            (cn = 'THash_RipeMD256') or
+            (cn = 'THash_RipeMD320') or
+            (cn = 'THash_SHA') or
+            (cn = 'THash_SHA1') or
+            (cn = 'THash_SHA256') or
+            (cn = 'THash_SHA384') or
+            (cn = 'THash_SHA512') or
+            (cn = 'THash_Sapphire') or
+            (cn = 'THash_Snefru128') or
+            (cn = 'THash_Snefru256') or
+            (cn = 'THash_Square') or
+            (cn = 'THash_Tiger') or
+            (cn = 'THash_Whirlpool') or
+            (cn = 'THash_Whirlpool1');
 end;
 
 function DC_DEC_Identity(IdentityBase: Int64; ClassName: string; dc51compat: boolean): Int64;
@@ -251,6 +286,7 @@ begin
       if (V<fvDc50Wip) and (cn='TCipher_Shark') then addinfo := ', faulty implementation';
       if (V<fvDc50Wip) and (cn='TCipher_SCOP') then addinfo := ', faulty implementation?';
       if (V<fvDc50Wip) and (cn='TCipher_Rijndael') then addinfo := ', default';
+      if (V>=fvDc50Wip) and (cn='TCipher_AES') then addinfo := ', default';
       sl.Add(
         '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50Wip), 8) + #9 +
         cn +
