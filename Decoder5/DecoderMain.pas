@@ -349,7 +349,9 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled), OnProgressProc);
+  fp := DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled);
+  fp.ContainFileOrigName := fpEncryptWithUserKey;
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', fp, OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
   fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', OnProgressProc);
@@ -360,7 +362,7 @@ begin
   Memo1.Lines.Add('');
 
   fp := DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled);
-  fp.FileNameUserPasswordEncrypted := false;
+  fp.ContainFileOrigName := fpExpose;
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', fp, OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
