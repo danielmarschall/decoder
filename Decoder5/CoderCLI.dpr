@@ -117,9 +117,16 @@ begin
     end;
     {$ENDREGION}
 
-    WriteLn('Done');
-    Readln; // TODO: remove
-    { TODO -oUser -cConsole Main : Code hier einfügen }
+    {$IFDEF MsWindows}
+    {$WARN SYMBOL_PLATFORM OFF}
+    if DebugHook <> 0 then
+    begin
+      WriteLn('');
+      WriteLn('Press any key to continue...');
+      ReadLn;
+    end;
+    {$WARN SYMBOL_PLATFORM ON}
+    {$ENDIF}
   except
     on E: Exception do
     begin

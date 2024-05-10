@@ -92,6 +92,30 @@ const
   // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
   DC4_OID = '1.3.6.1.4.1.37476.2.2.1.4';
 
+function DC_DEC_ClassExistedInDEC51(cn: string): boolean;
+begin
+  // TODO: Wouldn't be a inclusion-list better than an exclusion-list?
+  result :=
+       (cn<>'THash_SHA224') and
+       (cn<>'THash_SHA3_224') and
+       (cn<>'THash_SHA3_256') and
+       (cn<>'THash_SHA3_384') and
+       (cn<>'THash_SHA3_512') and
+       (cn<>'THash_Shake128') and
+       (cn<>'THash_Shake256') and
+       (cn<>'THash_Keccak_224') and
+       (cn<>'THash_Keccak_256') and
+       (cn<>'THash_Keccak_384') and
+       (cn<>'THash_Keccak_512') and
+       (cn<>'THash_BCrypt') and
+       (cn<>'THash_WhirlpoolT') and
+       (cn<>'TCipher_Null') and
+       (cn<>'TCipher_AES256') and
+       (cn<>'TCipher_XTEA') and
+       (cn<>'TCipher_AES128') and
+       (cn<>'TCipher_AES192');
+end;
+
 function DC_DEC_Identity(IdentityBase: Int64; ClassName: string; dc51compat: boolean): Int64;
 var
   Signature: AnsiString;
@@ -100,10 +124,20 @@ begin
   cn := ClassName;
   if dc51compat then
   begin
+    // Just different names in DEC 6.0 vs. DEC5.1 which we auto-correct to get the correct identity...
     if cn = 'THash_SHA0'{DEC6.0} then cn := 'THash_SHA'{DEC5.1};
     if cn = 'THash_Whirlpool0'{DEC6.0} then cn := 'THash_Whirlpool'{DEC5.1};
     if cn = 'TCipher_AES'{DEC6.0} then cn := 'TCipher_Rijndael'{DEC5.1};
     if cn = 'TCipher_Magma' then cn := 'TCipher_Gost'; // TCipher_Magma is an alias for TCipher_Gost
+
+    // You must not use DC2 or DC3 ciphers in DC4/DC5 files
+    // Also, these ciphers/hashes were not available in older DEC, so we don't accept them
+    if StartsText('TCipher_VtsDeCoder', cn) or
+       not DC_DEC_ClassExistedInDEC51(cn) then
+    begin
+      Exit(-1); // raise Exception.Create('This DEC class did not exist in old DEC 5.1c');
+    end;
+
     Signature := AnsiString   (StringOfChar(#$5A, 256 - Length(cn)) + AnsiUpperCase(cn));
     Result := CRC32(IdentityBase, Signature[1], Length(Signature));
   end
@@ -124,7 +158,8 @@ begin
   for p in TDECHash.ClassList do
   begin
     c := p.Value;
-    if (c <> nil) and (Identity = DC_DEC_Identity(IdentityBase, c.ClassName, dc51compat)) then
+    if (c <> nil) and
+       (Identity = DC_DEC_Identity(IdentityBase, c.ClassName, dc51compat)) then
     begin
       result := TDECHashClass(c);
       exit;
@@ -140,14 +175,13 @@ function DC_DEC_CipherById(IdentityBase, Identity: Int64; dc51compat: boolean; N
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
-  cn: string;
 begin
   for p in TDECCipher.ClassList do
   begin
     c := p.Value;
-    cn := c.ClassName;
-    if StartsText('TCipher_VtsDeCoder', cn) then continue;
-    if (c <> nil) and (Identity = DC_DEC_Identity(IdentityBase, cn, dc51compat)) then
+    if (c <> nil) and
+       not StartsText('TCipher_VtsDeCoder', c.ClassName) and
+       (Identity = DC_DEC_Identity(IdentityBase, c.ClassName, dc51compat)) then
     begin
       result := TDecCipherClass(c);
       exit;
@@ -173,22 +207,10 @@ begin
     begin
       c := p.Value;
       cn := c.ClassName;
-      if (V<fvDc50Wip) and (cn='THash_SHA224') then continue;
-      if (V<fvDc50Wip) and (cn='THash_SHA3_224') then continue;
-      if (V<fvDc50Wip) and (cn='THash_SHA3_256') then continue;
-      if (V<fvDc50Wip) and (cn='THash_SHA3_384') then continue;
-      if (V<fvDc50Wip) and (cn='THash_SHA3_512') then continue;
-      if (V<fvDc50Wip) and (cn='THash_Shake128') then continue;
-      if (V<fvDc50Wip) and (cn='THash_Shake256') then continue;
-      if (V<fvDc50Wip) and (cn='THash_Keccak_224') then continue;
-      if (V<fvDc50Wip) and (cn='THash_Keccak_256') then continue;
-      if (V<fvDc50Wip) and (cn='THash_Keccak_384') then continue;
-      if (V<fvDc50Wip) and (cn='THash_Keccak_512') then continue;
-      if (V<fvDc50Wip) and (cn='THash_BCrypt') then continue;
-      if (V<fvDc50Wip) and (cn='THash_WhirlpoolT') then continue;
+      if (V<fvDc50Wip) and (cn='THash_Whirlpool0') then cn := 'THash_Whirlpool';
+      if (V<fvDc50Wip) and (cn='THash_SHA0') then cn := 'THash_SHA';
+      if (V<fvDc50Wip) and not DC_DEC_ClassExistedInDEC51(cn) then continue;
       addinfo := '';
-      if (cn='THash_Whirlpool0') then cn := 'THash_Whirlpool';
-      if (cn='THash_SHA0') then cn := 'THash_SHA';
       if (V>=fvDc50Wip) and (cn='THash_SHA3_512') then addinfo := ', default'
       else if (V>=fvDc40) and (V<fvDc50Wip) and (cn='THash_SHA512') then addinfo := ', default'
       else if (V=fvHagenReddmannExample) and (cn='THash_SHA1') then addinfo := ', default';
@@ -223,12 +245,8 @@ begin
       c := p.Value;
       cn := c.ClassName;
       if StartsText('TCipher_VtsDeCoder', cn) then continue;
-      if (V<fvDc50Wip) and (cn='TCipher_Null') then continue;
-      if (V<fvDc50Wip) and (cn='TCipher_AES256') then continue;
-      if (V<fvDc50Wip) and (cn='TCipher_XTEA') then continue;
-      if (V<fvDc50Wip) and (cn='TCipher_AES128') then continue;
-      if (V<fvDc50Wip) and (cn='TCipher_AES192') then continue;
-      if (V<fvDc50Wip) and (cn='TCipher_AES') then cn := 'TCipher_Rijndael';;
+      if (V<fvDc50Wip) and (cn='TCipher_AES') then cn := 'TCipher_Rijndael';
+      if (V<fvDc50Wip) and not DC_DEC_ClassExistedInDEC51(cn) then continue;
       addinfo := '';
       if (V<fvDc50Wip) and (cn='TCipher_Shark') then addinfo := ', faulty implementation';
       if (V<fvDc50Wip) and (cn='TCipher_SCOP') then addinfo := ', faulty implementation?';
