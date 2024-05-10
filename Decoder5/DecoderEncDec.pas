@@ -758,7 +758,7 @@ begin
   if fi.OrigFileSize = -1 then
     sl.Add('Original filesize: unknown')
   else
-    sl.Add('Original filesize: ' + IntToStr(fi.OrigFileSize)); // TODO: human readable filesize
+    sl.Add('Original filesize: ' + FileSizeHumanReadable(fi.OrigFileSize));
   if fi.OrigFileDate = -1 then
     sl.Add('Original datetime: unknown')
   else
@@ -867,7 +867,7 @@ begin
     else
       SetLength(IV, 0);
     IvFillByte := AParameters.IvFillByte;
-    Seed := Convert(RandomBytes(AParameters.SeedSize));
+    Seed := BytesToRawByteString(RandomBytes(AParameters.SeedSize));
 
     HashClass := AParameters.HashClass;
     AHash := HashClass.Create;
@@ -1000,7 +1000,7 @@ begin
       Cipher.Init(FileNameKey, IV, IvFillByte);
       try
         if Length(OrigName) mod 2 <> 0 then OrigName := OrigName + #0; // should not happen, otherwise it is no valid UTF-16!
-        OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).EncodeBytes(BytesOf(OrigName)));
+        OrigNameEncrypted := BytesToRawByteString(TDECFormattedCipher(Cipher).EncodeBytes(BytesOf(OrigName)));
       finally
         Cipher.Done;
       end;
@@ -1156,7 +1156,7 @@ begin
     begin
       Source.position := 0;
       TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
-      HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
+      HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+APassword, TFormat_Copy);
       tempstream.WriteRawByteString(HashResult2);
     end
     else if V = fvDc41FinalCancelled then
@@ -1164,7 +1164,7 @@ begin
       Source.position := 0;
       TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
       HashResult2 := TDECHashExtended(ahash).CalcString(
-        Convert(HashResult) + Seed +
+        BytesToRawByteString(HashResult) + Seed +
             TDECHashExtended(ahash).CalcString(
               Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
             , TFormat_Copy)
@@ -1175,7 +1175,7 @@ begin
     begin
       tmp64 := tempstream.Position;
       tempstream.Position := 0;
-      HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, OnProgressProc));
+      HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, OnProgressProc));
       tempstream.Position := tmp64;
       tempstream.WriteRawByteString(HashResult2);
     end;
@@ -1523,7 +1523,7 @@ begin
       begin
         bakSourcePosEncryptedData := Source.Position;
         Source.Position := 0;
-        HashResult2 := Convert(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
+        HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
         Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
         if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
           raise Exception.Create('HMAC mismatch');
@@ -1577,7 +1577,7 @@ begin
       {$REGION '9.2 GCM Tag (only version 4+)'}
       if not OnlyReadFileInfo and (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then
       begin
-        if Convert(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult) <> Source.ReadRawByteString(TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3) then
+        if BytesToRawByteString(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult) <> Source.ReadRawByteString(TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3) then
           raise Exception.Create('GCM Auth Tag mismatch');
       end;
       {$ENDREGION}
@@ -1609,7 +1609,7 @@ begin
         begin
           Cipher.Init(Key, IV, IvFillByte);
           try
-            OrigNameEncrypted := Convert(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
+            OrigNameEncrypted := BytesToRawByteString(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
             if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
             OrigName := WideString(PWideString(Pointer(OrigNameEncrypted)));
           finally
@@ -1627,20 +1627,20 @@ begin
         begin
           tempstream.position := 0;
           TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
-          HashResult2 := Convert(HashResult);
+          HashResult2 := BytesToRawByteString(HashResult);
         end
         else if V = fvDc41Beta then
         begin
           tempstream.position := 0;
           TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
-          HashResult2 := TDECHashExtended(ahash).CalcString(Convert(HashResult)+Seed+APassword, TFormat_Copy);
+          HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+APassword, TFormat_Copy);
         end
         else if V = fvDc41FinalCancelled then
         begin
           tempstream.position := 0;
           TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
           HashResult2 := TDECHashExtended(ahash).CalcString(
-            Convert(HashResult) + Seed +
+            BytesToRawByteString(HashResult) + Seed +
                 TDECHashExtended(ahash).CalcString(
                   Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
                 , TFormat_Copy)

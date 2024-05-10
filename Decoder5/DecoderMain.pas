@@ -252,8 +252,6 @@ begin
   Debug_ListHashAlgos(Memo1.Lines, fvDc50Wip);
   Memo1.Lines.Add('');
 
-  exit;
-
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvHagenReddmannExample));
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc40));
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc41Beta));

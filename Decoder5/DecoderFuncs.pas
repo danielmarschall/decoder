@@ -38,7 +38,8 @@ procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc:
 procedure SecureDeleteFile(AFileName: string);
 function IsCompressedFileType(AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
-function Convert(const Bytes: TBytes): RawByteString; inline;
+function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
+function FileSizeHumanReadable(Bytes: Int64): string;
 
 implementation
 
@@ -287,9 +288,22 @@ begin
   end;
 end;
 
-function Convert(const Bytes: TBytes): RawByteString; inline;
+function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
 begin
   SetString(Result, PAnsiChar(pointer(Bytes)), length(Bytes));
+end;
+
+// https://stackoverflow.com/questions/30548940/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-delphi
+function FileSizeHumanReadable(Bytes: Int64): string;
+const
+  Description: Array [0 .. 8] of string = ('Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB');
+var
+  i: Integer;
+begin
+  i := 0;
+  while Bytes > Power(1024, i + 1) do
+    Inc(i);
+  Result := FormatFloat('###0.##', Bytes / IntPower(1024, i)) + ' ' + Description[i];
 end;
 
 { TStreamHelper }
@@ -364,7 +378,7 @@ end;
 
 procedure TStreamHelper.WriteRawBytes(b: TBytes);
 begin
-  WriteRawByteString(Convert(b));
+  WriteRawByteString(BytesToRawByteString(b));
 end;
 
 { TDECHashExtendedAuthentication }
