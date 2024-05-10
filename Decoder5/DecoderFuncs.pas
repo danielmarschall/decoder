@@ -3,7 +3,8 @@ unit DecoderFuncs;
 interface
 
 uses
-  Windows, DECTypes, Classes, SysUtils, Math, Forms;
+  Windows, DECTypes, Classes, SysUtils, Math, Forms,
+  DECHashBase, DECHashAuthentication;
 
 type
   TStreamHelper = class helper for TStream
@@ -18,6 +19,14 @@ type
     procedure WriteLong(lw: LongWord);
     procedure WriteRawByteString(rb: RawByteString);
     procedure WriteRawBytes(b: TBytes);
+  end;
+
+  // https://github.com/MHumm/DelphiEncryptionCompendium/issues/62
+  TDECHashExtendedAuthentication = class helper for TDECHashAuthentication
+    class function HMACFile(const Key: TBytes; const FileName: string;
+      const OnProgress:TDECProgressEvent = nil): TBytes;
+    class function HMACStream(const Key: TBytes; const Stream: TStream; Size: Int64;
+      const OnProgress:TDECProgressEvent): TBytes;
   end;
 
 procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
@@ -45,21 +54,34 @@ var
   CompressInputStream: TFileStream;
   CompressOutputStream: TFileStream;
   CompressionStream: TCompressionStream;
+  rbs: RawByteString;
+const
+  ChunkSize = $100000; // value from System.Classes
 begin
-  // TODO: Make use of OnProgressProc
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, TDECProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       CompressionStream:=TCompressionStream.Create(clMax, CompressOutputStream);
       try
-        CompressionStream.CopyFrom(CompressInputStream, CompressInputStream.Size);
+        if Assigned(OnProgressProc) then
+        begin
+          OnProgressProc(CompressInputStream.Size, CompressInputStream.Position, TDECProgressState.Processing);
+          rbs := CompressInputStream.ReadRawByteString(Min(ChunkSize,CompressInputStream.Size-CompressInputStream.Position));
+          CompressionStream.WriteRawByteString(rbs);
+        end
+        else
+        begin
+          CompressionStream.CopyFrom(CompressInputStream, CompressInputStream.Size);
+        end;
       finally
         FreeAndNil(CompressionStream);
       end;
     finally
       FreeAndNil(CompressOutputStream);
     end;
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, TDECProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
@@ -67,26 +89,29 @@ end;
 
 procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 var
-  Buf: array[0..4095] of Byte;
-  Count: Integer;
   CompressInputStream: TFileStream;
   CompressOutputStream: TFileStream;
   DecompressionStream: TDecompressionStream;
+  rbs: RawByteString;
+const
+  ChunkSize = $100000; // value from System.Classes
 begin
-  // TODO: Make use of OnProgressProc
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, TDECProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       DecompressionStream := TDecompressionStream.Create(CompressInputStream);
       try
-        while true do
+        if Assigned(OnProgressProc) then
         begin
-          Count := DecompressionStream.Read(Buf[0], SizeOf(Buf));
-          if Count = 0 then
-            break
-          else
-            CompressOutputStream.Write(Buf[0], Count);
+          OnProgressProc(DecompressionStream.Size, DecompressionStream.Position, TDECProgressState.Processing);
+          rbs := DecompressionStream.ReadRawByteString(Min(ChunkSize,DecompressionStream.Size-DecompressionStream.Position));
+          CompressOutputStream.WriteRawByteString(rbs);
+        end
+        else
+        begin
+          CompressOutputStream.CopyFrom(DecompressionStream, DecompressionStream.Size);
         end;
       finally
         FreeAndNil(DecompressionStream);
@@ -94,6 +119,7 @@ begin
     finally
       FreeAndNil(CompressOutputStream);
     end;
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, TDECProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
@@ -315,6 +341,98 @@ end;
 procedure TStreamHelper.WriteRawBytes(b: TBytes);
 begin
   WriteRawByteString(Convert(b));
+end;
+
+{ TDECHashExtendedAuthentication }
+
+class function TDECHashExtendedAuthentication.HMACFile(const Key: TBytes;
+  const FileName: string; const OnProgress: TDECProgressEvent): TBytes;
+var
+  fs: TFileStream;
+begin
+  fs := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  try
+    HMACStream(Key, fs, fs.Size, OnProgress);
+  finally
+    FreeAndNil(fs);
+  end;
+end;
+
+class function TDECHashExtendedAuthentication.HMACStream(const Key: TBytes;
+  const Stream: TStream; Size: Int64;
+  const OnProgress: TDECProgressEvent): TBytes;
+const
+  CONST_UINT_OF_0x36 = $3636363636363636;
+  CONST_UINT_OF_0x5C = $5C5C5C5C5C5C5C5C;
+var
+  HashInstance: TDECHashAuthentication;
+  InnerKeyPad, OuterKeyPad: array of Byte;
+  I, KeyLength, BlockSize, DigestLength: Integer;
+begin
+  // Taken from TDECHashAuthentication.HMAC and changed HashInstance.Calc to HashInstance.CalcStream for the message
+  HashInstance := TDECHashAuthenticationClass(self).Create;
+  try
+    BlockSize    := HashInstance.BlockSize; // 64 for sha1, ...
+    DigestLength := HashInstance.DigestSize;
+    KeyLength    := Length(Key);
+
+    SetLength(InnerKeyPad, BlockSize);
+    SetLength(OuterKeyPad, BlockSize);
+
+    I := 0;
+
+    if KeyLength > BlockSize then
+    begin
+      Result    := HashInstance.CalcBytes(Key);
+      KeyLength := DigestLength;
+    end
+    else
+      Result := Key;
+
+    while I <= KeyLength - SizeOf(NativeUInt) do
+    begin
+      PNativeUInt(@InnerKeyPad[I])^ := PNativeUInt(@Result[I])^ xor NativeUInt(CONST_UINT_OF_0x36);
+      PNativeUInt(@OuterKeyPad[I])^ := PNativeUInt(@Result[I])^ xor NativeUInt(CONST_UINT_OF_0x5C);
+      Inc(I, SizeOf(NativeUInt));
+    end;
+
+    while I < KeyLength do
+    begin
+      InnerKeyPad[I] := Result[I] xor $36;
+      OuterKeyPad[I] := Result[I] xor $5C;
+      Inc(I);
+    end;
+
+    while I <= BlockSize - SizeOf(NativeUInt) do
+    begin
+      PNativeUInt(@InnerKeyPad[I])^ := NativeUInt(CONST_UINT_OF_0x36);
+      PNativeUInt(@OuterKeyPad[I])^ := NativeUInt(CONST_UINT_OF_0x5C);
+      Inc(I, SizeOf(NativeUInt));
+    end;
+
+    while I < BlockSize do
+    begin
+      InnerKeyPad[I] := $36;
+      OuterKeyPad[I] := $5C;
+      Inc(I);
+    end;
+
+    HashInstance.Init;
+    HashInstance.Calc(InnerKeyPad[0], BlockSize);
+    if Size > 0 then
+      TDECHashExtended(HashInstance).CalcStream(Stream, Size, OnProgress, false);
+    HashInstance.Done;
+    Result := HashInstance.DigestAsBytes;
+
+    HashInstance.Init;
+    HashInstance.Calc(OuterKeyPad[0], BlockSize);
+    HashInstance.Calc(Result[0], DigestLength);
+    HashInstance.Done;
+
+    Result := HashInstance.DigestAsBytes;
+  finally
+    HashInstance.Free;
+  end;
 end;
 
 end.
