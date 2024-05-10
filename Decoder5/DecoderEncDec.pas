@@ -10,16 +10,16 @@ uses
   DECRandom, System.IOUtils;
 
 type
-  TDcFormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
+  TDc4FormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
 
   TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
 
   TYesNoAuto = (Yes, No, Auto);
 
-  TDcFileNamePolicy = (fpExpose, fpEncryptWithUserKey, fpHide);
+  TDc4FileNamePolicy = (fpExpose, fpEncryptWithUserKey, fpHide);
 
   TDC4Parameters = record
-    Dc4FormatVersion: TDcFormatVersion;
+    Dc4FormatVersion: TDc4FormatVersion;
     ShouldBeZLibCompressed: TYesNoAuto;
     KDF: TKdfVersion;
     PBKDF_Iterations: Integer;
@@ -31,7 +31,7 @@ type
     CipherMode: TCipherMode;
     BlockFillMode: TBlockFillMode;
     GCMAuthTagSizeInBytes: byte;
-    ContainFileOrigName: TDcFileNamePolicy;
+    ContainFileOrigName: TDc4FileNamePolicy;
     ContainFileOrigSize: boolean;
     ContainFileOrigDate: boolean;
   end;
@@ -65,15 +65,15 @@ procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString
 procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
 procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
 
-function DeCoder4X_GetDefaultParameters(V: TDcFormatVersion): TDC4Parameters;
+function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
 // Note for DeCoder4X_DecodeFile: If you just want to read the file information without decrypting, then let AOutput be blank
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 
-procedure Debug_ListHashAlgos(Lines: TStrings; V: TDcFormatVersion);
-procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDcFormatVersion);
+procedure Debug_ListHashAlgos(Lines: TStrings; V: TDc4FormatVersion);
+procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDc4FormatVersion);
 
 implementation
 
@@ -81,7 +81,7 @@ uses
   DecoderOldCiphers, DecoderFuncs, DateUtils, StrUtils, Math;
 
 const
-  DC4_ID_BASES: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of Int64 = (
+  DC4_ID_BASES: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of Int64 = (
     $84485225, // Hagen Reddmann Example (no .dc4 files)
     $59178954, // (De)Coder 4.0 (identities not used)
     $84671842, // (De)Coder 4.1 beta
@@ -94,7 +94,7 @@ const
 
 function DC_DEC_ClassExistedInDEC51(cn: string): boolean;
 begin
-  // TODO: Wouldn't be a inclusion-list better than an exclusion-list?
+  // TODO: Wouldn't be an inclusion-list better than an exclusion-list?
   result :=
        (cn<>'THash_SHA224') and
        (cn<>'THash_SHA3_224') and
@@ -193,7 +193,7 @@ begin
     raise Exception.CreateFmt('Cipher ID %.8x with base %.8x not found', [Identity, IdentityBase]);
 end;
 
-procedure Debug_ListHashAlgos(Lines: TStrings; V: TDcFormatVersion);
+procedure Debug_ListHashAlgos(Lines: TStrings; V: TDc4FormatVersion);
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
@@ -230,7 +230,7 @@ begin
   end;
 end;
 
-procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDcFormatVersion);
+procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDc4FormatVersion);
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
@@ -761,7 +761,7 @@ begin
   end;
 end;
 
-function DeCoder4X_GetDefaultParameters(V: TDcFormatVersion): TDC4Parameters;
+function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 begin
   result.Dc4FormatVersion := V;
   if V < fvDc41Beta then
@@ -857,7 +857,7 @@ end;
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
   const
-    DC4_SUBFORMAT_VERSION: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of string = (
+    DC4_SUBFORMAT_VERSION: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of string = (
       'Hagen Reddmann Example File',
       '(De)Coder 4.0',
       '(De)Coder 4.1 Beta',
@@ -865,7 +865,7 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
       '(De)Coder 5.0 WIP'
     );
 
-    INTEGRITY_CHECK_INFO: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of string = (
+    INTEGRITY_CHECK_INFO: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of string = (
       'DEC CalcMac',
       'Hash of source data',
       'Nested Hash of source data with password',
@@ -978,7 +978,7 @@ var
   IsFolder: boolean;
   ATempFileName: string;
   PbkdfIterations: long;
-  V: TDcFormatVersion;
+  V: TDc4FormatVersion;
   GCMAuthTagSizeInBytes: byte;
   tmpWS: WideString;
   outFileDidExist: boolean;
@@ -1384,7 +1384,7 @@ var
   OrigFileDate: Int64;
   ch: RawByteString;
   F: byte;
-  V: TDcFormatVersion;
+  V: TDc4FormatVersion;
   Cipher: TDECCipher;
   Seed: RawByteString;
   tempstream: TFileStream;
@@ -1474,7 +1474,7 @@ begin
           // 02 = (De)Coder 4.1 Beta
           // 03 = (De)Coder 4.1 Final Cancelled (never released)
           // 04 = (De)Coder 5.0 WorkInProgress
-          V := TDcFormatVersion(Source.ReadByte); // if too big, it will automatically be set to fvHagenReddmannExample
+          V := TDc4FormatVersion(Source.ReadByte); // if too big, it will automatically be set to fvHagenReddmannExample
           if V = fvHagenReddmannExample then raise Exception.Create('DC Unsupported version');
         end
         else

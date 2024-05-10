@@ -53,10 +53,14 @@ const
   Cmd_DC30_DeCrypt = 'DC30_DeCrypt';
   Cmd_DC32_EnCrypt = 'DC32_EnCrypt';
   Cmd_DC32_DeCrypt = 'DC32_DeCrypt';
+  Cmd_DC4X_EnCrypt_NoInfo = 'DC4X_EnCrypt';
+  Cmd_DC4X_EnCrypt_WithInfo = 'DC4X_EnCrypt+';
+  Cmd_DC4X_DeCrypt = 'DC4X_DeCrypt';
+  Cmd_DC4X_FileInfo = 'DC4X_FileInfo';
   Cmd_SecureDeleteFile = 'DeleteFile';
   Cmd_SecureDeleteFolder = 'DeleteFolder';
   Cmd_Help = 'Help';
-  Cmd_Debug        = 'Debug';
+  Cmd_Debug = 'Debug';
 
 {$REGION 'Debug methods'}
 procedure Debug_Testcases;
@@ -484,17 +488,18 @@ end;
 
 var
   iKey: integer;
+  fp: TDC4Parameters;
 
 begin
   try
     {$REGION '(De)Coder 1.0'}
-    if SameText(ParamStr(1), Cmd_DC10_EnCrypt) then
+    if SameText(ParamStr(1), Cmd_DC10_EnCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder10_EncodeFile(ParamStr(2), ParamStr(3), false, OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC10_DeCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC10_DeCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder10_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
@@ -502,40 +507,40 @@ begin
     end
     {$ENDREGION}
     {$REGION '(De)Coder 2.x'}
-    else if SameText(ParamStr(1), Cmd_DC20_EnCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC20_EnCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder20_EncodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC20_DeCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC20_DeCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder20_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC21_EnCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC21_EnCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder21_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC21_DeCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC21_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder21_DecodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC22_EnCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC22_EnCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder22_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC22_DeCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC22_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
@@ -544,35 +549,64 @@ begin
     end
     {$ENDREGION}
     {$REGION '(De)Coder 3.x'}
-    else if SameText(ParamStr(1), Cmd_DC30_EnCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC30_EnCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
-      DeCoder30_EncodeFile(ParamStr(2), ParamStr(3), ParamStr(4), OnProgressProc);
+      DeCoder30_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC30_DeCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC30_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
-      DeCoder30_DecodeFile(ParamStr(2), ParamStr(3), ParamStr(4), OnProgressProc);
+      DeCoder30_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC32_EnCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC32_EnCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
-      DeCoder32_EncodeFile(ParamStr(2), ParamStr(3), ParamStr(4), OnProgressProc);
+      DeCoder32_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC32_DeCrypt) then
+    else if SameText(ParamStr(1), Cmd_DC32_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
-      DeCoder32_DecodeFile(ParamStr(2), ParamStr(3), ParamStr(4), OnProgressProc);
+      DeCoder32_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
       ExitCode := 0;
     end
     {$ENDREGION}
     {$REGION '(De)Coder 4.x / 5.0'}
-
-    // TODO: CLi implement 4.x
-
+    else if SameText(ParamStr(1), Cmd_DC4X_EnCrypt_NoInfo) and (ParamCount = 4) then
+    begin
+      CheckFileExists(ParamStr(2));
+      fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
+      fp.ContainFileOrigName := fpHide;
+      fp.ContainFileOrigSize := false;
+      fp.ContainFileOrigDate := false;
+      DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), fp, OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC4X_EnCrypt_WithInfo) and (ParamCount = 4) then
+    begin
+      CheckFileExists(ParamStr(2));
+      fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
+      fp.ContainFileOrigName := fpExpose;
+      fp.ContainFileOrigSize := true;
+      fp.ContainFileOrigDate := true;
+      DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), fp, OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC4X_DeCrypt) and (ParamCount = 4) then
+    begin
+      CheckFileExists(ParamStr(2));
+      DeCoder4X_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_DC4X_FileInfo) and (ParamCount = 2) then
+    begin
+      CheckFileExists(ParamStr(2));
+      DeCoder4X_DecodeFile(ParamStr(2), '', '', OnProgressProc);
+      ExitCode := 0;
+    end
     {$ENDREGION}
     {$REGION 'Debug commands'}
     else if SameText(ParamStr(1), Cmd_Debug) then
@@ -600,13 +634,13 @@ begin
     end
     {$ENDREGION}
     {$REGION 'Utils'}
-    else if SameText(ParamStr(1), Cmd_SecureDeleteFile) then
+    else if SameText(ParamStr(1), Cmd_SecureDeleteFile) and (ParamCount = 2) then
     begin
       CheckFileExists(ParamStr(2));
       SecureDeleteFile(ParamStr(2));
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) then
+    else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) and (ParamCount = 2) then
     begin
       CheckDirectoryExists(ParamStr(2));
       raise Exception.Create('Not implemented'); // TODO: Implement secure delete folder
@@ -619,6 +653,14 @@ begin
       WriteLn('ViaThinkSoft (De)Coder 5.0');
       WriteLn(Format('Built %s', [DateTimeToStr(GetOwnBuildTimestamp)]));
       WriteLn('');
+
+      WriteLn('Encrypting and decrypting:');
+      WriteLn(Format('%s %s  <InFile> <OutFile> <Password> -- Encrypts a file using (De)Coder 5.0', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_EnCrypt_NoInfo]));
+      WriteLn(Format('%s %s <InFile> <OutFile> <Password> -- Same as %s, but with metadata name+size+date', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_EnCrypt_WithInfo, Cmd_DC4X_EnCrypt_NoInfo]));
+      WriteLn(Format('%s %s  <InFile> <OutFile> <Password> -- Decrypts a file which was encrypted by (De)Coder 4.x or 5.x', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_DeCrypt]));
+      WriteLn(Format('%s %s <InFile>                      -- Shows info for a DC4 or DC5 file', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_FileInfo]));
+      WriteLn('');
+
       WriteLn('Support for legacy file formats:');
       WriteLn(Format('%s %s <InFile> <OutFile> -- Encrypts a file using the (De)Coder 1.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_EnCrypt]));
       WriteLn(Format('%s %s <InFile> <OutFile> -- Decrypts a file using the (De)Coder 1.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_DeCrypt]));
@@ -628,18 +670,26 @@ begin
       WriteLn(Format('%s %s <InFile> <OutFile> <Key1..255> -- Decrypts a file using the (De)Coder 2.1 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC21_DeCrypt]));
       WriteLn(Format('%s %s <InFile> <OutFile> <Key1..256> -- Encrypts a file using the (De)Coder 2.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC22_EnCrypt]));
       WriteLn(Format('%s %s <InFile> <OutFile> <Key1..256> -- Decrypts a file using the (De)Coder 2.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC22_DeCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password> -- Encrypts a file using the (De)Coder 3.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC30_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password> -- Decrypts a file using the (De)Coder 3.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC30_DeCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password> -- Encrypts a file using the (De)Coder 3.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC32_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password> -- Decrypts a file using the (De)Coder 3.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC32_DeCrypt]));
+      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC30_EnCrypt]));
+      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC30_DeCrypt]));
+      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC32_EnCrypt]));
+      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC32_DeCrypt]));
       WriteLn('');
       WriteLn('Extras:');
-      WriteLn(Format('%s %s <File> -- Wipes a file from a disk in a secure way', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_SecureDeleteFile]));
+      WriteLn(Format('%s %s <File>     -- Wipes a file from a disk in a secure way', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_SecureDeleteFile]));
       WriteLn(Format('%s %s <Folder> -- Wipes a complete folder from a disk in a secure way', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_SecureDeleteFolder]));
-      WriteLn(Format('%s %s -- Shows this command listing', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Help]));
-      WriteLn(Format('%s %s <???> -- Internal debug commands', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Debug]));
+      WriteLn(Format('%s %s                  -- Shows this command listing', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Help]));
+      //WriteLn(Format('%s %s <???>           -- Internal debug commands', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Debug]));
 
-      if SameText(ParamStr(1), Cmd_Help) or SameText(ParamStr(1), '--help') or SameText(ParamStr(1), '/?') then
+      if ParamCount = 0 then
+      begin
+        ExitCode := 0;
+        WriteLn('');
+        WriteLn('Press any key to exit...');
+        ReadLn;
+        Exit;
+      end
+      else if (ParamCount=1) and (SameText(ParamStr(1), Cmd_Help) or SameText(ParamStr(1), '--help') or SameText(ParamStr(1), '/?')) then
         ExitCode := 0
       else
         ExitCode := 1;
