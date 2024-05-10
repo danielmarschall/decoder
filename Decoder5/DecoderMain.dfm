@@ -16,22 +16,13 @@ object FormMain: TFormMain
     635
     467)
   TextHeight = 13
-  object Button1: TButton
-    Left = 8
-    Top = 96
-    Width = 129
-    Height = 49
-    Caption = 'Entropy Test'
-    TabOrder = 0
-    OnClick = Button1Click
-  end
   object ProgressBar1: TProgressBar
     Left = 8
     Top = 64
     Width = 619
     Height = 17
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 1
+    TabOrder = 0
   end
   object Memo1: TMemo
     Left = 8
@@ -47,24 +38,6 @@ object FormMain: TFormMain
     Lines.Strings = (
       'Memo1')
     ParentFont = False
-    TabOrder = 2
-  end
-  object Button3: TButton
-    Left = 432
-    Top = 96
-    Width = 145
-    Height = 65
-    Caption = 'Testcases'
-    TabOrder = 3
-    OnClick = Button3Click
-  end
-  object Button2: TButton
-    Left = 216
-    Top = 104
-    Width = 145
-    Height = 65
-    Caption = 'Button2'
-    TabOrder = 4
-    OnClick = Button2Click
+    TabOrder = 1
   end
 end

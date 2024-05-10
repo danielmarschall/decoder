@@ -319,7 +319,10 @@ begin
       if Assigned(tempstream) then FreeAndNil(tempstream);
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -410,7 +413,10 @@ begin
       if Assigned(tempstream) then FreeAndNil(tempstream);
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -441,7 +447,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -472,7 +481,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -503,7 +515,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -534,7 +549,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -565,7 +583,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -596,7 +617,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -627,7 +651,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -658,7 +685,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -689,7 +719,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -720,7 +753,10 @@ begin
       ssIn.Free;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -1331,7 +1367,10 @@ begin
       end;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
@@ -1870,7 +1909,10 @@ begin
       end;
     end;
   except
-    if not outFileDidExist then SecureDeleteFile(AOutput);
+    try
+      if not outFileDidExist then SecureDeleteFile(AOutput);
+    except
+    end;
     raise;
   end;
 end;
