@@ -212,13 +212,44 @@ var
 begin
   Memo1.Lines.Clear;
 
+  Memo1.Lines.Add('Reddmann Example Cipher Algos');
+  Debug_ListCipherAlgos(Memo1.Lines, fvHagenReddmannExample);
+  Memo1.Lines.Add('');
 
-  Memo1.Lines.Add('DC 5.0 Hash Algos');
-  Debug_ListHashAlgos(Memo1.Lines, fvDc50Wip);
+  Memo1.Lines.Add('Reddmann Example Hash Algos');
+  Debug_ListHashAlgos(Memo1.Lines, fvHagenReddmannExample);
+  Memo1.Lines.Add('');
+
+  //Memo1.Lines.Add('DC 4.0 Cipher Algos');
+  //Debug_ListCipherAlgos(Memo1.Lines, fvDc40);
+  //Memo1.Lines.Add('');
+
+  //Memo1.Lines.Add('DC 4.0 Hash Algos');
+  //Debug_ListHashAlgos(Memo1.Lines, fvDc40);
+  //Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('DC 4.1B Cipher Algos');
+  Debug_ListCipherAlgos(Memo1.Lines, fvDc41Beta);
+  Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('DC 4.1B Hash Algos');
+  Debug_ListHashAlgos(Memo1.Lines, fvDc41Beta);
+  Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('DC 4.1F Cipher Algos');
+  Debug_ListCipherAlgos(Memo1.Lines, fvDc41FinalCancelled);
+  Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('DC 4.1F Hash Algos');
+  Debug_ListHashAlgos(Memo1.Lines, fvDc41FinalCancelled);
   Memo1.Lines.Add('');
 
   Memo1.Lines.Add('DC 5.0 Cipher Algos');
   Debug_ListCipherAlgos(Memo1.Lines, fvDc50Wip);
+  Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('DC 5.0 Hash Algos');
+  Debug_ListHashAlgos(Memo1.Lines, fvDc50Wip);
   Memo1.Lines.Add('');
 
   exit;

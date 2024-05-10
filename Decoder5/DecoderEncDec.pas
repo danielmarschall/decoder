@@ -78,7 +78,7 @@ procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDcFormatVersion);
 implementation
 
 uses
-  DecoderOldCiphers, DecoderFuncs, DateUtils;
+  DecoderOldCiphers, DecoderFuncs, DateUtils, StrUtils;
 
 const
   DC4_ID_BASES: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of Int64 = (
@@ -92,21 +92,31 @@ const
   // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
   DC4_OID = '1.3.6.1.4.1.37476.2.2.1.4';
 
-function DEC51_Identity(IdentityBase: Int64; ClassName: string): Int64;
+function DC_DEC_Identity(IdentityBase: Int64; ClassName: string; dc51compat: boolean): Int64;
 var
   Signature: AnsiString;
   cn: string;
 begin
   cn := ClassName;
-  if cn = 'THash_SHA0'{DEC6.0} then cn := 'THash_SHA'{DEC5.1};
-  if cn = 'THash_Whirlpool0'{DEC6.0} then cn := 'THash_Whirlpool'{DEC5.1};
-  if cn = 'TCipher_AES'{DEC6.0} then cn := 'TCipher_Rijndael'{DEC5.1};
-  if cn = 'TCipher_Magma' then cn := 'TCipher_Gost'; // TCipher_Magma is an alias for TCipher_Gost
-  Signature := AnsiString(StringOfChar(#$5A, 256 - Length(cn)) + AnsiUpperCase(cn));
-  Result := CRC32(IdentityBase, Signature[1], Length(Signature));
+  if dc51compat then
+  begin
+    if cn = 'THash_SHA0'{DEC6.0} then cn := 'THash_SHA'{DEC5.1};
+    if cn = 'THash_Whirlpool0'{DEC6.0} then cn := 'THash_Whirlpool'{DEC5.1};
+    if cn = 'TCipher_AES'{DEC6.0} then cn := 'TCipher_Rijndael'{DEC5.1};
+    if cn = 'TCipher_Magma' then cn := 'TCipher_Gost'; // TCipher_Magma is an alias for TCipher_Gost
+    Signature := AnsiString   (StringOfChar(#$5A, 256 - Length(cn)) + AnsiUpperCase(cn));
+    Result := CRC32(IdentityBase, Signature[1], Length(Signature));
+  end
+  else
+  begin
+    // Code copied from TDECObject.Identity
+    // we cannot use TDECClassList.ClassByIdentity, because it does not allow switching of IdentifyBase
+    Signature := RawByteString(StringOfChar(#$5A, 256 - Length(cn)) + UpperCase(cn));
+    Result := CRC32(IdentityBase, Signature[Low(Signature)], Length(Signature) * SizeOf(Signature[Low(Signature)]));
+  end;
 end;
 
-function DEC51_HashById(IdentityBase, Identity: Int64; NoException: boolean=false): TDECHashClass;
+function DC_DEC_HashById(IdentityBase, Identity: Int64; dc51compat: boolean; NoException: boolean=false): TDECHashClass;
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
@@ -114,7 +124,7 @@ begin
   for p in TDECHash.ClassList do
   begin
     c := p.Value;
-    if (c <> nil) and (Identity = DEC51_Identity(IdentityBase, c.ClassName)) then
+    if (c <> nil) and (Identity = DC_DEC_Identity(IdentityBase, c.ClassName, dc51compat)) then
     begin
       result := TDECHashClass(c);
       exit;
@@ -126,15 +136,18 @@ begin
     raise Exception.CreateFmt('Hash ID %.8x with base %.8x not found', [Identity, IdentityBase]);
 end;
 
-function DEC51_CipherById(IdentityBase, Identity: Int64; NoException: boolean=false): TDECCipherClass;
+function DC_DEC_CipherById(IdentityBase, Identity: Int64; dc51compat: boolean; NoException: boolean=false): TDECCipherClass;
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
+  cn: string;
 begin
   for p in TDECCipher.ClassList do
   begin
     c := p.Value;
-    if (c <> nil) and (Identity = DEC51_Identity(IdentityBase, c.ClassName)) then
+    cn := c.ClassName;
+    if StartsText('TCipher_VtsDeCoder', cn) then continue;
+    if (c <> nil) and (Identity = DC_DEC_Identity(IdentityBase, cn, dc51compat)) then
     begin
       result := TDecCipherClass(c);
       exit;
@@ -151,17 +164,47 @@ var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
   cn: string;
+  sl: TStringList;
+  addinfo: string;
 begin
-  for p in TDECHash.ClassList do
-  begin
-    c := p.Value;
-    cn := c.ClassName;
-    Lines.Add(
-      '0x'+IntToHex(DEC51_Identity(DC4_ID_BASES[V], cn), 8) + #9 +
-      cn +
-      ' (DigestSize: '+IntToStr(TDECHashClass(c).DigestSize) +
-      ', BlockSize: '+IntToStr(TDECHashClass(c).BlockSize) + ')'
-    );
+  sl := TStringList.Create;
+  try
+    for p in TDECHash.ClassList do
+    begin
+      c := p.Value;
+      cn := c.ClassName;
+      if (V<fvDc50Wip) and (cn='THash_SHA224') then continue;
+      if (V<fvDc50Wip) and (cn='THash_SHA3_224') then continue;
+      if (V<fvDc50Wip) and (cn='THash_SHA3_256') then continue;
+      if (V<fvDc50Wip) and (cn='THash_SHA3_384') then continue;
+      if (V<fvDc50Wip) and (cn='THash_SHA3_512') then continue;
+      if (V<fvDc50Wip) and (cn='THash_Shake128') then continue;
+      if (V<fvDc50Wip) and (cn='THash_Shake256') then continue;
+      if (V<fvDc50Wip) and (cn='THash_Keccak_224') then continue;
+      if (V<fvDc50Wip) and (cn='THash_Keccak_256') then continue;
+      if (V<fvDc50Wip) and (cn='THash_Keccak_384') then continue;
+      if (V<fvDc50Wip) and (cn='THash_Keccak_512') then continue;
+      if (V<fvDc50Wip) and (cn='THash_BCrypt') then continue;
+      if (V<fvDc50Wip) and (cn='THash_WhirlpoolT') then continue;
+      addinfo := '';
+      if (cn='THash_Whirlpool0') then cn := 'THash_Whirlpool';
+      if (cn='THash_SHA0') then cn := 'THash_SHA';
+      if (V>=fvDc50Wip) and (cn='THash_SHA3_512') then addinfo := ', default'
+      else if (V>=fvDc40) and (V<fvDc50Wip) and (cn='THash_SHA512') then addinfo := ', default'
+      else if (V=fvHagenReddmannExample) and (cn='THash_SHA1') then addinfo := ', default';
+      sl.Add(
+        '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50Wip), 8) + #9 +
+        cn +
+        ' (DigestSize: '+IntToStr(TDECHashClass(c).DigestSize) +
+        ', BlockSize: '+IntToStr(TDECHashClass(c).BlockSize) +
+        addinfo +
+        ')'
+      );
+    end;
+    sl.Sorted := true;
+    Lines.AddStrings(sl);
+  finally
+    FreeAndNil(sl);
   end;
 end;
 
@@ -170,20 +213,40 @@ var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
   cn: string;
-const
-  IdentityBase = $1259D82A; // DC 5.0
+  sl: TStringList;
+  addinfo: string;
 begin
-  for p in TDECCipher.ClassList do
-  begin
-    c := p.Value;
-    cn := c.ClassName;
-    Lines.Add(
-      '0x'+IntToHex(DEC51_Identity(DC4_ID_BASES[V], cn), 8) + #9 +
-      cn +
-      ' (KeySize: '+IntToStr(TDECCipherClass(c).Context.KeySize) +
-      ', BlockSize: '+IntToStr(TDECCipherClass(c).Context.BlockSize) +
-      ', BufferSize: '+IntToStr(TDECCipherClass(c).Context.BufferSize) + ')'
-    );
+  sl := TStringList.Create;
+  try
+    for p in TDECCipher.ClassList do
+    begin
+      c := p.Value;
+      cn := c.ClassName;
+      if StartsText('TCipher_VtsDeCoder', cn) then continue;
+      if (V<fvDc50Wip) and (cn='TCipher_Null') then continue;
+      if (V<fvDc50Wip) and (cn='TCipher_AES256') then continue;
+      if (V<fvDc50Wip) and (cn='TCipher_XTEA') then continue;
+      if (V<fvDc50Wip) and (cn='TCipher_AES128') then continue;
+      if (V<fvDc50Wip) and (cn='TCipher_AES192') then continue;
+      if (V<fvDc50Wip) and (cn='TCipher_AES') then cn := 'TCipher_Rijndael';;
+      addinfo := '';
+      if (V<fvDc50Wip) and (cn='TCipher_Shark') then addinfo := ', faulty implementation';
+      if (V<fvDc50Wip) and (cn='TCipher_SCOP') then addinfo := ', faulty implementation?';
+      if (V<fvDc50Wip) and (cn='TCipher_Rijndael') then addinfo := ', default';
+      sl.Add(
+        '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50Wip), 8) + #9 +
+        cn +
+        ' (KeySize: '+IntToStr(TDECCipherClass(c).Context.KeySize) +
+        ', BlockSize: '+IntToStr(TDECCipherClass(c).Context.BlockSize) +
+        ', BufferSize: '+IntToStr(TDECCipherClass(c).Context.BufferSize) +
+        addinfo +
+        ')'
+      );
+    end;
+    sl.Sorted := true;
+    Lines.AddStrings(sl);
+  finally
+    FreeAndNil(sl);
   end;
 end;
 
@@ -990,7 +1053,7 @@ begin
 
     {$REGION '5. Cipher identity (version 0 and 2+)'}
     if V <> fvDc40 then
-      tempstream.WriteLongBE(DEC51_Identity(idBase, CipherClass.ClassName));
+      tempstream.WriteLongBE(DC_DEC_Identity(idBase, CipherClass.ClassName, V<fvDc50Wip));
     {$ENDREGION}
 
     {$REGION '6. Cipher mode (version 0 and 2+)'}
@@ -999,7 +1062,7 @@ begin
 
     {$REGION '7. Hash identity (version 0 and 2+)'}
     if V <> fvDc40 then
-      tempstream.WriteLongBE(DEC51_Identity(idBase, HashClass.ClassName));
+      tempstream.WriteLongBE(DC_DEC_Identity(idBase, HashClass.ClassName, V<fvDc50Wip));
     {$ENDREGION}
 
     {$REGION '7.5 IV (only version 4+)'}
@@ -1192,7 +1255,7 @@ begin
   try
     try
       // Is it the Hagen Reddmann example file format?
-      CipherClass := DEC51_CipherById(DC4_ID_BASES[fvHagenReddmannExample], Source.ReadLongBE, true);
+      CipherClass := DC_DEC_CipherById(DC4_ID_BASES[fvHagenReddmannExample], Source.ReadLongBE, true, true);
       if not Assigned(CipherClass) then
         Source.Position := 0;
 
@@ -1347,10 +1410,11 @@ begin
       {$REGION '5. Cipher identity (only version 0 or 2+)'}
       if V <> fvHagenReddmannExample then // If V=fvHagenReddmannExample, then we already checked it and the stream position should be 4.
       begin
+        // Now query with the new actual fitting id base version (dependant on V)
         if V = fvDc40 then
           CipherClass := TCipher_AES
         else
-          CipherClass := DEC51_CipherById(idBase, Source.ReadLongBE);
+          CipherClass := DC_DEC_CipherById(idBase, Source.ReadLongBE, V<fvDc50Wip);
       end;
       if (V < fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
       if (V < fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
@@ -1369,7 +1433,7 @@ begin
       if V = fvDc40 then
         HashClass := THash_SHA512
       else
-        HashClass := DEC51_HashById(idBase, Source.ReadLongBE);
+        HashClass := DC_DEC_HashById(idBase, Source.ReadLongBE, V<fvDc50Wip);
       AHash := HashClass.Create;
       {$ENDREGION}
 
