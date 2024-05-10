@@ -1,8 +1,5 @@
 unit DecoderEncDec;
 
-// TODO: Idea for (De)Coder 5.0 format: Original file size (optional)
-// TODO: Idea for (De)Coder 5.0 format: Original file date (optional)
-
 interface
 
 uses
@@ -10,7 +7,7 @@ uses
   System.UITypes, DECCiphers, DECCipherBase, DECHash, DECHashBase,
   DECHashAuthentication, DECUtil, DECCipherFormats, 
   EncdDecd, System.NetEncoding, DECCRC, DECBaseClass, Generics.Collections,
-  DECRandom;
+  DECRandom, System.IOUtils;
 
 type
   TDcFormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
@@ -39,13 +36,15 @@ type
     ContainFileOrigDate: boolean;
   end;
 
+  UnixTimestamp = Int64;
+
   TDC4FileInfo = record
     IsZLibCompressed: boolean;
     IsCompressedFolder: boolean;
     Parameters: TDC4Parameters;
     OrigFileName: string; // or '' if hidden
-    OrigFileSize: Int64; // or -1 if hidden
-    OrigFileDate: TDateTime; // or 0 if hidden
+    OrigFileSize: Int64; // or =-1 if hidden
+    OrigFileDate: UnixTimestamp; // or =-1 if hidden
   end;
 
 procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDECProgressEvent=nil);
@@ -73,10 +72,25 @@ procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword
 // Note for DeCoder4X_DecodeFile: If you just want to read the file information without decrypting, then let AOutput be blank
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 
+procedure Debug_ListHashAlgos(Lines: TStrings; V: TDcFormatVersion);
+procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDcFormatVersion);
+
 implementation
 
 uses
-  DecoderOldCiphers, DecoderFuncs;
+  DecoderOldCiphers, DecoderFuncs, DateUtils;
+
+const
+  DC4_ID_BASES: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of Int64 = (
+    $84485225, // Hagen Reddmann Example (no .dc4 files)
+    $59178954, // (De)Coder 4.0 (identities not used)
+    $84671842, // (De)Coder 4.1 beta
+    $19387612, // (De)Coder 4.1 final/cancelled
+    $1259d82a  // (De)Coder 5.0 WIP
+  );
+
+  // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
+  DC4_OID = '1.3.6.1.4.1.37476.2.2.1.4';
 
 function DEC51_Identity(IdentityBase: Int64; ClassName: string): Int64;
 var
@@ -132,17 +146,46 @@ begin
     raise Exception.CreateFmt('Cipher ID %.8x with base %.8x not found', [Identity, IdentityBase]);
 end;
 
-const
-  DC4_ID_BASES: array[Low(TDcFormatVersion)..High(TDcFormatVersion)] of Int64 = (
-    $84485225, // Hagen Reddmann Example (no .dc4 files)
-    $59178954, // (De)Coder 4.0 (identities not used)
-    $84671842, // (De)Coder 4.1 beta
-    $19387612, // (De)Coder 4.1 final/cancelled
-    $1259d82a  // (De)Coder 5.0 WIP
-  );
+procedure Debug_ListHashAlgos(Lines: TStrings; V: TDcFormatVersion);
+var
+  p: TPair<int64, TDECClass>;
+  c: TDECClass;
+  cn: string;
+begin
+  for p in TDECHash.ClassList do
+  begin
+    c := p.Value;
+    cn := c.ClassName;
+    Lines.Add(
+      '0x'+IntToHex(DEC51_Identity(DC4_ID_BASES[V], cn), 8) + #9 +
+      cn +
+      ' (DigestSize: '+IntToStr(TDECHashClass(c).DigestSize) +
+      ', BlockSize: '+IntToStr(TDECHashClass(c).BlockSize) + ')'
+    );
+  end;
+end;
 
-  // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
-  DC4_OID = '1.3.6.1.4.1.37476.2.2.1.4';
+procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDcFormatVersion);
+var
+  p: TPair<int64, TDECClass>;
+  c: TDECClass;
+  cn: string;
+const
+  IdentityBase = $1259D82A; // DC 5.0
+begin
+  for p in TDECCipher.ClassList do
+  begin
+    c := p.Value;
+    cn := c.ClassName;
+    Lines.Add(
+      '0x'+IntToHex(DEC51_Identity(DC4_ID_BASES[V], cn), 8) + #9 +
+      cn +
+      ' (KeySize: '+IntToStr(TDECCipherClass(c).Context.KeySize) +
+      ', BlockSize: '+IntToStr(TDECCipherClass(c).Context.BlockSize) +
+      ', BufferSize: '+IntToStr(TDECCipherClass(c).Context.BufferSize) + ')'
+    );
+  end;
+end;
 
 procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDECProgressEvent=nil);
 var
@@ -579,7 +622,7 @@ begin
   if (AParameters.Dc4FormatVersion <> fvDc41FinalCancelled) and (AParameters.ContainFileOrigName=fpEncryptWithUserKey) then
     raise Exception.Create('Encrypted Filename only accepted in DC41Final version');
   if (AParameters.Dc4FormatVersion < fvDc50Wip) and (AParameters.ContainFileOrigName=fpHide) then
-    raise Exception.Create('Orig FileSize can only be hidden in format version 4');
+    raise Exception.Create('Orig File Name can only be hidden in format version 4');
   if (AParameters.Dc4FormatVersion < fvDc50Wip) and AParameters.ContainFileOrigSize then
     raise Exception.Create('Orig FileSize only available in format version 4');
   if (AParameters.Dc4FormatVersion < fvDc50Wip) and AParameters.ContainFileOrigDate then
@@ -649,15 +692,18 @@ begin
     sl.Add('Original filename: unknown')
   else
     sl.Add('Original filename: ' + fi.OrigFileName);
-  if fi.OrigFileSize < 0 then
+  if fi.OrigFileSize = -1 then
     sl.Add('Original filesize: unknown')
   else
     sl.Add('Original filesize: ' + IntToStr(fi.OrigFileSize)); // TODO: human readable filesize
-  if fi.OrigFileDate <= 0 then
+  if fi.OrigFileDate = -1 then
     sl.Add('Original datetime: unknown')
   else
-    sl.Add('Original datetime: ' + DateTimeToStr(fi.OrigFileDate));
-  sl.Add('Encrypted File Password: ' + YesNo(fi.Parameters.ContainFileOrigName=fpEncryptWithUserKey));
+    sl.Add('Original datetime: ' + DateTimeToStr(UnixToDateTime(fi.OrigFileDate, false)));
+  if fi.Parameters.Dc4FormatVersion = fvDc41FinalCancelled then
+    sl.Add('Password Encrypted File Name: ' + YesNo(fi.Parameters.ContainFileOrigName=fpEncryptWithUserKey))
+  else
+    sl.Add('Password Encrypted File Name: not available');
   sl.Add('Key Derivation Algorithm: ' + KDF_VERSION_NAMES[fi.Parameters.KDF]);
   if fi.Parameters.KDF = kvPbkdf2 then
     sl.Add('PBKDF Iterations: ' + IntToStr(fi.Parameters.PBKDF_Iterations));
@@ -713,8 +759,6 @@ var
   tmpWS: WideString;
 begin
   DeCoder4X_ValidateParameterBlock(AParameters);
-
-  // TODO: implement new size, date
 
   tempstream := nil;
   Source := nil;
@@ -830,7 +874,7 @@ begin
 
     {$REGION '2.1 Magic Sequence (only version 4+)'}
     if (V>=fvDc50Wip) then
-      tempstream.WriteRawByteString(DC4_OID);
+      tempstream.WriteRawByteString('[' + DC4_OID + ']');
     {$ENDREGION}
 
     {$REGION '3. Filename (version 1+)'}
@@ -897,7 +941,7 @@ begin
       finally
         Cipher.Done;
       end;
-      tempstream.WriteLong(Length(OrigNameEncrypted));
+      tempstream.WriteLongBE(Length(OrigNameEncrypted));
       tempstream.WriteRawByteString(OrigNameEncrypted);
     end
     else if V >= fvDc50Wip then
@@ -911,18 +955,42 @@ begin
         OrigName := UTF8Encode(ExtractFileName(AFileName))
       else
         OrigName := '';
+      if Length(OrigName) > 255 then
+        raise Exception.Create('Filename too long');
       tempstream.WriteByte(Length(OrigName));
       tempstream.WriteRawByteString(OrigName);
     end;
     {$ENDREGION}
 
+    {$REGION '3.1 File Size (version 4+)'}
+    if V >= fvDc50Wip then
+    begin
+      if AParameters.ContainFileOrigSize then
+        tempstream.WriteInt64(Int64(TFile.GetSize(AFileName)))
+      else
+        tempstream.WriteInt64(-1);
+    end;
+    {$ENDREGION}
+
+    {$REGION '3.2 File Date/Time (version 4+)'}
+    if V >= fvDc50Wip then
+    begin
+      if AParameters.ContainFileOrigDate then
+        tempstream.WriteInt64(DateTimeToUnix(TFile.GetLastWriteTime(AFileName), false))
+      else
+        tempstream.WriteInt64(-1);
+    end;
+    {$ENDREGION}
+
     {$REGION '4. IdBase (only version 2+)'}
     idBase := DC4_ID_BASES[V];
-    if V >= fvDc41Beta then tempstream.WriteLong(idBase);
+    if V >= fvDc41Beta then
+      tempstream.WriteLongBE(idBase);
     {$ENDREGION}
 
     {$REGION '5. Cipher identity (version 0 and 2+)'}
-    if V <> fvDc40 then tempstream.WriteLong(DEC51_Identity(idBase, CipherClass.ClassName));
+    if V <> fvDc40 then
+      tempstream.WriteLongBE(DEC51_Identity(idBase, CipherClass.ClassName));
     {$ENDREGION}
 
     {$REGION '6. Cipher mode (version 0 and 2+)'}
@@ -931,9 +999,7 @@ begin
 
     {$REGION '7. Hash identity (version 0 and 2+)'}
     if V <> fvDc40 then
-    begin
-      tempstream.WriteLong(DEC51_Identity(idBase, HashClass.ClassName));
-    end;
+      tempstream.WriteLongBE(DEC51_Identity(idBase, HashClass.ClassName));
     {$ENDREGION}
 
     {$REGION '7.5 IV (only version 4+)'}
@@ -972,7 +1038,8 @@ begin
     {$ENDREGION}
 
     {$REGION '8.6 PBKDF Iterations (only for KdfVersion=kvPbkdf2)'}
-    if KdfVersion = kvPbkdf2 then tempstream.WriteByte(PbkdfIterations);
+    if KdfVersion = kvPbkdf2 then
+      tempstream.WriteInt32(PbkdfIterations);
     {$ENDREGION}
 
     {$REGION '8.7 GCM Tag length (only if GCM mode)'}
@@ -989,7 +1056,7 @@ begin
     try
       Source.Position := 0;
       if V = fvHagenReddmannExample then
-        tempstream.WriteLong(Source.Size);
+        tempstream.WriteLongBE(Source.Size);
       TDECFormattedCipher(Cipher).EncodeStream(Source, tempstream, source.size, OnProgressProc);
     finally
       Cipher.Done;
@@ -1051,7 +1118,7 @@ begin
     end;
     {$ENDREGION}
 
-    {$REGION '11. File Terminus (readonly version 2 and 3)'}
+    {$REGION '11. File Terminus (only version 2 and 3)'}
     if V = fvDc41Beta then
     begin
       tempstream.WriteRawByteString(RawByteString(TNetEncoding.Base64.Encode('DCTERMINUS')));
@@ -1077,6 +1144,8 @@ end;
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 var
   Source: TFileStream;
+  OrigFileSize: Int64;
+  OrigFileDate: Int64;
 var
   ch: RawByteString;
   F: byte;
@@ -1110,8 +1179,6 @@ var
   iTmp: integer;
   OnlyReadFileInfo: boolean;
 begin
-  // TODO: implement new filename, size, date
-
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   tempstream := nil;
   cipher := nil;
@@ -1120,10 +1187,12 @@ begin
   IsFolder := false;
   OnlyReadFileInfo := AOutput = '';
   ATempFileName := '';
+  OrigFileSize := -1;
+  OrigFileDate := -1;
   try
     try
       // Is it the Hagen Reddmann example file format?
-      CipherClass := DEC51_CipherById(DC4_ID_BASES[fvHagenReddmannExample], Source.ReadLong, true);
+      CipherClass := DEC51_CipherById(DC4_ID_BASES[fvHagenReddmannExample], Source.ReadLongBE, true);
       if not Assigned(CipherClass) then
         Source.Position := 0;
 
@@ -1195,7 +1264,7 @@ begin
       end
       else
       begin
-        MagicSeq := RawByteString(DC4_OID);
+        MagicSeq := RawByteString('[' + DC4_OID + ']');
         FileTerminus := '';
       end;
       {$ENDREGION}
@@ -1237,7 +1306,7 @@ begin
           // Encryption-Password = Hash->KDfx(User-Password, Seed)
           // if not encrypted with user-password, otherwise:
           // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
-          OrigNameEncrypted := Source.ReadRawByteString(Source.ReadLong); // will be decrypted below (after we initialized hash/cipher)
+          OrigNameEncrypted := Source.ReadRawByteString(Source.ReadLongBE); // will be decrypted below (after we initialized hash/cipher)
         end
         else if V >= fvDc50Wip then
         begin
@@ -1254,11 +1323,25 @@ begin
       end;
       {$ENDREGION}
 
+      {$REGION '3.1 File Size (version 4+)'}
+      if V >= fvDc50Wip then
+      begin
+        OrigFileSize := Source.ReadInt64;
+      end;
+      {$ENDREGION}
+
+      {$REGION '3.2 File Date/Time (version 4+)'}
+      if V >= fvDc50Wip then
+      begin
+        OrigFileDate := Source.ReadInt64;
+      end;
+      {$ENDREGION}
+
       {$REGION '4. IdBase (only version 2+)'}
       if (V = fvHagenReddmannExample) or (V = fvDc40) then
         idBase := DC4_ID_BASES[V] // hardcoded
       else
-        idBase := Source.ReadLong;
+        idBase := Source.ReadLongBE;
       {$ENDREGION}
 
       {$REGION '5. Cipher identity (only version 0 or 2+)'}
@@ -1267,7 +1350,7 @@ begin
         if V = fvDc40 then
           CipherClass := TCipher_AES
         else
-          CipherClass := DEC51_CipherById(idBase, Source.ReadLong);
+          CipherClass := DEC51_CipherById(idBase, Source.ReadLongBE);
       end;
       if (V < fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
       if (V < fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
@@ -1286,7 +1369,7 @@ begin
       if V = fvDc40 then
         HashClass := THash_SHA512
       else
-        HashClass := DEC51_HashById(idBase, Source.ReadLong);
+        HashClass := DEC51_HashById(idBase, Source.ReadLongBE);
       AHash := HashClass.Create;
       {$ENDREGION}
 
@@ -1338,7 +1421,7 @@ begin
 
       {$REGION '8.6 KDF Iterations (ONLY PRESENT for PBKDF2)'}
       if KDFVersion = kvPbkdf2 then
-        PbkdfIterations := Source.ReadLong
+        PbkdfIterations := Source.ReadInt32
       else
         PbkdfIterations := 0;
       {$ENDREGION}
@@ -1398,7 +1481,7 @@ begin
         try
           if V = fvHagenReddmannExample then
           begin
-            TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, Source.ReadLong, OnProgressProc);
+            TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, Source.ReadLongBE, OnProgressProc);
           end
           else
           begin
@@ -1539,8 +1622,8 @@ begin
       result.IsZLibCompressed := IsZLibCompressed;
       result.IsCompressedFolder := IsFolder;
       result.OrigFileName := OrigName;
-      result.OrigFileSize := ;
-      result.OrigFileDate := ;
+      result.OrigFileSize := OrigFileSize;
+      result.OrigFileDate := OrigFileDate;
       result.Parameters.Dc4FormatVersion := V;
       if V < fvDc41Beta then
         result.Parameters.ShouldBeZLibCompressed := No
@@ -1557,6 +1640,8 @@ begin
       result.Parameters.BlockFillMode := Cipher.FillMode;
       if (V = fvDc41FinalCancelled) and FileNameUserPasswordEncrypted then
         result.Parameters.ContainFileOrigName := fpEncryptWithUserKey
+      else if (V >= fvDc50Wip) and (OrigName = '') then
+        result.Parameters.ContainFileOrigName := fpHide
       else
         result.Parameters.ContainFileOrigName := fpExpose;
       result.Parameters.ContainFileOrigSize := V >= fvDc50Wip;

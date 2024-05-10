@@ -63,53 +63,6 @@ begin
   memo1.Lines.Add(FloatTostr(entropy));
 end;
 
-(*
-procedure TFormMain.Button2Click(Sender: TObject);
-var
-  p: TPair<int64, TDECClass>;
-  c: TDECClass;
-  cn: string;
-const
-  IdentityBase = $1259D82A; // DC 5.0
-begin
-  Memo1.Clear;
-  for p in TDECHash.ClassList do
-  begin
-    c := p.Value;
-    cn := c.ClassName;
-    Memo1.Lines.Add(
-      '0x'+IntToHex(DEC51_Identity(IdentityBase, cn), 8) + #9 +
-      cn +
-      ' (DigestSize: '+IntToStr(TDECHashClass(c).DigestSize) +
-      ', BlockSize: '+IntToStr(TDECHashClass(c).BlockSize) + ')'
-    );
-  end;
-end;
-
-procedure TFormMain.Button3Click(Sender: TObject);
-var
-  p: TPair<int64, TDECClass>;
-  c: TDECClass;
-  cn: string;
-const
-  IdentityBase = $1259D82A; // DC 5.0
-begin
-  Memo1.Clear;
-  for p in TDECCipher.ClassList do
-  begin
-    c := p.Value;
-    cn := c.ClassName;
-    Memo1.Lines.Add(
-      '0x'+IntToHex(DEC51_Identity(IdentityBase, cn), 8) + #9 +
-      cn +
-      ' (KeySize: '+IntToStr(TDECCipherClass(c).Context.KeySize) +
-      ', BlockSize: '+IntToStr(TDECCipherClass(c).Context.BlockSize) +
-      ', BufferSize: '+IntToStr(TDECCipherClass(c).Context.BufferSize) + ')'
-    );
-  end;
-end;
-*)
-
 procedure TFormMain.Button2Click(Sender: TObject);
 
   type
@@ -249,12 +202,26 @@ procedure TFormMain.Button3Click(Sender: TObject);
       ms1.Free;
     end
   end;
+
+
+
 var
   fp: TDC4Parameters;
   fi: TDC4FileInfo;
 
 begin
   Memo1.Lines.Clear;
+
+
+  Memo1.Lines.Add('DC 5.0 Hash Algos');
+  Debug_ListHashAlgos(Memo1.Lines, fvDc50Wip);
+  Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('DC 5.0 Cipher Algos');
+  Debug_ListCipherAlgos(Memo1.Lines, fvDc50Wip);
+  Memo1.Lines.Add('');
+
+  exit;
 
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvHagenReddmannExample));
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc40));
@@ -373,13 +340,31 @@ begin
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 
-  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc50Wip), OnProgressProc);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp.ContainFileOrigName := fpHide;
+  fp.ContainFileOrigSize := false;
+  fp.ContainFileOrigDate := false;
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
   fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', '', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver4.bmp');
   DeleteFile('schloss_ver4.dc5');
-  Memo1.Lines.Add('DC50 OK:');
+  Memo1.Lines.Add('DC50 OK (without file name/date/time):');
+  DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
+  Memo1.Lines.Add('');
+
+  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp.ContainFileOrigName := fpExpose;
+  fp.ContainFileOrigSize := true;
+  fp.ContainFileOrigDate := true;
+  DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);
+  DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
+  Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
+  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', '', '', OnProgressProc);
+  DeleteFile('schloss_decoded_dc5_ver4.bmp');
+  DeleteFile('schloss_ver4.dc5');
+  Memo1.Lines.Add('DC50 OK (with file name/date/time):');
   DeCoder4X_PrintFileInfo(fi, Memo1.Lines);
   Memo1.Lines.Add('');
 

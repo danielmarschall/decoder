@@ -38,6 +38,7 @@ object FormMain: TFormMain
     Top = 184
     Width = 619
     Height = 275
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
     Font.Height = -11

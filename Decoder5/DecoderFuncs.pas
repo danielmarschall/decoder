@@ -11,12 +11,16 @@ type
   public
     procedure Read(var Value; Size: Integer);
     function ReadByte: Byte;
-    function ReadLong: LongWord;
+    function ReadLongBE: LongWord;
+    function ReadInt32: Int32;
+    function ReadInt64: Int64;
     function ReadRawByteString(len: integer): RawByteString;
     function ReadRawBytes(len: integer): TBytes;
     procedure Write(var Value; Size: Integer);
     procedure WriteByte(b: Byte);
-    procedure WriteLong(lw: LongWord);
+    procedure WriteLongBE(lw: LongWord);
+    procedure WriteInt32(i32: Int32);
+    procedure WriteInt64(i64: Int64);
     procedure WriteRawByteString(rb: RawByteString);
     procedure WriteRawBytes(b: TBytes);
   end;
@@ -300,10 +304,20 @@ begin
   Read(Result, SizeOf(Result));
 end;
 
-function TStreamHelper.ReadLong: LongWord;
+function TStreamHelper.ReadLongBE: LongWord;
 begin
   Read(Result, SizeOf(Result));
   Result := Result shl 24 or Result shr 24 or Result shl 8 and $00FF0000 or Result shr 8 and $0000FF00;
+end;
+
+function TStreamHelper.ReadInt32: Int32;
+begin
+  Read(Result, SizeOf(Result));
+end;
+
+function TStreamHelper.ReadInt64: Int64;
+begin
+  Read(Result, SizeOf(Result));
 end;
 
 function TStreamHelper.ReadRawByteString(len: integer): RawByteString;
@@ -327,10 +341,20 @@ begin
   Write(b, SizeOf(b));
 end;
 
-procedure TStreamHelper.WriteLong(lw: LongWord);
+procedure TStreamHelper.WriteLongBE(lw: LongWord);
 begin
   lw := lw shl 24 or lw shr 24 or lw shl 8 and $00FF0000 or lw shr 8 and $0000FF00;
   Write(lw, SizeOf(lw));
+end;
+
+procedure TStreamHelper.WriteInt32(i32: Int32);
+begin
+  Write(i32, SizeOf(i32));
+end;
+
+procedure TStreamHelper.WriteInt64(i64: Int64);
+begin
+  Write(i64, SizeOf(i64));
 end;
 
 procedure TStreamHelper.WriteRawByteString(rb: RawByteString);
