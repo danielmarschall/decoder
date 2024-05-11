@@ -53,15 +53,16 @@ const
   Cmd_DC30_DeCrypt = 'DC30_DeCrypt';
   Cmd_DC32_EnCrypt = 'DC32_EnCrypt';
   Cmd_DC32_DeCrypt = 'DC32_DeCrypt';
-  Cmd_DC4X_EnCrypt_NoInfo = 'DC4X_EnCrypt';
-  Cmd_DC4X_EnCrypt_WithInfo = 'DC4X_EnCrypt+';
-  Cmd_DC4X_DeCrypt = 'DC4X_DeCrypt';
-  Cmd_DC4X_FileInfo = 'DC4X_FileInfo';
+  Cmd_DC50_EnCrypt_NoInfo = 'DC50_EnCrypt';
+  Cmd_DC50_EnCrypt_WithInfo = 'DC50_EnCrypt+';
+  Cmd_DC50_DeCrypt = 'DC50_DeCrypt';
+  Cmd_DC50_FileInfo = 'DC50_FileInfo';
   Cmd_SecureDeleteFile = 'DeleteFile';
   Cmd_SecureDeleteFolder = 'DeleteFolder';
   Cmd_Help = 'Help';
   {$IFDEF Debug}
-  Cmd_Debug = 'Debug';
+  Cmd_Debug_Testcases = 'Debug_Testcases';
+  Cmd_Debug_EntropyTest = 'Debug_EntropyTest';
   {$ENDIF}
 
 {$REGION 'Debug methods'}
@@ -490,6 +491,7 @@ var
   fp: TDC4Parameters;
   fi: TDC4FileInfo;
   sl: TStringList;
+  OwnName: string;
 
 begin
   try
@@ -575,8 +577,8 @@ begin
       ExitCode := 0;
     end
     {$ENDREGION}
-    {$REGION '(De)Coder 4.x / 5.0'}
-    else if SameText(ParamStr(1), Cmd_DC4X_EnCrypt_NoInfo) and (ParamCount = 4) then
+    {$REGION '(De)Coder 4.x / 5.x'}
+    else if SameText(ParamStr(1), Cmd_DC50_EnCrypt_NoInfo) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
@@ -586,7 +588,7 @@ begin
       DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), fp, OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC4X_EnCrypt_WithInfo) and (ParamCount = 4) then
+    else if SameText(ParamStr(1), Cmd_DC50_EnCrypt_WithInfo) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
@@ -596,13 +598,13 @@ begin
       DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), fp, OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC4X_DeCrypt) and (ParamCount = 4) then
+    else if SameText(ParamStr(1), Cmd_DC50_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder4X_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
       ExitCode := 0;
     end
-    else if SameText(ParamStr(1), Cmd_DC4X_FileInfo) and (ParamCount = 2) then
+    else if SameText(ParamStr(1), Cmd_DC50_FileInfo) and (ParamCount = 2) then
     begin
       CheckFileExists(ParamStr(2));
       fi := DeCoder4X_DecodeFile(ParamStr(2), '', '', nil{OnProgressProc}); // no progress bar, because people might want to pipe the output to a file
@@ -618,23 +620,16 @@ begin
     {$ENDREGION}
     {$REGION 'Debug commands'}
     {$IFDEF Debug}
-    else if SameText(ParamStr(1), Cmd_Debug) then
+    else if SameText(ParamStr(1), Cmd_Debug_Testcases) and (ParamCount = 1) then
     begin
-      if SameText(ParamStr(2), Cmd_Debug_Testcases) and (ParamCount = 2) then
-      begin
-        Debug_Testcases;
-        ExitCode := 0;
-      end
-      else if SameText(ParamStr(2), Cmd_Debug_EntropyTest) and (ParamCount = 4) then
-      begin
-        CheckDirectoryExists(ParamStr(3));
-        Debug_EntroyTest(ParamStr(3), ParamStr(4));
-        ExitCode := 0;
-      end
-      else
-      begin
-        raise Exception.Create('Unknown debug command');
-      end;
+      Debug_Testcases;
+      ExitCode := 0;
+    end
+    else if SameText(ParamStr(1), Cmd_Debug_EntropyTest) and (ParamCount = 3) then
+    begin
+      CheckDirectoryExists(ParamStr(2));
+      Debug_EntroyTest(ParamStr(2), ParamStr(3));
+      ExitCode := 0;
     end
     {$ENDIF}
     {$ENDREGION}
@@ -655,38 +650,41 @@ begin
     {$REGION 'Illegal usage / Help page'}
     else
     begin
-      WriteLn('ViaThinkSoft (De)Coder 5.0');
-      WriteLn(Format('Built %s', [DateTimeToStr(GetOwnBuildTimestamp)]));
+      OwnName := ChangeFileExt(Uppercase(ExtractFileName(ParamStr(0))),'');
+
+      WriteLn(Format('%-35s Built %s', ['ViaThinkSoft (De)Coder 5.0', DateTimeToStr(GetOwnBuildTimestamp)]));
+      WriteLn(Format('FREEWARE - Licensed under the terms of the Apache 2.0 License', []));
       WriteLn('');
 
-      WriteLn('Encrypting and decrypting:');
-      WriteLn(Format('%s %s  <InFile> <OutFile> <Password> -- Encrypts a file using (De)Coder 5.0', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_EnCrypt_NoInfo]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password> -- Same as %s, but with metadata name+size+date', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_EnCrypt_WithInfo, Cmd_DC4X_EnCrypt_NoInfo]));
-      WriteLn(Format('%s %s  <InFile> <OutFile> <Password> -- Decrypts a file which was encrypted by (De)Coder 4.x or 5.x', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_DeCrypt]));
-      WriteLn(Format('%s %s <InFile>                      -- Shows info for a DC4 or DC5 file', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC4X_FileInfo]));
+      WriteLn('=== Encrypting and decrypting ===');
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using (De)Coder 5.0', [OwnName, Cmd_DC50_EnCrypt_NoInfo]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Same as %s, but with metadata name+size+date', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Cmd_DC50_EnCrypt_NoInfo]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a (De)Coder 4.x or 5.x encrypted file', [OwnName, Cmd_DC50_DeCrypt]));
+      WriteLn(Format('%s %-13s <InFile>                       -- Shows details of a (De)Coder 4.x or 5.x encrypted file', [OwnName, Cmd_DC50_FileInfo]));
       WriteLn('');
 
-      WriteLn('Support for legacy file formats:');
-      WriteLn(Format('%s %s <InFile> <OutFile> -- Encrypts a file using the (De)Coder 1.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> -- Decrypts a file using the (De)Coder 1.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC10_DeCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> -- Encrypts a file using the (De)Coder 2.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC20_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> -- Decrypts a file using the (De)Coder 2.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC20_DeCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Key1..255> -- Encrypts a file using the (De)Coder 2.1 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC21_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Key1..255> -- Decrypts a file using the (De)Coder 2.1 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC21_DeCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Key1..256> -- Encrypts a file using the (De)Coder 2.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC22_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Key1..256> -- Decrypts a file using the (De)Coder 2.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC22_DeCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC30_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.0 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC30_DeCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC32_EnCrypt]));
-      WriteLn(Format('%s %s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.2 format (INSECURE)', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_DC32_DeCrypt]));
+      WriteLn('=== Support for legacy file formats ===');
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Encrypts a file using the (De)Coder 1.0 format (INSECURE)', [OwnName, Cmd_DC10_EnCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Decrypts a file using the (De)Coder 1.0 format (INSECURE)', [OwnName, Cmd_DC10_DeCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Encrypts a file using the (De)Coder 2.0 format (INSECURE)', [OwnName, Cmd_DC20_EnCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Decrypts a file using the (De)Coder 2.0 format (INSECURE)', [OwnName, Cmd_DC20_DeCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- Encrypts a file using the (De)Coder 2.1 format (INSECURE)', [OwnName, Cmd_DC21_EnCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- Decrypts a file using the (De)Coder 2.1 format (INSECURE)', [OwnName, Cmd_DC21_DeCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- Encrypts a file using the (De)Coder 2.2 format (INSECURE)', [OwnName, Cmd_DC22_EnCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- Decrypts a file using the (De)Coder 2.2 format (INSECURE)', [OwnName, Cmd_DC22_DeCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.0 format (INSECURE)', [OwnName, Cmd_DC30_EnCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.0 format (INSECURE)', [OwnName, Cmd_DC30_DeCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.2 format (INSECURE)', [OwnName, Cmd_DC32_EnCrypt]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.2 format (INSECURE)', [OwnName, Cmd_DC32_DeCrypt]));
       WriteLn('');
-      WriteLn('Extras:');
-      WriteLn(Format('%s %s <File>     -- Wipes a file from a disk in a secure way', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_SecureDeleteFile]));
-      WriteLn(Format('%s %s <Folder> -- Wipes a complete folder from a disk in a secure way', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_SecureDeleteFolder]));
-      WriteLn(Format('%s %s                  -- Shows this command listing', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Help]));
+      WriteLn('=== Extras ===');
+      WriteLn(Format('%s %-13s <File>     -- Wipes a file from a disk in a secure way', [OwnName, Cmd_SecureDeleteFile]));
+      WriteLn(Format('%s %-13s <Folder>   -- Wipes a complete folder from a disk in a secure way', [OwnName, Cmd_SecureDeleteFolder]));
       {$IFDEF Debug}
-      WriteLn(Format('%s %s <???>           -- Internal debug commands', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Debug]));
+      WriteLn(Format('%s %-13s          -- Run internal testcases from folder TestData', [OwnName, Cmd_Debug_Testcases]));
+      WriteLn(Format('%s %-13s <DirName> <CSVResultFile> -- Run entropy test on directory', [OwnName, Cmd_Debug_EntropyTest]));
       {$ENDIF}
+      WriteLn(Format('%s %-13s            -- Shows this command listing', [OwnName, Cmd_Help]));
 
       if ParamCount = 0 then
       begin
