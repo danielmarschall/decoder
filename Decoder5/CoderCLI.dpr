@@ -633,7 +633,7 @@ begin
     end
     {$ENDIF}
     {$ENDREGION}
-    {$REGION 'Utils'}
+    {$REGION 'Extras'}
     else if SameText(ParamStr(1), Cmd_SecureDeleteFile) and (ParamCount = 2) then
     begin
       CheckFileExists(ParamStr(2));
@@ -642,6 +642,7 @@ begin
     end
     else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) and (ParamCount = 2) then
     begin
+      // TODO: Give the user a countdown to cancel
       CheckDirectoryExists(ParamStr(2));
       SecureDeleteFolder(ParamStr(2));
       ExitCode := 0;

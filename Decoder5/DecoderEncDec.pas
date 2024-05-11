@@ -71,7 +71,7 @@ procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
 procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 
-// Note: A password is only encrypted to read a user-key-encrypted filename (feature was only available in format version 3)
+// Note: A password is only required for reading an user-key-encrypted filename (feature was only available in format version 3)
 function DeCoder4X_FileInfo(const AFileName: String; const APassword: RawByteString=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
@@ -1080,8 +1080,6 @@ begin
         Auto:  IsZLibCompressed := not IsCompressedFileType(AFileName)
                                     or (ShannonEntropy(AFileName, OnProgressProc) < 7.5);
       end;
-      // AParameters.IsCompressedFolder    (this is just an output and will be ignored as input)
-      // AParameters.OrigFileName          (this is just an output and will be ignored as input)
       KdfVersion := AParameters.KDF;
       PbkdfIterations := AParameters.PBKDF_Iterations;
       if AParameters.IVSizeInBytes > 0 then

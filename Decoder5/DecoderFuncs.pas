@@ -47,7 +47,7 @@ function GetOwnBuildTimestamp: TDateTime;
 implementation
 
 uses
-  DECUtil, DECRandom, ZLib, DateUtils;
+  DECUtil, DECRandom, ZLib, DateUtils, StrUtils;
 
 {$IFDEF Unicode}
 function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
@@ -146,27 +146,28 @@ begin
   until Length(Result) = len;
 end;
 
+function GetClusterSize(Drive: String): integer;
+var
+  SectorsPerCluster, BytesPerSector, dummy: Cardinal;
+begin
+  SectorsPerCluster := 0;
+  BytesPerSector := 0;
+  GetDiskFreeSpace(PChar(Drive), SectorsPerCluster, BytesPerSector, dummy, dummy);
+
+  Result := SectorsPerCluster * BytesPerSector;
+end;
+
+function RelToAbs(RelPath: string; BasePath: string=''): string;
+var
+  Dst: array[0..MAX_PATH-1] of char;
+begin
+  if BasePath = '' then BasePath := GetCurrentDir;
+  if TPath.IsPathRooted(RelPath) then Exit(RelPath);
+  PathCanonicalize(@Dst[0], PChar(IncludeTrailingPathDelimiter(BasePath) + RelPath));
+  result := Dst;
+end;
+
 function SecureDeleteFile(const AFileName: string): boolean;
-
-  function GetClusterSize(Drive: String): integer;
-  var
-    SectorsPerCluster, BytesPerSector, dummy: Cardinal;
-  begin
-    SectorsPerCluster := 0;
-    BytesPerSector := 0;
-    GetDiskFreeSpace(PChar(Drive), SectorsPerCluster, BytesPerSector, dummy, dummy);
-
-    Result := SectorsPerCluster * BytesPerSector;
-  end;
-
-  function RelToAbs(const RelPath, BasePath: string): string;
-  var
-    Dst: array[0..MAX_PATH-1] of char;
-  begin
-    PathCanonicalize(@Dst[0], PChar(IncludeTrailingPathDelimiter(BasePath) + RelPath));
-    result := Dst;
-  end;
-
 var
   drive: string;
   fs: TFileStream;
@@ -183,7 +184,7 @@ begin
 
   ClusterSize := 32000; // max available in Windows format dialog
   try
-    drive := ExtractFileDrive(RelToAbs(AFileName, GetCurrentDir));
+    drive := ExtractFileDrive(RelToAbs(AFileName));
     if drive <> '' then
       ClusterSize := GetClusterSize(drive);
   except
@@ -234,15 +235,46 @@ begin
   result := DeleteFile(AFileNameRenamed);
 end;
 
+function Occurrences(const Substring, Text: string): integer;
+var
+  offset: integer;
+begin
+  result := 0;
+  offset := PosEx(Substring, Text, 1);
+  while offset <> 0 do
+  begin
+    inc(result);
+    offset := PosEx(Substring, Text, offset + length(Substring));
+  end;
+end;
+
 function SecureDeleteFolder(const ADirName: string): boolean;
 var
   F: TSearchRec;
   ADirNameTest: string;
   ADirNameParent: string;
   ADirNameRenamed: string;
+  ADirNameAbs: string;
+  IsDriveOrShareRoot: boolean;
 begin
   if not DirectoryExists(ADirName) then Exit(False);
   result := true;
+
+  ADirNameAbs := RelToAbs(ADirName);
+
+  IsDriveOrShareRoot :=
+    // are we trying to delete a drive root D:\, \, \\?\D:\, D:
+    EndsStr(':\', ADirNameAbs) or
+    EndsStr(':/', ADirNameAbs) or
+    EndsStr(':', ADirNameAbs) or
+    (ADirNameAbs = '/') or
+    (ADirNameAbs = '\') or
+    // Is this a root UNC shared?  \\server1\share\
+    (
+      StartsStr('\\', ADirNameAbs) and
+      (Occurrences('\', IncludeTrailingPathDelimiter(ADirNameAbs)) = 4) and
+      EndsStr('\', IncludeTrailingPathDelimiter(ADirNameAbs))
+    );
 
   {$IFDEF Console}
   WriteLn('START Delete folder: ' + ADirName);
@@ -264,55 +296,58 @@ begin
       FindClose(F);
     end;
 
-    if TDirectory.IsEmpty(ADirName) then
+    if not IsDriveOrShareRoot then
     begin
-      ADirNameRenamed := ExcludeTrailingPathDelimiter(ADirName);
-      ADirNameParent := ExtractFileDir(ADirNameRenamed);
-      if ADirNameParent <> '' then ADirNameParent := IncludeTrailingPathDelimiter(ADirNameParent);
-
-      // Avoid that undelete tools see directory name...
-      ADirNameTest := ADirNameParent + RandStringFileNameFriendly(Length(ExtractFileName(ADirNameRenamed)));
-      if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
-
-      // ... or the size of the name
-      ADirNameTest := ADirNameParent + '_';
-      if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
-
-      // Change folder attributes and modification dates to also destroy this info from undelete tools
-      try
-        TDirectory.SetCreationTimeUtc(ADirNameRenamed, 0);
-        TDirectory.SetLastWriteTimeUtc(ADirNameRenamed, 0);
-        TDirectory.SetLastAccessTimeUtc(ADirNameRenamed, 0);
-        TDirectory.SetAttributes(ADirNameRenamed, []);
-      except
-      end;
-
-      // and now delete empty directory
-      if not RemoveDir(ADirNameRenamed) then
+      if TDirectory.IsEmpty(ADirName) then
       begin
-        // Undo renaming
-        if ADirName <> ADirNameRenamed then
-          RenameFile(ADirNameRenamed, ADirName);
+        ADirNameRenamed := ExcludeTrailingPathDelimiter(ADirName);
+        ADirNameParent := ExtractFileDir(ADirNameRenamed);
+        if ADirNameParent <> '' then ADirNameParent := IncludeTrailingPathDelimiter(ADirNameParent);
 
-        {$IFDEF Console}
-        WriteLn('ERROR Deleting empty folder: ' + ADirName);
-        {$ENDIF}
-        result := false;
+        // Avoid that undelete tools see directory name...
+        ADirNameTest := ADirNameParent + RandStringFileNameFriendly(Length(ExtractFileName(ADirNameRenamed)));
+        if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
+
+        // ... or the size of the name
+        ADirNameTest := ADirNameParent + '_';
+        if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
+
+        // Change folder attributes and modification dates to also destroy this info from undelete tools
+        try
+          TDirectory.SetCreationTimeUtc(ADirNameRenamed, 0);
+          TDirectory.SetLastWriteTimeUtc(ADirNameRenamed, 0);
+          TDirectory.SetLastAccessTimeUtc(ADirNameRenamed, 0);
+          TDirectory.SetAttributes(ADirNameRenamed, []);
+        except
+        end;
+
+        // and now delete empty directory
+        if not RemoveDir(ADirNameRenamed) then
+        begin
+          // Undo renaming
+          if ADirName <> ADirNameRenamed then
+            RenameFile(ADirNameRenamed, ADirName);
+
+          {$IFDEF Console}
+          WriteLn('ERROR Deleting empty folder: ' + ADirName);
+          {$ENDIF}
+          result := false;
+        end
+        else
+        begin
+          {$IFDEF Console}
+          WriteLn('DONE Deleting folder: ' + ADirName);
+          {$ENDIF}
+          result := true;
+        end;
       end
       else
       begin
         {$IFDEF Console}
-        WriteLn('DONE Deleting folder: ' + ADirName);
+        WriteLn('ERROR Deleting folder contents: ' + ADirName);
         {$ENDIF}
-        result := true;
+        result := false;
       end;
-    end
-    else
-    begin
-      {$IFDEF Console}
-      WriteLn('ERROR Deleting folder contents: ' + ADirName);
-      {$ENDIF}
-      result := false;
     end;
   end;
 end;
