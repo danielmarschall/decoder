@@ -35,6 +35,7 @@ type
 
 procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+function RelToAbs(RelPath: string; BasePath: string=''): string;
 function SecureDeleteFile(const AFileName: string): boolean;
 function SecureDeleteFolder(const ADirName: string): boolean;
 function IsCompressedFileType(const AFileName: string): boolean;
@@ -43,6 +44,10 @@ function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
 function FileSizeHumanReadable(Bytes: Int64): string;
 function GetBuildTimestamp(const ExeFile: string): TDateTime;
 function GetOwnBuildTimestamp: TDateTime;
+
+{$IFDEF Console}
+procedure CountDown(msg: string; timer: integer);
+{$ENDIF}
 
 implementation
 
@@ -55,6 +60,22 @@ function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
 {$ELSE}
 function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
   external 'shlwapi.dll' name 'PathCanonicalizeA';
+{$ENDIF}
+
+{$IFDEF Console}
+procedure CountDown(msg: string; timer: integer);
+const
+  interval = 100;
+begin
+  timer := timer * 1000;
+  while timer > 0 do
+  begin
+    Sleep(interval);
+    Dec(timer, interval);
+    Write('     ' + msg + ' ... ' + inttostr(round(timer/1000)) + 's    ' + #13);
+  end;
+  WriteLn('');
+end;
 {$ENDIF}
 
 procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);

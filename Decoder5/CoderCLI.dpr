@@ -149,13 +149,13 @@ begin
 
   WriteLn('DC 5.0 Cipher Algos');
   sl.Clear;
-  Debug_ListCipherAlgos(sl, fvDc50Wip);
+  Debug_ListCipherAlgos(sl, fvDc50);
   WriteLn(sl.Text);
   WriteLn('');
 
   WriteLn('DC 5.0 Hash Algos');
   sl.Clear;
-  Debug_ListHashAlgos(sl, fvDc50Wip);
+  Debug_ListHashAlgos(sl, fvDc50);
   WriteLn(sl.Text);
   WriteLn('');
 
@@ -163,7 +163,7 @@ begin
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc40));
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc41Beta));
   DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled));
-  DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc50Wip));
+  DeCoder4X_ValidateParameterBlock(DeCoder4X_GetDefaultParameters(fvDc50));
   WriteLn('DeCoder4X_ValidateParameterBlock OK');
   WriteLn('');
 
@@ -286,7 +286,7 @@ begin
   WriteLn(sl.Text);
   WriteLn('');
 
-  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50);
   fp.ContainFileOrigName := fpHide;
   fp.ContainFileOrigSize := false;
   fp.ContainFileOrigDate := false;
@@ -302,7 +302,7 @@ begin
   WriteLn(sl.Text);
   WriteLn('');
 
-  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50);
   fp.ContainFileOrigName := fpExpose;
   fp.ContainFileOrigSize := true;
   fp.ContainFileOrigDate := true;
@@ -318,7 +318,7 @@ begin
   WriteLn(sl.Text);
   WriteLn('');
 
-  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50);
   fp.CipherClass := TCipher_AES128;
   fp.CipherMode := cmGCM;
   fp.GCMAuthTagSizeInBytes := 16;
@@ -333,7 +333,7 @@ begin
   WriteLn(sl.Text);
   WriteLn('');
 
-  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50);
   fp.CipherClass := TCipher_Blowfish;
   fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);
@@ -347,7 +347,7 @@ begin
   WriteLn(sl.Text);
   WriteLn('');
 
-  fp := DeCoder4X_GetDefaultParameters(fvDc50Wip);
+  fp := DeCoder4X_GetDefaultParameters(fvDc50);
   fp.CipherClass := TCipher_Blowfish;
   fp.CipherMode := cmECBx;
   fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
@@ -485,6 +485,9 @@ end;
 
 {$ENDIF}
 {$ENDREGION}
+
+const
+  DeleteFolderCountDown = 15;
 
 var
   iKey: integer;
@@ -642,8 +645,12 @@ begin
     end
     else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) and (ParamCount = 2) then
     begin
-      // TODO: Give the user a countdown to cancel
       CheckDirectoryExists(ParamStr(2));
+      WriteLn('Caution! You are about to delete this folder and all of its contents:');
+      WriteLn(RelToAbs(ParamStr(2)));
+      WriteLn('');
+      CountDown('Press Ctrl+C to cancel or wait to continue: ', DeleteFolderCountDown);
+      WriteLn('');
       SecureDeleteFolder(ParamStr(2));
       ExitCode := 0;
     end

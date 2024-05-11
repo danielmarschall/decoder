@@ -10,7 +10,7 @@ uses
   DECRandom, System.IOUtils;
 
 type
-  TDc4FormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50Wip);
+  TDc4FormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50);
 
   TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
 
@@ -90,8 +90,8 @@ const
     $84485225, // Hagen Reddmann Example (no .dc4 files)
     $59178954, // (De)Coder 4.0 (identities not used)
     $84671842, // (De)Coder 4.1 beta
-    $19387612, // (De)Coder 4.1 final/cancelled
-    $1259d82a  // (De)Coder 5.0 WIP
+    $19387612, // (De)Coder 4.1 final (cancelled)
+    $1259d82a  // (De)Coder 5.0
   );
 
   // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
@@ -248,15 +248,15 @@ begin
     begin
       c := p.Value;
       cn := c.ClassName;
-      if (V<fvDc50Wip) and (cn='THash_Whirlpool0') then cn := 'THash_Whirlpool';
-      if (V<fvDc50Wip) and (cn='THash_SHA0') then cn := 'THash_SHA';
-      if (V<fvDc50Wip) and not DC_DEC_ClassExistedInDEC51(cn) then continue;
+      if (V<fvDc50) and (cn='THash_Whirlpool0') then cn := 'THash_Whirlpool';
+      if (V<fvDc50) and (cn='THash_SHA0') then cn := 'THash_SHA';
+      if (V<fvDc50) and not DC_DEC_ClassExistedInDEC51(cn) then continue;
       addinfo := '';
-      if (V>=fvDc50Wip) and (cn='THash_SHA3_512') then addinfo := ', default'
-      else if (V>=fvDc40) and (V<fvDc50Wip) and (cn='THash_SHA512') then addinfo := ', default'
+      if (V>=fvDc50) and (cn='THash_SHA3_512') then addinfo := ', default'
+      else if (V>=fvDc40) and (V<fvDc50) and (cn='THash_SHA512') then addinfo := ', default'
       else if (V=fvHagenReddmannExample) and (cn='THash_SHA1') then addinfo := ', default';
       sl.Add(
-        '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50Wip), 8) + #9 +
+        '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50), 8) + #9 +
         cn +
         ' (DigestSize: '+IntToStr(TDECHashClass(c).DigestSize) +
         ', BlockSize: '+IntToStr(TDECHashClass(c).BlockSize) +
@@ -288,15 +288,15 @@ begin
       c := p.Value;
       cn := c.ClassName;
       if StartsText('TCipher_VtsDeCoder', cn) then continue;
-      if (V<fvDc50Wip) and (cn='TCipher_AES') then cn := 'TCipher_Rijndael';
-      if (V<fvDc50Wip) and not DC_DEC_ClassExistedInDEC51(cn) then continue;
+      if (V<fvDc50) and (cn='TCipher_AES') then cn := 'TCipher_Rijndael';
+      if (V<fvDc50) and not DC_DEC_ClassExistedInDEC51(cn) then continue;
       addinfo := '';
-      if (V<fvDc50Wip) and (cn='TCipher_Shark') then addinfo := ', faulty implementation';
-      if (V<fvDc50Wip) and (cn='TCipher_SCOP') then addinfo := ', faulty implementation?';
-      if (V<fvDc50Wip) and (cn='TCipher_Rijndael') then addinfo := ', default';
-      if (V>=fvDc50Wip) and (cn='TCipher_AES') then addinfo := ', default';
+      if (V<fvDc50) and (cn='TCipher_Shark') then addinfo := ', faulty implementation';
+      if (V<fvDc50) and (cn='TCipher_SCOP') then addinfo := ', faulty implementation?';
+      if (V<fvDc50) and (cn='TCipher_Rijndael') then addinfo := ', default';
+      if (V>=fvDc50) and (cn='TCipher_AES') then addinfo := ', default';
       sl.Add(
-        '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50Wip), 8) + #9 +
+        '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50), 8) + #9 +
         cn +
         ' (KeySize: '+IntToStr(TDECCipherClass(c).Context.KeySize) +
         ', BlockSize: '+IntToStr(TDECCipherClass(c).Context.BlockSize) +
@@ -829,7 +829,7 @@ begin
     result.ShouldBeZLibCompressed := Auto;
   result.KDF := kvKdfx;
   result.PBKDF_Iterations := 0; // only for KdfVersion=kvPbkdf2
-  if V >= fvDc50Wip then
+  if V >= fvDc50 then
     result.IVSizeInBytes := 16
   else
     result.IVSizeInBytes := 0;
@@ -840,7 +840,7 @@ begin
     result.SeedSize := 16;
   if V = fvHagenReddmannExample then
     result.HashClass := THash_SHA1
-  else if V<fvDc50Wip then
+  else if V<fvDc50 then
     result.HashClass := THash_SHA512
   else
     result.HashClass := THash_SHA3_512;
@@ -849,11 +849,11 @@ begin
   result.BlockFillMode := TBlockFillMode.fmByte;
   if V = fvDc41FinalCancelled then
     Result.ContainFileOrigName := fpEncryptWithUserKey // only available in version 3
-  else if V < fvDc50Wip then
+  else if V < fvDc50 then
     Result.ContainFileOrigName := fpExpose
   else
     Result.ContainFileOrigName := fpHide; // default disabled for privacy
-  if (V >= fvDc50Wip) and (result.CipherMode = cmGCM) then
+  if (V >= fvDc50) and (result.CipherMode = cmGCM) then
     result.GCMAuthTagSizeInBytes := 128 shr 3
   else
     result.GCMAuthTagSizeInBytes := 0;
@@ -880,11 +880,11 @@ begin
   if (AParameters.Dc4FormatVersion < fvDc41Beta) and (AParameters.ShouldBeZLibCompressed <> No) then
     raise Exception.Create('ZLib requires DC41beta+ version');
 
-  if (AParameters.Dc4FormatVersion < fvDc50Wip) and (AParameters.IvFillByte <> $FF) then
+  if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.IvFillByte <> $FF) then
     raise Exception.Create('Indiv IvFillByte only accepted format version 4+');
-  if (AParameters.Dc4FormatVersion < fvDc50Wip) and (AParameters.IVSizeInBytes <> 0) then
+  if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.IVSizeInBytes <> 0) then
     raise Exception.Create('Indiv IV only accepted format version 4+');
-  if (AParameters.Dc4FormatVersion < fvDc50Wip) and (AParameters.KDF <> kvKdfx) then
+  if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.KDF <> kvKdfx) then
     raise Exception.Create('Indiv KDF only accepted format version 4+');
 
   if (AParameters.CipherMode <> cmGCM) and (AParameters.GCMAuthTagSizeInBytes <> 0) then
@@ -903,11 +903,11 @@ begin
 
   if (AParameters.Dc4FormatVersion <> fvDc41FinalCancelled) and (AParameters.ContainFileOrigName=fpEncryptWithUserKey) then
     raise Exception.Create('Encrypted Filename only accepted in DC41Final version');
-  if (AParameters.Dc4FormatVersion < fvDc50Wip) and (AParameters.ContainFileOrigName=fpHide) then
+  if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.ContainFileOrigName=fpHide) then
     raise Exception.Create('Orig File Name can only be hidden in format version 4');
-  if (AParameters.Dc4FormatVersion < fvDc50Wip) and AParameters.ContainFileOrigSize then
+  if (AParameters.Dc4FormatVersion < fvDc50) and AParameters.ContainFileOrigSize then
     raise Exception.Create('Orig FileSize only available in format version 4');
-  if (AParameters.Dc4FormatVersion < fvDc50Wip) and AParameters.ContainFileOrigDate then
+  if (AParameters.Dc4FormatVersion < fvDc50) and AParameters.ContainFileOrigDate then
     raise Exception.Create('Orig FileDate only available in format version 4');
 end;
 
@@ -919,7 +919,7 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
       '(De)Coder 4.0',
       '(De)Coder 4.1 Beta',
       '(De)Coder 4.1 Final (Cancelled)',
-      '(De)Coder 5.0 WIP'
+      '(De)Coder 5.0'
     );
 
     INTEGRITY_CHECK_INFO: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of string = (
@@ -1039,6 +1039,19 @@ var
   GCMAuthTagSizeInBytes: byte;
   tmpWS: WideString;
   outFileDidExist: boolean;
+const
+  // Measurement of 21367	files
+  // ShanEntropy  AvgComprRatioZLibMax
+  // 0.00-0.99    0.99908
+  // 1.00-1.99    0.21721
+  // 2.00-2.99    0.23161
+  // 3.00-3.99    0.20000
+  // 4.00-4.99    0.21339
+  // 5.00-5.99    0.35107
+  // 6.00-6.99    0.55397
+  // 7.00-7.49    0.73129
+  // 7.50-7.99    0.87920
+  ShannonEntropyTreshold = 7.5;
 begin
   if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   DeCoder4X_ValidateParameterBlock(AParameters);
@@ -1065,20 +1078,8 @@ begin
       case AParameters.ShouldBeZLibCompressed of
         Yes:   IsZLibCompressed := true;
         No:    IsZLibCompressed := false;
-
-        // Measurement of 21367	files
-        // ShanEntropy  AvgComprRatioZLibMax
-        // 0.00-0.99    0.99908
-        // 1.00-1.99    0.21721
-        // 2.00-2.99    0.23161
-        // 3.00-3.99    0.20000
-        // 4.00-4.99    0.21339
-        // 5.00-5.99    0.35107
-        // 6.00-6.99    0.55397
-        // 7.00-7.49    0.73129
-        // 7.50-7.99    0.87920
         Auto:  IsZLibCompressed := not IsCompressedFileType(AFileName)
-                                    or (ShannonEntropy(AFileName, OnProgressProc) < 7.5);
+                                    or (ShannonEntropy(AFileName, OnProgressProc) < ShannonEntropyTreshold);
       end;
       KdfVersion := AParameters.KDF;
       PbkdfIterations := AParameters.PBKDF_Iterations;
@@ -1156,7 +1157,7 @@ begin
       {$ENDREGION}
 
       {$REGION '2.1 Magic Sequence (only version 4+)'}
-      if (V>=fvDc50Wip) then
+      if (V>=fvDc50) then
         tempstream.WriteRawByteString('[' + DC4_OID + ']');
       {$ENDREGION}
 
@@ -1227,7 +1228,7 @@ begin
         tempstream.WriteLongBE(Length(OrigNameEncrypted));
         tempstream.WriteRawByteString(OrigNameEncrypted);
       end
-      else if V >= fvDc50Wip then
+      else if V >= fvDc50 then
       begin
         // Ver4: Clear text filename, with length byte in front of it
         // Possible values:
@@ -1246,7 +1247,7 @@ begin
       {$ENDREGION}
 
       {$REGION '3.1 File Size (version 4+)'}
-      if V >= fvDc50Wip then
+      if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigSize then
           tempstream.WriteInt64(Int64(TFile.GetSize(AFileName)))
@@ -1256,7 +1257,7 @@ begin
       {$ENDREGION}
 
       {$REGION '3.2 File Date/Time (version 4+)'}
-      if V >= fvDc50Wip then
+      if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigDate then
           tempstream.WriteInt64(DateTimeToUnix(TFile.GetLastWriteTime(AFileName), false))
@@ -1273,7 +1274,7 @@ begin
 
       {$REGION '5. Cipher identity (version 0 and 2+)'}
       if V <> fvDc40 then
-        tempstream.WriteLongBE(DC_DEC_Identity(idBase, CipherClass.ClassName, V<fvDc50Wip));
+        tempstream.WriteLongBE(DC_DEC_Identity(idBase, CipherClass.ClassName, V<fvDc50));
       {$ENDREGION}
 
       {$REGION '6. Cipher mode (version 0 and 2+)'}
@@ -1282,11 +1283,11 @@ begin
 
       {$REGION '7. Hash identity (version 0 and 2+)'}
       if V <> fvDc40 then
-        tempstream.WriteLongBE(DC_DEC_Identity(idBase, HashClass.ClassName, V<fvDc50Wip));
+        tempstream.WriteLongBE(DC_DEC_Identity(idBase, HashClass.ClassName, V<fvDc50));
       {$ENDREGION}
 
       {$REGION '7.5 IV (only version 4+)'}
-      if V >= fvDc50Wip then
+      if V >= fvDc50 then
       begin
         tempstream.WriteByte(Length(IV));
         tempstream.WriteRawBytes(IV);
@@ -1294,14 +1295,14 @@ begin
       {$ENDREGION}
 
       {$REGION '7.6 IV Fill Byte (only version 4+)'}
-      if V >= fvDc50Wip then
+      if V >= fvDc50 then
       begin
         tempstream.WriteByte(IvFillByte);
       end;
       {$ENDREGION}
 
       {$REGION '7.7 Cipher block filling mode (only version 4+; currently unused by DEC)'}
-      if V >= fvDc50Wip then
+      if V >= fvDc50 then
       begin
         tempstream.WriteByte(Ord(Cipher.FillMode));
       end;
@@ -1313,7 +1314,7 @@ begin
       {$ENDREGION}
 
       {$REGION '8.5 KDF version (only version 4+)'}
-      if V >= fvDc50Wip then
+      if V >= fvDc50 then
       begin
         // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
         tempstream.WriteByte(Ord(KdfVersion));
@@ -1326,7 +1327,7 @@ begin
       {$ENDREGION}
 
       {$REGION '8.7 GCM Tag length (only if GCM mode)'}
-      if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
+      if (V>=fvDc50) and (Cipher.Mode=cmGCM) then
       begin
         if GCMAuthTagSizeInBytes > 16 then GCMAuthTagSizeInBytes := 16; // 128 bits this is the size of CalcGaloisHash()
         TDECFormattedCipher(Cipher).AuthenticationResultBitLength := GCMAuthTagSizeInBytes * 8;
@@ -1347,7 +1348,7 @@ begin
       {$ENDREGION}
 
       {$REGION '9.1 DEC CalcMAC (not if ECB mode)'}
-      if ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode<>cmECBx) then
+      if ((V=fvHagenReddmannExample) or (V>=fvDc50)) and (Cipher.Mode<>cmECBx) then
       begin
         HashResult2 := Cipher.CalcMAC;
         if V=fvHagenReddmannExample then
@@ -1359,7 +1360,7 @@ begin
       {$ENDREGION}
 
       {$REGION '9.2 GCM Tag (only if GCM mode)'}
-      if (V>=fvDc50Wip) and (Cipher.Mode=cmGCM) then
+      if (V>=fvDc50) and (Cipher.Mode=cmGCM) then
       begin
         tempstream.WriteRawBytes(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult);
       end;
@@ -1391,7 +1392,7 @@ begin
         , TFormat_Copy);
         tempstream.WriteRawByteString(HashResult2);
       end
-      else if V >= fvDc50Wip then
+      else if V >= fvDc50 then
       begin
         tmp64 := tempstream.Position;
         tempstream.Position := 0;
@@ -1602,7 +1603,7 @@ begin
             // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
             OrigNameEncrypted := Source.ReadRawByteString(Source.ReadLongBE); // will be decrypted below (after we initialized hash/cipher)
           end
-          else if V >= fvDc50Wip then
+          else if V >= fvDc50 then
           begin
             // Possible values:
             // - Original name in its entirety (example "foobar.txt")
@@ -1618,14 +1619,14 @@ begin
         {$ENDREGION}
 
         {$REGION '3.1 File Size (version 4+)'}
-        if V >= fvDc50Wip then
+        if V >= fvDc50 then
         begin
           OrigFileSize := Source.ReadInt64;
         end;
         {$ENDREGION}
 
         {$REGION '3.2 File Date/Time (version 4+)'}
-        if V >= fvDc50Wip then
+        if V >= fvDc50 then
         begin
           OrigFileDate := Source.ReadInt64;
         end;
@@ -1645,11 +1646,11 @@ begin
           if V = fvDc40 then
             CipherClass := TCipher_AES
           else
-            CipherClass := DC_DEC_CipherById(idBase, Source.ReadLongBE, V<fvDc50Wip);
+            CipherClass := DC_DEC_CipherById(idBase, Source.ReadLongBE, V<fvDc50);
         end;
-        if (V < fvDc50Wip) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
-        if (V < fvDc50Wip) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
-        if (V < fvDc50Wip) and (CipherClass = TCipher_Shark) then Cipherclass := TCipher_Shark_DEC52; // It didn't work in DEC 5.1c
+        if (V < fvDc50) and (CipherClass = TCipher_SCOP) then Cipherclass := TCipher_SCOP_DEC52; // unclear if it was faulty in DEC 5.2 or DEC 5.1c
+        if (V < fvDc50) and (CipherClass = TCipher_XTEA) then Cipherclass := TCipher_XTEA_DEC52; // XTEA was not existing in DEC 5.1c, so it must be a DEC 5.2 problem only
+        if (V < fvDc50) and (CipherClass = TCipher_Shark) then Cipherclass := TCipher_Shark_DEC52; // It didn't work in DEC 5.1c
         Cipher := CipherClass.Create;
         {$ENDREGION}
 
@@ -1664,26 +1665,26 @@ begin
         if V = fvDc40 then
           HashClass := THash_SHA512
         else
-          HashClass := DC_DEC_HashById(idBase, Source.ReadLongBE, V<fvDc50Wip);
+          HashClass := DC_DEC_HashById(idBase, Source.ReadLongBE, V<fvDc50);
         AHash := HashClass.Create;
         {$ENDREGION}
 
         {$REGION '7.5 IV (only version 4+)'}
-        if V >= fvDc50Wip then
+        if V >= fvDc50 then
           IV := Source.ReadRawBytes(Source.ReadByte)
         else
           SetLength(IV, 0);
         {$ENDREGION}
 
         {$REGION '7.6 IV Fill Byte (only version 4+)'}
-        if V >= fvDc50Wip then
+        if V >= fvDc50 then
           IvFillByte := Source.ReadByte
         else
           IvFillByte := $FF;
         {$ENDREGION}
 
         {$REGION '7.7 Cipher block filling mode (only version 4+; currently unused by DEC)'}
-        if V >= fvDc50Wip then
+        if V >= fvDc50 then
         begin
           iBlockFillMode := Source.ReadByte;
           if integer(iBlockFillMode) > Ord(High(TBlockFillMode)) then
@@ -1706,7 +1707,7 @@ begin
         {$REGION '8.5 KDF version (only version 4+)'}
         // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
         // For PBKDF2, a DWORD with the iterations follows
-        if V >= fvDc50Wip then
+        if V >= fvDc50 then
           KdfVersion := TKdfVersion(Source.ReadByte)
         else
           KdfVersion := kvKdfx;
@@ -1750,7 +1751,7 @@ begin
         {$ENDREGION}
 
         {$REGION 'Verify HMAC of whole file before decrypting (version 4+)'}
-        if not OnlyReadFileInfo and (V >= fvDc50Wip) then
+        if not OnlyReadFileInfo and (V >= fvDc50) then
         begin
           bakSourcePosEncryptedData := Source.Position;
           Source.Position := 0;
@@ -1763,7 +1764,7 @@ begin
         {$ENDREGION}
 
         {$REGION '8.7 GCM Tag Length (only version 4+)'}
-        if not OnlyReadFileInfo and (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then
+        if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           TDECFormattedCipher(Cipher).AuthenticationResultBitLength := Source.ReadByte * 8;
         end;
@@ -1781,8 +1782,8 @@ begin
             else
             begin
               iTmp := source.size - source.Position;
-              if ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode <> cmECBx) then Dec(iTmp, Cipher.Context.BlockSize{CalcMac}); // field 9.1
-              if (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then Dec(iTmp, TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3); // field 9.2
+              if ((V=fvHagenReddmannExample) or (V>=fvDc50)) and (Cipher.Mode <> cmECBx) then Dec(iTmp, Cipher.Context.BlockSize{CalcMac}); // field 9.1
+              if (V>=fvDc50) and (Cipher.Mode = cmGCM) then Dec(iTmp, TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3); // field 9.2
               Dec(iTmp, ahash.DigestSize{Hash/HMAC}); // field 10
               Dec(iTmp, Length(FileTerminus)); // field 11
               TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, iTmp, OnProgressProc);
@@ -1794,7 +1795,7 @@ begin
         {$ENDREGION}
 
         {$REGION '9.1 DEC CalcMAC (version 0 with length prefix, version 4+ without)'}
-        if not OnlyReadFileInfo and ((V=fvHagenReddmannExample) or (V>=fvDc50Wip)) and (Cipher.Mode <> cmECBx) then
+        if not OnlyReadFileInfo and ((V=fvHagenReddmannExample) or (V>=fvDc50)) and (Cipher.Mode <> cmECBx) then
         begin
           if V=fvHagenReddmannExample then
             cMac := Source.ReadRawByteString(Source.ReadByte)
@@ -1806,7 +1807,7 @@ begin
         {$ENDREGION}
 
         {$REGION '9.2 GCM Tag (only version 4+)'}
-        if not OnlyReadFileInfo and (V>=fvDc50Wip) and (Cipher.Mode = cmGCM) then
+        if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           if BytesToRawByteString(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult) <> Source.ReadRawByteString(TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3) then
             raise Exception.Create('GCM Auth Tag mismatch');
@@ -1852,7 +1853,7 @@ begin
 
         {$REGION '10. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
         // (For version 4, the HMAC was checked above, before encrypting, so we exclude the check here)
-        if not OnlyReadFileInfo and (V >= fvDc40) and (V < fvDc50Wip) then
+        if not OnlyReadFileInfo and (V >= fvDc40) and (V < fvDc50) then
         begin
           if V = fvDc40 then
           begin
@@ -1882,7 +1883,7 @@ begin
 
           if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
           begin
-            if V >= fvDc50Wip then
+            if V >= fvDc50 then
               raise Exception.Create('HMAC mismatch')
             else
               raise Exception.Create('Hash mismatch');
@@ -1939,13 +1940,13 @@ begin
         result.Parameters.BlockFillMode := Cipher.FillMode;
         if (V = fvDc41FinalCancelled) and FileNameUserPasswordEncrypted then
           result.Parameters.ContainFileOrigName := fpEncryptWithUserKey
-        else if (V >= fvDc50Wip) and (OrigName = '') then
+        else if (V >= fvDc50) and (OrigName = '') then
           result.Parameters.ContainFileOrigName := fpHide
         else
           result.Parameters.ContainFileOrigName := fpExpose;
-        result.Parameters.ContainFileOrigSize := V >= fvDc50Wip;
-        result.Parameters.ContainFileOrigDate := V >= fvDc50Wip;
-        if (V >= fvDc50Wip) and (result.Parameters.CipherMode = cmGCM) then
+        result.Parameters.ContainFileOrigSize := V >= fvDc50;
+        result.Parameters.ContainFileOrigDate := V >= fvDc50;
+        if (V >= fvDc50) and (result.Parameters.CipherMode = cmGCM) then
           result.Parameters.GCMAuthTagSizeInBytes := TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3
         else
           result.Parameters.GCMAuthTagSizeInBytes := 0;
