@@ -67,10 +67,13 @@ procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString
 
 function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
-procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
+
 procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
-// Note for DeCoder4X_DecodeFile: If you just want to read the file information without decrypting, then let AOutput be blank
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+
+// Note: A password is only encrypted to read a user-key-encrypted filename (feature was only available in format version 3)
+function DeCoder4X_FileInfo(const AFileName: String; const APassword: RawByteString=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
 {$IFDEF Debug}
 procedure Debug_ListHashAlgos(Lines: TStrings; V: TDc4FormatVersion);
@@ -323,6 +326,7 @@ var
 const
   chunksize = 4096; // bigger = faster
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   tempstream := nil;
@@ -387,6 +391,7 @@ var
 const
   chunksize = 4096*3; // bigger = faster. Must be multiple of 3
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   tempstream := nil;
@@ -470,6 +475,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -504,6 +510,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -538,6 +545,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -572,6 +580,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -606,6 +615,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -640,6 +650,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -674,6 +685,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -708,6 +720,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -742,6 +755,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -776,6 +790,7 @@ var
   Cipher: TDECCipher;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -1025,6 +1040,7 @@ var
   tmpWS: WideString;
   outFileDidExist: boolean;
 begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   DeCoder4X_ValidateParameterBlock(AParameters);
 
   tempstream := nil;
@@ -1417,7 +1433,7 @@ begin
   end;
 end;
 
-function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function _DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 resourcestring
   SInfoUnzipNotImplemented = 'Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool';
 var
@@ -1957,6 +1973,17 @@ begin
     end;
     raise;
   end;
+end;
+
+function DeCoder4X_FileInfo(const AFileName: String; const APassword: RawByteString=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+begin
+  result := _DeCoder4X_DecodeFile(AFileName, '', APassword, OnProgressProc);
+end;
+
+function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+begin
+  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  result := _DeCoder4X_DecodeFile(AFileName, AOutput, APassword, OnProgressProc);
 end;
 
 initialization

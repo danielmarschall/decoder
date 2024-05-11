@@ -225,7 +225,7 @@ begin
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver0.dc5', 'test', DeCoder4X_GetDefaultParameters(fvHagenReddmannExample), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver0.dc5', 'schloss_decoded_dc5_ver0.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver0.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver0.dc5', '', '', OnProgressProc);
+  fi := DeCoder4X_FileInfo('schloss_ver0.dc5', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver0.bmp');
   DeleteFile('schloss_ver0.dc5');
   WriteLn('Hagen Example OK:');
@@ -237,7 +237,7 @@ begin
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver1.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc40), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver1.dc5', 'schloss_decoded_dc5_ver1.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver1.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver1.dc5', '', '', OnProgressProc);
+  fi := DeCoder4X_FileInfo('schloss_ver1.dc5', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver1.bmp');
   DeleteFile('schloss_ver1.dc5');
   WriteLn('DC40 OK:');
@@ -249,7 +249,7 @@ begin
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver2.dc5', 'test', DeCoder4X_GetDefaultParameters(fvDc41Beta), OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver2.dc5', 'schloss_decoded_dc5_ver2.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver2.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver2.dc5', '', '', OnProgressProc);
+  fi := DeCoder4X_FileInfo('schloss_ver2.dc5', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver2.bmp');
   DeleteFile('schloss_ver2.dc5');
   WriteLn('DC41 Beta OK:');
@@ -263,7 +263,7 @@ begin
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', fp, OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', OnProgressProc);
+  fi := DeCoder4X_FileInfo('schloss_ver3.dc5', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver3.bmp');
   DeleteFile('schloss_ver3.dc5');
   WriteLn('DC41 Final OK (Filename encrypted):');
@@ -277,7 +277,7 @@ begin
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver3.dc5', 'test', fp, OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver3.dc5', 'schloss_decoded_dc5_ver3.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver3.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver3.dc5', '', '', OnProgressProc);
+  fi := DeCoder4X_FileInfo('schloss_ver3.dc5', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver3.bmp');
   DeleteFile('schloss_ver3.dc5');
   WriteLn('DC41 Final OK (Filename not encrypted):');
@@ -293,7 +293,7 @@ begin
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', '', '', OnProgressProc);
+  fi := DeCoder4X_FileInfo('schloss_ver4.dc5', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver4.bmp');
   DeleteFile('schloss_ver4.dc5');
   WriteLn('DC50 OK (without file name/date/time):');
@@ -309,7 +309,7 @@ begin
   DeCoder4X_EncodeFile('schloss_decoded.bmp', 'schloss_ver4.dc5', 'test', fp, OnProgressProc);
   DeCoder4X_DecodeFile('schloss_ver4.dc5', 'schloss_decoded_dc5_ver4.bmp', 'test', OnProgressProc);
   Assert(Are2FilesEqual('schloss_decoded.bmp', 'schloss_decoded_dc5_ver4.bmp'));
-  fi := DeCoder4X_DecodeFile('schloss_ver4.dc5', '', '', OnProgressProc);
+  fi := DeCoder4X_FileInfo('schloss_ver4.dc5', '', OnProgressProc);
   DeleteFile('schloss_decoded_dc5_ver4.bmp');
   DeleteFile('schloss_ver4.dc5');
   WriteLn('DC50 OK (with file name/date/time):');
@@ -607,7 +607,7 @@ begin
     else if SameText(ParamStr(1), Cmd_DC50_FileInfo) and (ParamCount = 2) then
     begin
       CheckFileExists(ParamStr(2));
-      fi := DeCoder4X_DecodeFile(ParamStr(2), '', '', nil{OnProgressProc}); // no progress bar, because people might want to pipe the output to a file
+      fi := DeCoder4X_FileInfo(ParamStr(2), '', nil{OnProgressProc}); // no progress bar, because people might want to pipe the output to a file
       sl := TStringList.Create;
       try
         DeCoder4X_PrintFileInfo(fi, sl);
