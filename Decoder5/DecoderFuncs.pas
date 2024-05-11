@@ -35,8 +35,8 @@ type
 
 procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
-function SecureDeleteFile(AFileName: string): boolean;
-function SecureDeleteFolder(ADirName: string): boolean;
+function SecureDeleteFile(const AFileName: string): boolean;
+function SecureDeleteFolder(const ADirName: string): boolean;
 function IsCompressedFileType(const AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
 function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
@@ -146,7 +146,7 @@ begin
   until Length(Result) = len;
 end;
 
-function SecureDeleteFile(AFileName: string): boolean;
+function SecureDeleteFile(const AFileName: string): boolean;
 
   function GetClusterSize(Drive: String): integer;
   var
@@ -170,7 +170,8 @@ function SecureDeleteFile(AFileName: string): boolean;
 var
   drive: string;
   fs: TFileStream;
-  AFileName2: string;
+  AFileNameTest: string;
+  AFileNameRenamed: string;
   ClusterSize: integer;
 begin
   if not FileExists(AFileName) then Exit(False);
@@ -207,22 +208,26 @@ begin
     FreeAndNil(fs);
   end;
 
+  AFileNameRenamed := AFileName;
+
   // Avoid that undelete tools see file name...
-  AFileName2 := IncludeTrailingPathDelimiter(ExtractFileDir(AFileName))+RandStringFileNameFriendly(Length(ExtractFileName(AFileName)));
-  if RenameFile(AFileName, AFileName2) then AFileName := AFileName2;
+  AFileNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(AFileNameRenamed))+
+    RandStringFileNameFriendly(Length(ExtractFileName(AFileNameRenamed)));
+  if RenameFile(AFileNameRenamed, AFileNameTest) then AFileNameRenamed := AFileNameTest;
 
   // ... or the size of the name
-  AFileName2 := IncludeTrailingPathDelimiter(ExtractFileDir(AFileName))+'_';
-  if RenameFile(AFileName, AFileName2) then AFileName := AFileName2;
+  AFileNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(AFileNameRenamed))+'_';
+  if RenameFile(AFileNameRenamed, AFileNameTest) then AFileNameRenamed := AFileNameTest;
 
   // now delete the file
-  result := DeleteFile(AFileName);
+  result := DeleteFile(AFileNameRenamed);
 end;
 
-function SecureDeleteFolder(ADirName: string): boolean;
+function SecureDeleteFolder(const ADirName: string): boolean;
 var
   F: TSearchRec;
-  ADirName2: string;
+  ADirNameTest: string;
+  ADirNameRenamed: string;
 begin
   if not DirectoryExists(ADirName) then Exit(False);
   result := true;
@@ -249,23 +254,35 @@ begin
 
     if TDirectory.IsEmpty(ADirName) then
     begin
-      ADirName := ExcludeTrailingPathDelimiter(ADirName);
+      ADirNameRenamed := ExcludeTrailingPathDelimiter(ADirName);
 
       // Avoid that undelete tools see directory name...
-      ADirName2 := IncludeTrailingPathDelimiter(ExtractFileDir(ADirName))+RandStringFileNameFriendly(Length(ExtractFileName(ADirName)));
-      if RenameFile(ADirName, ADirName2) then ADirName := ADirName2;
+      ADirNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(ADirNameRenamed))+
+        RandStringFileNameFriendly(Length(ExtractFileName(ADirNameRenamed)));
+      if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
 
       // ... or the size of the name
-      ADirName2 := IncludeTrailingPathDelimiter(ExtractFileDir(ADirName))+'_';
-      if RenameFile(ADirName, ADirName2) then ADirName := ADirName2;
+      ADirNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(ADirNameRenamed))+'_';
+      if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
 
       // and now delete empty directory
-      if not RemoveDir(ADirName) then
+      if not RemoveDir(ADirNameRenamed) then
       begin
+        // Undo renaming
+        if ADirName <> ADirNameRenamed then
+          RenameFile(ADirNameRenamed, ADirName);
+
         {$IFDEF Console}
         WriteLn('ERROR Deleting empty folder: ' + ADirName);
         {$ENDIF}
         result := false;
+      end
+      else
+      begin
+        {$IFDEF Console}
+        WriteLn('DONE Deleting folder: ' + ADirName);
+        {$ENDIF}
+        result := true;
       end;
     end
     else
