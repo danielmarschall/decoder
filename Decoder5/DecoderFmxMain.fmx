@@ -4,8 +4,8 @@ object Form3: TForm3
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = Single
   Caption = 'ViaThinkSoft (De)Coder 5.0'
-  ClientHeight = 361
-  ClientWidth = 640
+  ClientHeight = 362
+  ClientWidth = 646
   Position = ScreenCenter
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -22,35 +22,38 @@ object Form3: TForm3
     OnClick = DropTarget1Click
   end
   object ProgressBar1: TProgressBar
+    Anchors = [akLeft, akTop, akRight]
     Orientation = Horizontal
     Position.X = 440.000000000000000000
     Position.Y = 152.000000000000000000
-    Size.Width = 185.000000000000000000
+    Size.Width = 191.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
   end
   object Label1: TLabel
+    Anchors = [akLeft, akTop, akRight]
     StyledSettings = [Family, Style, FontColor]
     Position.X = 152.000000000000000000
     Position.Y = 8.000000000000000000
-    Size.Width = 337.000000000000000000
+    Size.Width = 479.000000000000000000
     Size.Height = 41.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Font.Size = 24.000000000000000000
     TextSettings.WordWrap = False
     TextSettings.Trimming = None
     Text = 'ViaThinkSoft (De)Coder 5.0'
-    TabOrder = 6
+    TabOrder = 8
   end
   object Label2: TLabel
+    Anchors = [akLeft, akTop, akRight]
     Position.X = 152.000000000000000000
     Position.Y = 57.000000000000000000
-    Size.Width = 473.000000000000000000
-    Size.Height = 63.000000000000000000
+    Size.Width = 479.000000000000000000
+    Size.Height = 69.000000000000000000
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 8
+    TabOrder = 11
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All files (*.*)|*.*'
@@ -62,14 +65,15 @@ object Form3: TForm3
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
     ReadOnly = True
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Position.X = 152.000000000000000000
     Position.Y = 200.000000000000000000
-    Size.Width = 473.000000000000000000
-    Size.Height = 121.000000000000000000
+    Size.Width = 479.000000000000000000
+    Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 3
-    Viewport.Width = 469.000000000000000000
-    Viewport.Height = 117.000000000000000000
+    TabOrder = 5
+    Viewport.Width = 475.000000000000000000
+    Viewport.Height = 118.000000000000000000
   end
   object Edit1: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -95,7 +99,7 @@ object Form3: TForm3
     Position.Y = 134.000000000000000000
     TextSettings.Trimming = None
     Text = 'Password:'
-    TabOrder = 11
+    TabOrder = 12
   end
   object Label5: TLabel
     Position.X = 152.000000000000000000
@@ -108,8 +112,9 @@ object Form3: TForm3
     TabOrder = 10
   end
   object CheckBox1: TCheckBox
+    Anchors = [akLeft, akBottom]
     Position.X = 152.000000000000000000
-    Position.Y = 329.000000000000000000
+    Position.Y = 330.000000000000000000
     Size.Width = 393.000000000000000000
     Size.Height = 19.000000000000000000
     Size.PlatformDefault = False

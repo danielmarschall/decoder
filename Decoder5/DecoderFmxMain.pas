@@ -75,69 +75,73 @@ var
   fp: TDC4Parameters;
   RepeatedPassword: string;
 begin
-  case TButton(Sender).Tag of
-    {$REGION '(De)Coder 1.0 decrypt'}
-    TAG_DC10_DECRYPT:
-    begin
-      SaveDialog1.FileName := ChangeFileExt(ChosenFile, '_decoded.txt');
-      if SaveDialog1.Execute then
+  try
+    case TButton(Sender).Tag of
+      {$REGION '(De)Coder 1.0 decrypt'}
+      TAG_DC10_DECRYPT:
       begin
-        AOutput := SaveDialog1.FileName;
-        DeCoder10_DecodeFile(ChosenFile, AOutput, OnProgressProc);
-        ExplorerNavigateToFile(AOutput);
-      end;
-    end;
-    {$ENDREGION}
-    {$REGION '(De)Coder 4.x/5.0 decrypt'}
-    TAG_DC4X_DECRYPT:
-    begin
-      SaveDialog1.FileName := DC4FileInfo.OrigFileName;
-      if SaveDialog1.Execute then
-      begin
-        AOutput := SaveDialog1.FileName;
-        DeCoder4X_DecodeFile(ChosenFile, AOutput, Edit1.Text, OnProgressProc);
-        ExplorerNavigateToFile(AOutput);
-      end;
-    end;
-    {$ENDREGION}
-    {$REGION 'Encrypt'}
-    TAG_DC50_ENCRYPT:
-    begin
-      while true do
-      begin
-        // #0 means that the password char '*' is used
-        if not InputQuery(Caption, #0 + 'Please repeat the password for encryption', RepeatedPassword) then
-          Abort;
-        if RepeatedPassword <> Edit1.Text then
-          ShowMessage('Password mismatch!')  // TODO: can this box have style and icon?
-        else
-          break;
-      end;
-      SaveDialog1.FileName := ChangeFileExt(ChosenFile, '.dc5');
-      if SaveDialog1.Execute then
-      begin
-        AOutput := SaveDialog1.FileName;
-        fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
-        if CheckBox1.IsChecked then
+        SaveDialog1.FileName := ChangeFileExt(ChosenFile, '_decoded.txt');
+        if SaveDialog1.Execute then
         begin
-          fp.ContainFileOrigName := fpExpose;
-          fp.ContainFileOrigSize := true;
-          fp.ContainFileOrigDate := true;
-        end
-        else
-        begin
-          fp.ContainFileOrigName := fpHide;
-          fp.ContainFileOrigSize := false;
-          fp.ContainFileOrigDate := false;
+          AOutput := SaveDialog1.FileName;
+          DeCoder10_DecodeFile(ChosenFile, AOutput, OnProgressProc);
+          ExplorerNavigateToFile(AOutput);
         end;
-        // TODO: UTF-8 passwords!
-        DeCoder4X_EncodeFile(ChosenFile, AOutput, Edit1.Text, fp, OnProgressProc);
-        ExplorerNavigateToFile(AOutput);
       end;
+      {$ENDREGION}
+      {$REGION '(De)Coder 4.x/5.0 decrypt'}
+      TAG_DC4X_DECRYPT:
+      begin
+        SaveDialog1.FileName := DC4FileInfo.OrigFileName;
+        if SaveDialog1.Execute then
+        begin
+          AOutput := SaveDialog1.FileName;
+          DeCoder4X_DecodeFile(ChosenFile, AOutput, Edit1.Text, OnProgressProc);
+          ExplorerNavigateToFile(AOutput);
+        end;
+      end;
+      {$ENDREGION}
+      {$REGION 'Encrypt'}
+      TAG_DC50_ENCRYPT:
+      begin
+        while true do
+        begin
+          // #0 means that the password char '*' is used
+          if not InputQuery(Caption, #0 + 'Please repeat the password for encryption', RepeatedPassword) then
+            Abort;
+          if RepeatedPassword <> Edit1.Text then
+            ShowMessage('Password mismatch!')  // TODO: can this box have style and icon?
+          else
+            break;
+        end;
+        SaveDialog1.FileName := ChangeFileExt(ChosenFile, '.dc5');
+        if SaveDialog1.Execute then
+        begin
+          AOutput := SaveDialog1.FileName;
+          fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
+          if CheckBox1.IsChecked then
+          begin
+            fp.ContainFileOrigName := fpExpose;
+            fp.ContainFileOrigSize := true;
+            fp.ContainFileOrigDate := true;
+          end
+          else
+          begin
+            fp.ContainFileOrigName := fpHide;
+            fp.ContainFileOrigSize := false;
+            fp.ContainFileOrigDate := false;
+          end;
+          // TODO: UTF-8 passwords!
+          DeCoder4X_EncodeFile(ChosenFile, AOutput, Edit1.Text, fp, OnProgressProc);
+          ExplorerNavigateToFile(AOutput);
+        end;
+      end;
+      {$ENDREGION}
     end;
-    {$ENDREGION}
+    Edit1.Text := '';
+  except
+    ProgressBar1.Visible := false;
   end;
-  Edit1.Text := '';
 end;
 
 procedure TForm3.DropTarget1Click(Sender: TObject);
@@ -164,6 +168,16 @@ begin
   CheckBox1.Visible := geMetadataCheckbox in AElements;
   Button2.Visible := geStartButton in AElements;
   if gePassword in AElements then Edit1.SetFocus;
+
+  if (geStartButton in AElements) and not (gePassword in AElements) then
+    Button2.Position.X := Edit1.Position.X
+  else
+    Button2.Position.X := Edit1.Position.X + Edit1.Width + 8;
+
+  if (geInfos in AElements) and not (geMetadataCheckbox in AElements) then
+    Memo1.Height := CheckBox1.Position.Y + CheckBox1.Height - Memo1.Position.Y
+  else
+    Memo1.Height := CheckBox1.Position.Y - (Form3.ClientHeight - (CheckBox1.Position.Y + CheckBox1.Height)) - Memo1.Position.Y;
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
