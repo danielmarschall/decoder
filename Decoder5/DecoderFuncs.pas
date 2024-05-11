@@ -3,7 +3,8 @@ unit DecoderFuncs;
 interface
 
 uses
-  Windows, {$IFNDEF Console}Forms, {$ENDIF} DECTypes, Classes, SysUtils, Math, DECHashBase, DECHashAuthentication;
+  Windows, {$IFNDEF Console}Forms, {$ENDIF} DECTypes, Classes, SysUtils,
+  Math, DECHashBase, DECHashAuthentication, IOUtils;
 
 type
   TStreamHelper = class helper for TStream
@@ -34,9 +35,9 @@ type
 
 procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
-procedure SecureDeleteFile(AFileName: string);
-procedure SecureDeleteFolder(ADirName: string);
-function IsCompressedFileType(AFileName: string): boolean;
+function SecureDeleteFile(AFileName: string): boolean;
+function SecureDeleteFolder(ADirName: string): boolean;
+function IsCompressedFileType(const AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
 function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
 function FileSizeHumanReadable(Bytes: Int64): string;
@@ -132,7 +133,20 @@ begin
   end;
 end;
 
-procedure SecureDeleteFile(AFileName: string);
+function RandStringFileNameFriendly(len: integer): string;
+const
+  str = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+var
+  i: UInt32;
+begin
+  Result := '';
+  repeat
+    i := RandomLong mod UInt32(Length(str));
+    Result := Result + str[UInt32(Low(str)) + i];
+  until Length(Result) = len;
+end;
+
+function SecureDeleteFile(AFileName: string): boolean;
 
   function GetClusterSize(Drive: String): integer;
   var
@@ -143,19 +157,6 @@ procedure SecureDeleteFile(AFileName: string);
     GetDiskFreeSpace(PChar(Drive), SectorsPerCluster, BytesPerSector, dummy, dummy);
 
     Result := SectorsPerCluster * BytesPerSector;
-  end;
-
-  function RandFileName(len: integer): string;
-  const
-    str = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  var
-    i: UInt32;
-  begin
-    Result := '';
-    repeat
-      i := RandomLong mod UInt32(Length(str));
-      Result := Result + str[UInt32(Low(str)) + i];
-    until Length(Result) = len;
   end;
 
   function RelToAbs(const RelPath, BasePath: string): string;
@@ -172,6 +173,12 @@ var
   AFileName2: string;
   ClusterSize: integer;
 begin
+  if not FileExists(AFileName) then Exit(False);
+
+  {$IFDEF Console}
+  WriteLn('Delete file: ' + AFileName);
+  {$ENDIF}
+
   ClusterSize := 32000; // max available in Windows format dialog
   try
     drive := ExtractFileDrive(RelToAbs(AFileName, GetCurrentDir));
@@ -201,7 +208,7 @@ begin
   end;
 
   // Avoid that undelete tools see file name...
-  AFileName2 := IncludeTrailingPathDelimiter(ExtractFileDir(AFileName))+RandFileName(Length(ExtractFileName(AFileName)));
+  AFileName2 := IncludeTrailingPathDelimiter(ExtractFileDir(AFileName))+RandStringFileNameFriendly(Length(ExtractFileName(AFileName)));
   if RenameFile(AFileName, AFileName2) then AFileName := AFileName2;
 
   // ... or the size of the name
@@ -209,15 +216,69 @@ begin
   if RenameFile(AFileName, AFileName2) then AFileName := AFileName2;
 
   // now delete the file
-  DeleteFile(AFileName);
+  result := DeleteFile(AFileName);
 end;
 
-procedure SecureDeleteFolder(ADirName: string);
+function SecureDeleteFolder(ADirName: string): boolean;
+var
+  F: TSearchRec;
+  ADirName2: string;
 begin
-  raise Exception.Create('Not implemented'); // TODO: Implement secure delete folder
+  if not DirectoryExists(ADirName) then Exit(False);
+  result := true;
+
+  {$IFDEF Console}
+  WriteLn('START Delete folder: ' + ADirName);
+  {$ENDIF}
+
+  if FindFirst(IncludeTrailingPathDelimiter(ADirName) + '*', faAnyFile, F) = 0 then
+  begin
+    try
+      repeat
+        if (F.Attr and faDirectory <> 0) then
+        begin
+          if (F.Name <> '.') and (F.Name <> '..') then
+            result := result and SecureDeleteFolder(IncludeTrailingPathDelimiter(ADirName) + F.Name);
+        end
+        else
+          result := result and SecureDeleteFile(IncludeTrailingPathDelimiter(ADirName) + F.Name);
+      until FindNext(F) <> 0;
+    finally
+      FindClose(F);
+    end;
+
+    if TDirectory.IsEmpty(ADirName) then
+    begin
+      ADirName := ExcludeTrailingPathDelimiter(ADirName);
+
+      // Avoid that undelete tools see directory name...
+      ADirName2 := IncludeTrailingPathDelimiter(ExtractFileDir(ADirName))+RandStringFileNameFriendly(Length(ExtractFileName(ADirName)));
+      if RenameFile(ADirName, ADirName2) then ADirName := ADirName2;
+
+      // ... or the size of the name
+      ADirName2 := IncludeTrailingPathDelimiter(ExtractFileDir(ADirName))+'_';
+      if RenameFile(ADirName, ADirName2) then ADirName := ADirName2;
+
+      // and now delete empty directory
+      if not RemoveDir(ADirName) then
+      begin
+        {$IFDEF Console}
+        WriteLn('ERROR Deleting empty folder: ' + ADirName);
+        {$ENDIF}
+        result := false;
+      end;
+    end
+    else
+    begin
+      {$IFDEF Console}
+      WriteLn('ERROR Deleting folder contents: ' + ADirName);
+      {$ENDIF}
+      result := false;
+    end;
+  end;
 end;
 
-function IsCompressedFileType(AFileName: string): boolean;
+function IsCompressedFileType(const AFileName: string): boolean;
 begin
   result :=
     SameText(ExtractFileExt(AFileName), '.zip') or

@@ -606,7 +606,7 @@ begin
     else if SameText(ParamStr(1), Cmd_DC4X_FileInfo) and (ParamCount = 2) then
     begin
       CheckFileExists(ParamStr(2));
-      fi := DeCoder4X_DecodeFile(ParamStr(2), '', '', OnProgressProc);
+      fi := DeCoder4X_DecodeFile(ParamStr(2), '', '', nil{OnProgressProc}); // no progress bar, because people might want to pipe the output to a file
       sl := TStringList.Create;
       try
         DeCoder4X_PrintFileInfo(fi, sl);
