@@ -588,7 +588,7 @@ begin
       fp.ContainFileOrigName := fpHide;
       fp.ContainFileOrigSize := false;
       fp.ContainFileOrigDate := false;
-      DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), fp, OnProgressProc);
+      DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), ParamStr(4), fp, OnProgressProc);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC50_EnCrypt_WithInfo) and (ParamCount = 4) then
@@ -598,13 +598,13 @@ begin
       fp.ContainFileOrigName := fpExpose;
       fp.ContainFileOrigSize := true;
       fp.ContainFileOrigDate := true;
-      DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), fp, OnProgressProc);
+      DeCoder4X_EncodeFile(ParamStr(2), ParamStr(3), ParamStr(4), fp, OnProgressProc);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC50_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
-      DeCoder4X_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
+      DeCoder4X_DecodeFile(ParamStr(2), ParamStr(3), ParamStr(4), OnProgressProc);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC50_FileInfo) and (ParamCount = 2) then

@@ -9,6 +9,9 @@
         <Projects Include="CoderCLI.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="DecoderFmx.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +38,23 @@
     <Target Name="CoderCLI:Make">
         <MSBuild Projects="CoderCLI.dproj" Targets="Make"/>
     </Target>
+    <Target Name="DecoderFmx">
+        <MSBuild Projects="DecoderFmx.dproj"/>
+    </Target>
+    <Target Name="DecoderFmx:Clean">
+        <MSBuild Projects="DecoderFmx.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DecoderFmx:Make">
+        <MSBuild Projects="DecoderFmx.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Coder;CoderCLI"/>
+        <CallTarget Targets="Coder;CoderCLI;DecoderFmx"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Coder:Clean;CoderCLI:Clean"/>
+        <CallTarget Targets="Coder:Clean;CoderCLI:Clean;DecoderFmx:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Coder:Make;CoderCLI:Make"/>
+        <CallTarget Targets="Coder:Make;CoderCLI:Make;DecoderFmx:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

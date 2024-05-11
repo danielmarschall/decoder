@@ -3,7 +3,7 @@ unit DecoderFuncs;
 interface
 
 uses
-  Windows, {$IFNDEF Console}Forms, {$ENDIF} DECTypes, Classes, SysUtils,
+  Windows, {$IFNDEF Console}Fmx.Forms, {$ENDIF} DECTypes, Classes, SysUtils,
   Math, DECHashBase, DECHashAuthentication, IOUtils;
 
 type
@@ -42,6 +42,8 @@ function IsCompressedFileType(const AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
 function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
 function FileSizeHumanReadable(Bytes: Int64): string;
+procedure ExplorerNavigateToFile(const AFileName: string);
+function GetFileTypename(const FileName: string): string;
 function GetBuildTimestamp(const ExeFile: string): TDateTime;
 function GetOwnBuildTimestamp: TDateTime;
 
@@ -52,7 +54,7 @@ procedure CountDown(msg: string; timer: integer);
 implementation
 
 uses
-  DECUtil, DECRandom, ZLib, DateUtils, StrUtils;
+  DECUtil, DECRandom, ZLib, DateUtils, StrUtils, Registry, ShellAPI;
 
 {$IFDEF Unicode}
 function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
@@ -469,6 +471,21 @@ begin
   while Bytes > Power(1024, i + 1) do
     Inc(i);
   Result := FormatFloat('###0.##', Bytes / IntPower(1024, i)) + ' ' + Description[i];
+end;
+
+function GetFileTypename(const Filename: string): string;
+var
+  Info: TSHFileInfo;
+begin
+  if SHGetFileInfo(PChar(Filename), 0, Info, SizeOf(Info), SHGFI_TYPENAME) <> 0 then
+    Result := Info.szTypeName
+  else
+    Result := '';
+end;
+
+procedure ExplorerNavigateToFile(const AFileName: string);
+begin
+  ShellExecute(0, 'open', 'explorer.exe', PChar('/select,'+AFileName), nil, SW_SHOWNORMAL);
 end;
 
 function GetBuildTimestamp(const ExeFile: string): TDateTime;

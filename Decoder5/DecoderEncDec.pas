@@ -49,6 +49,7 @@ type
 
 procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDECProgressEvent=nil);
 procedure DeCoder10_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+function DeCoder10_DetectFile(const AFileName: string): boolean;
 
 procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
 procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
@@ -397,8 +398,6 @@ begin
   tempstream := nil;
   try
     try
-      tempstream := TFileStream.Create(AOutput, fmCreate);
-
       if (Source.Size < 5+3) or ((Source.Size-5) mod 3 <> 0) then
         wrongFormat := true
       else
@@ -410,6 +409,8 @@ begin
       if wrongFormat then
         raise Exception.Create('This file was not encrypted with (De)Coder 1.0');
       Source.Position := 5;
+
+      tempstream := TFileStream.Create(AOutput, fmCreate);
       if Assigned(OnProgressProc) then OnProgressProc(Source.Size, 0, TDECProgressState.Started);
       for ch := 'A' to 'Z' do
         let[Ord(ch)-Ord('A')+1] := ch;
@@ -465,6 +466,28 @@ begin
     except
     end;
     raise;
+  end;
+end;
+
+function DeCoder10_DetectFile(const AFileName: string): boolean;
+var
+  Source: TFileStream;
+  rbs: RawByteString;
+  wrongformat: boolean;
+begin
+  Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
+  try
+    if (Source.Size < 5+3) or ((Source.Size-5) mod 3 <> 0) then
+      wrongFormat := true
+    else
+    begin
+      rbs := Source.ReadRawByteString(5);
+      Source.Position := Source.Size - 3;
+      wrongFormat := (rbs <> 'COD'+#1#1) or (Source.ReadRawByteString(3) <> #1#1#1);
+    end;
+    result := not wrongFormat;
+  finally
+    FreeAndNil(Source);
   end;
 end;
 
@@ -1530,9 +1553,9 @@ begin
           // 01 = (De)Coder 4.0
           // 02 = (De)Coder 4.1 Beta
           // 03 = (De)Coder 4.1 Final Cancelled (never released)
-          // 04 = (De)Coder 5.0 WorkInProgress
+          // 04 = (De)Coder 5.0
           V := TDc4FormatVersion(Source.ReadByte); // if too big, it will automatically be set to fvHagenReddmannExample
-          if V = fvHagenReddmannExample then raise Exception.Create('DC Unsupported version');
+          if V = fvHagenReddmannExample then raise Exception.Create('Unsupported file format version');
         end
         else
         begin
@@ -1733,6 +1756,7 @@ begin
                          Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
                 What I don't understand: How should the program know if the user password or the "hash" password is used??
           *)
+          if APassword = '' then raise Exception.Create('An empty password is not allowed');
           if KDFVersion = kvKdfx then
             Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
           else if KDFVersion = kvKdf1 then
@@ -1884,9 +1908,9 @@ begin
           if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
           begin
             if V >= fvDc50 then
-              raise Exception.Create('HMAC mismatch')
+              raise Exception.Create('HMAC mismatch. Password wrong or file corrupt.')
             else
-              raise Exception.Create('Hash mismatch');
+              raise Exception.Create('Hash mismatch. Password wrong or file corrupt.');
           end;
         end;
         {$ENDREGION}

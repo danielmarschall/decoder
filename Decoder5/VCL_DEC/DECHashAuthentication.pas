@@ -1125,6 +1125,7 @@ class function TDECHashAuthentication.KDFx(const Data, Seed: TBytes;
                                            MaskSize: Integer;
                                            Index: UInt32 = 1): TBytes;
 begin
+  // TODO: Report to Github: "Range check error" if Data is empty
   if (length(Seed) > 0) then
     Result := KDFx(Data[0], Length(Data), Seed[0], Length(Seed), MaskSize, Index)
   else
