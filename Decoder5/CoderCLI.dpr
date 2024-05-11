@@ -1,6 +1,6 @@
 program CoderCLI;
 
-// TODO: Make (De)Coder GUI + CLI multi-lingual
+// TODO: Make CLI multi-lingual
 
 {$APPTYPE CONSOLE}
 

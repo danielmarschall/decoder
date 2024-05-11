@@ -1,5 +1,8 @@
 unit DecoderFmxMain;
 
+// TODO: Should we also offer SecureDelete in this GUI?
+// TODO: Make app multi-lingual!
+
 interface
 
 uses
@@ -7,6 +10,10 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.ExtCtrls,
   FMX.StdCtrls, FMX.Controls.Presentation, FMX.Memo.Types, FMX.ScrollBox,
   FMX.Memo, FMX.Edit, System.IOUtils, DecoderEncDec;
+
+type
+  TDcGuiElement = (gePassword, geStartButton, geInfos, geMetadataCheckbox);
+  TDcGuiElements = set of TDcGuiElement;
 
 type
   TForm3 = class(TForm)
@@ -26,13 +33,12 @@ type
       const Point: TPointF);
     procedure DropTarget1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
-    { Private-Deklarationen }
     ChosenFile: string;
     DC4FileInfo: TDC4FileInfo;
     procedure OpenFile(const AFileName: string);
-  public
-    { Public-Deklarationen }
+    procedure GuiShowElements(AElements: TDcGuiElements);
   end;
 
 var
@@ -59,17 +65,21 @@ begin
     Form3.ProgressBar1.Value := Form3.ProgressBar1.Max
   else
     Form3.ProgressBar1.Value := Pos;
+
+  Form3.ProgressBar1.Visible := State = Processing;  
 end;
 
 procedure TForm3.Button2Click(Sender: TObject);
 var
   AOutput: string;
   fp: TDC4Parameters;
+  RepeatedPassword: string;
 begin
   case TButton(Sender).Tag of
     {$REGION '(De)Coder 1.0 decrypt'}
     TAG_DC10_DECRYPT:
     begin
+      SaveDialog1.FileName := ChangeFileExt(ChosenFile, '_decoded.txt');
       if SaveDialog1.Execute then
       begin
         AOutput := SaveDialog1.FileName;
@@ -93,7 +103,17 @@ begin
     {$REGION 'Encrypt'}
     TAG_DC50_ENCRYPT:
     begin
-      // TODO: Let user repeat the password!
+      while true do
+      begin
+        // #0 means that the password char '*' is used
+        if not InputQuery(Caption, #0 + 'Please repeat the password for encryption', RepeatedPassword) then
+          Abort;
+        if RepeatedPassword <> Edit1.Text then
+          ShowMessage('Password mismatch!')  // TODO: can this box have style and icon?
+        else
+          break;
+      end;
+      SaveDialog1.FileName := ChangeFileExt(ChosenFile, '.dc5');
       if SaveDialog1.Execute then
       begin
         AOutput := SaveDialog1.FileName;
@@ -135,7 +155,31 @@ begin
   OpenFile(Data.Files[0]);
 end;
 
+procedure TForm3.GuiShowElements(AElements: TDcGuiElements);
+begin
+  Label4.Visible := gePassword in AElements;
+  Edit1.Visible := gePassword in AElements;
+  Label5.Visible := geInfos in AElements;
+  Memo1.Visible := geInfos in AElements;
+  CheckBox1.Visible := geMetadataCheckbox in AElements;
+  Button2.Visible := geStartButton in AElements;
+  if gePassword in AElements then Edit1.SetFocus;
+end;
+
+procedure TForm3.FormCreate(Sender: TObject);
+begin
+  Label2.Text :=
+    'Built ' + DateTimeToStr(GetOwnBuildTimestamp) + #13#10 +
+    'Developed by Daniel Marschall - www.daniel-marschall.de' + #13#10 +
+    'FREEWARE - Licensed under the terms of the Apache 2.0 License';
+  ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
+  GuiShowElements([]);
+  Application.Title := Caption; // because of Message dialog captions
+end;
+
 procedure TForm3.OpenFile(const AFileName: string);
+var
+  fp: TDC4Parameters;
 begin
   Memo1.Lines.Clear;
 
@@ -145,9 +189,10 @@ begin
   Label1.Text := ExtractFileName(OpenDialog1.FileName);
   if DeCoder10_DetectFile(AFileName) then
   begin
-    Label2.Text := 'This file was encrypted using (De)Coder 1.0';
+    Label2.Text := 'This file was encrypted using (De)Coder 1.0' + #13#10 + 'Do you want to decrypt it now?';
     Button2.Tag := TAG_DC10_DECRYPT;
     Button2.Text := 'Decrypt';
+    GuiShowElements([geStartButton]);
     Exit;
   end;
   {$ENDREGION}
@@ -161,9 +206,11 @@ begin
       Label2.Text := 'This file was encrypted using (De)Coder 4.1 Beta'
     else
       Label2.Text := 'This file was encrypted using (De)Coder 4.0';
+    Label2.Text := Label2.Text + #13#10 + 'Do you want to decrypt it now?';
     DeCoder4X_PrintFileInfo(DC4FileInfo, Memo1.Lines);
     Button2.Tag := TAG_DC4X_DECRYPT;
     Button2.Text := 'Decrypt';
+    GuiShowElements([gePassword, geStartButton, geInfos]);
     Exit;
   except
     on E: Exception do
@@ -185,7 +232,10 @@ begin
   Memo1.Lines.Add('File type: ' + GetFileTypename(AFileName));
   Memo1.Lines.Add('File size: ' + FileSizeHumanReadable(TFile.GetSize(AFileName)));
   Memo1.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
+  fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
+  CheckBox1.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
   // TODO: Add note about (De)Coder 2.x and 3.x
+  GuiShowElements([gePassword, geStartButton, geInfos, geMetadataCheckbox]);
   {$ENDREGION}
 end;
 

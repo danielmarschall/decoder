@@ -4,12 +4,13 @@ object Form3: TForm3
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = Single
   Caption = 'ViaThinkSoft (De)Coder 5.0'
-  ClientHeight = 342
+  ClientHeight = 361
   ClientWidth = 640
   Position = ScreenCenter
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
   DesignerMasterStyle = 0
   object DropTarget1: TDropTarget
     Filter = '*.*'
@@ -38,8 +39,8 @@ object Form3: TForm3
     TextSettings.Font.Size = 24.000000000000000000
     TextSettings.WordWrap = False
     TextSettings.Trimming = None
-    Text = 'schloss_decoded.bmp'
-    TabOrder = 2
+    Text = 'ViaThinkSoft (De)Coder 5.0'
+    TabOrder = 6
   end
   object Label2: TLabel
     Position.X = 152.000000000000000000
@@ -49,10 +50,10 @@ object Form3: TForm3
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    Text = 'Label2'
-    TabOrder = 4
+    TabOrder = 8
   end
   object OpenDialog1: TOpenDialog
+    Filter = 'All files (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Left = 24
     Top = 24
@@ -66,13 +67,13 @@ object Form3: TForm3
     Size.Width = 473.000000000000000000
     Size.Height = 121.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 6
+    TabOrder = 3
     Viewport.Width = 469.000000000000000000
     Viewport.Height = 117.000000000000000000
   end
   object Edit1: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 7
+    TabOrder = 1
     Password = True
     Position.X = 152.000000000000000000
     Position.Y = 152.000000000000000000
@@ -81,19 +82,20 @@ object Form3: TForm3
     Size.PlatformDefault = False
   end
   object Button2: TButton
+    Default = True
     Position.X = 352.000000000000000000
     Position.Y = 152.000000000000000000
-    TabOrder = 8
+    TabOrder = 2
     Text = 'Decrypt'
     TextSettings.Trimming = None
     OnClick = Button2Click
   end
   object Label4: TLabel
     Position.X = 152.000000000000000000
-    Position.Y = 128.000000000000000000
+    Position.Y = 134.000000000000000000
     TextSettings.Trimming = None
     Text = 'Password:'
-    TabOrder = 10
+    TabOrder = 11
   end
   object Label5: TLabel
     Position.X = 152.000000000000000000
@@ -103,18 +105,21 @@ object Form3: TForm3
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'Technical information about this file:'
-    TabOrder = 9
+    TabOrder = 10
   end
   object CheckBox1: TCheckBox
-    Position.X = 352.000000000000000000
-    Position.Y = 173.000000000000000000
-    Size.Width = 265.000000000000000000
+    Position.X = 152.000000000000000000
+    Position.Y = 329.000000000000000000
+    Size.Width = 393.000000000000000000
     Size.Height = 19.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 12
-    Text = 'Include metadata: File name, size, date'
+    TabOrder = 4
+    Text = 
+      'Include metadata into output file: File name, size, modification' +
+      ' date'
   end
   object SaveDialog1: TSaveDialog
+    Filter = 'All files (*.*)|*.*'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
     Left = 32
     Top = 160

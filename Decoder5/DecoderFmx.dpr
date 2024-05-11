@@ -4,6 +4,8 @@ uses
   System.StartUpCopy,
   FMX.Forms,
   FMX.Styles,
+  System.SysUtils,
+  System.IOUtils,
   DecoderFmxMain in 'DecoderFmxMain.pas' {Form3},
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
@@ -13,7 +15,8 @@ uses
 
 begin
   // Styles here: c:\Program Files (x86)\Embarcadero\Studio\23.0\Redist\styles\Fmx\
-  TStyleManager.SetStyleFromFile('Transparent.style');
+  if TFile.Exists('Transparent.style') then
+    TStyleManager.SetStyleFromFile('Transparent.style');
   Application.Initialize;
   Application.CreateForm(TForm3, Form3);
   Application.Run;

@@ -347,7 +347,7 @@ begin
         begin
           ch := rbsIn[j];
           if (Ord(ch)<32) or (Ord(ch)>126) then
-            raise Exception.Create('Only binary files can be encrypted with (De)Coder 1.0');
+            raise Exception.Create('Only ASCII text files can be encrypted with (De)Coder 1.0');
           if ForceUpperCase then ch := UpCase(ch);
           if ch in ['A'..'Z'] then
             rbsOut := rbsOut + AnsiChar(#36) + let[Ord(ch)-Ord('A')+1] + AnsiChar(#16);
@@ -1611,6 +1611,8 @@ begin
             begin
               OrigName := OrigName + string(ch);
               ch := Source.ReadRawByteString(1);
+              if (Ord(ch[Low(ch)])<32){ or (Ord(ch[Low(ch)])>126)} then
+                raise Exception.Create('Invalid file name');
             end;
             if V = fvDc41Beta then
             begin
