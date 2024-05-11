@@ -33,8 +33,8 @@ type
       const OnProgress:TDECProgressEvent): TBytes;
   end;
 
-procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
-procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 function SecureDeleteFile(const AFileName: string): boolean;
 function SecureDeleteFolder(const ADirName: string): boolean;
 function IsCompressedFileType(const AFileName: string): boolean;
@@ -57,7 +57,7 @@ function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
   external 'shlwapi.dll' name 'PathCanonicalizeA';
 {$ENDIF}
 
-procedure ZLib_Compress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 var
   CompressInputStream: TFileStream;
   CompressOutputStream: TFileStream;
@@ -95,7 +95,7 @@ begin
   end;
 end;
 
-procedure Zlib_Decompress(InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
 var
   CompressInputStream: TFileStream;
   CompressOutputStream: TFileStream;
@@ -171,6 +171,7 @@ var
   drive: string;
   fs: TFileStream;
   AFileNameTest: string;
+  AFileNameParent: string;
   AFileNameRenamed: string;
   ClusterSize: integer;
 begin
@@ -209,15 +210,25 @@ begin
   end;
 
   AFileNameRenamed := AFileName;
+  AFileNameParent := ExtractFileDir(AFileNameRenamed);
+  if AFileNameParent <> '' then AFileNameParent := IncludeTrailingPathDelimiter(AFileNameParent);
 
   // Avoid that undelete tools see file name...
-  AFileNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(AFileNameRenamed))+
-    RandStringFileNameFriendly(Length(ExtractFileName(AFileNameRenamed)));
+  AFileNameTest := AFileNameParent + RandStringFileNameFriendly(Length(ExtractFileName(AFileNameRenamed)));
   if RenameFile(AFileNameRenamed, AFileNameTest) then AFileNameRenamed := AFileNameTest;
 
   // ... or the size of the name
-  AFileNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(AFileNameRenamed))+'_';
+  AFileNameTest := AFileNameParent + '_';
   if RenameFile(AFileNameRenamed, AFileNameTest) then AFileNameRenamed := AFileNameTest;
+
+  // Change file attributes and modification dates to also destroy this info from undelete tools
+  try
+    TFile.SetCreationTimeUtc(AFileNameRenamed, 0);
+    TFile.SetLastWriteTimeUtc(AFileNameRenamed, 0);
+    TFile.SetLastAccessTimeUtc(AFileNameRenamed, 0);
+    TFile.SetAttributes(AFileNameRenamed, []);
+  except
+  end;
 
   // now delete the file
   result := DeleteFile(AFileNameRenamed);
@@ -227,6 +238,7 @@ function SecureDeleteFolder(const ADirName: string): boolean;
 var
   F: TSearchRec;
   ADirNameTest: string;
+  ADirNameParent: string;
   ADirNameRenamed: string;
 begin
   if not DirectoryExists(ADirName) then Exit(False);
@@ -255,15 +267,25 @@ begin
     if TDirectory.IsEmpty(ADirName) then
     begin
       ADirNameRenamed := ExcludeTrailingPathDelimiter(ADirName);
+      ADirNameParent := ExtractFileDir(ADirNameRenamed);
+      if ADirNameParent <> '' then ADirNameParent := IncludeTrailingPathDelimiter(ADirNameParent);
 
       // Avoid that undelete tools see directory name...
-      ADirNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(ADirNameRenamed))+
-        RandStringFileNameFriendly(Length(ExtractFileName(ADirNameRenamed)));
+      ADirNameTest := ADirNameParent + RandStringFileNameFriendly(Length(ExtractFileName(ADirNameRenamed)));
       if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
 
       // ... or the size of the name
-      ADirNameTest := IncludeTrailingPathDelimiter(ExtractFileDir(ADirNameRenamed))+'_';
+      ADirNameTest := ADirNameParent + '_';
       if RenameFile(ADirNameRenamed, ADirNameTest) then ADirNameRenamed := ADirNameTest;
+
+      // Change folder attributes and modification dates to also destroy this info from undelete tools
+      try
+        TDirectory.SetCreationTimeUtc(ADirNameRenamed, 0);
+        TDirectory.SetLastWriteTimeUtc(ADirNameRenamed, 0);
+        TDirectory.SetLastAccessTimeUtc(ADirNameRenamed, 0);
+        TDirectory.SetAttributes(ADirNameRenamed, []);
+      except
+      end;
 
       // and now delete empty directory
       if not RemoveDir(ADirNameRenamed) then

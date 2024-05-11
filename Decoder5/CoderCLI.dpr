@@ -28,13 +28,13 @@ begin
   end;
 end;
 
-procedure CheckFileExists(AFileName: string);
+procedure CheckFileExists(const AFileName: string);
 begin
   if not FileExists(AFileName) then
     raise Exception.CreateFmt('File %s not found', [AFileName]);
 end;
 
-procedure CheckDirectoryExists(AFileName: string);
+procedure CheckDirectoryExists(const AFileName: string);
 begin
   if not DirectoryExists(AFileName) then
     raise Exception.CreateFmt('Directory %s not found', [AFileName]);

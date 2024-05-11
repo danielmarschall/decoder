@@ -92,7 +92,7 @@ const
   // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
   DC4_OID = '1.3.6.1.4.1.37476.2.2.1.4';
 
-function DC_DEC_ClassExistedInDEC51(cn: string): boolean;
+function DC_DEC_ClassExistedInDEC51(const cn: string): boolean;
 begin
   result := (cn = 'TCipher_1DES') or
             (cn = 'TCipher_2DDES') or
