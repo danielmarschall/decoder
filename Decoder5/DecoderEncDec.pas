@@ -72,8 +72,10 @@ procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword
 // Note for DeCoder4X_DecodeFile: If you just want to read the file information without decrypting, then let AOutput be blank
 function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 
+{$IFDEF Debug}
 procedure Debug_ListHashAlgos(Lines: TStrings; V: TDc4FormatVersion);
 procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDc4FormatVersion);
+{$ENDIF}
 
 implementation
 
@@ -228,6 +230,7 @@ begin
     raise Exception.CreateFmt('Cipher ID %.8x with base %.8x not found', [Identity, IdentityBase]);
 end;
 
+{$IFDEF Debug}
 procedure Debug_ListHashAlgos(Lines: TStrings; V: TDc4FormatVersion);
 var
   p: TPair<int64, TDECClass>;
@@ -264,7 +267,9 @@ begin
     FreeAndNil(sl);
   end;
 end;
+{$ENDIF}
 
+{$IFDEF Debug}
 procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDc4FormatVersion);
 var
   p: TPair<int64, TDECClass>;
@@ -303,6 +308,7 @@ begin
     FreeAndNil(sl);
   end;
 end;
+{$ENDIF}
 
 procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDECProgressEvent=nil);
 var

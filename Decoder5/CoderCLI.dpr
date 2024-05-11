@@ -60,9 +60,13 @@ const
   Cmd_SecureDeleteFile = 'DeleteFile';
   Cmd_SecureDeleteFolder = 'DeleteFolder';
   Cmd_Help = 'Help';
+  {$IFDEF Debug}
   Cmd_Debug = 'Debug';
+  {$ENDIF}
 
 {$REGION 'Debug methods'}
+{$IFDEF Debug}
+
 procedure Debug_Testcases;
 
   function Are2FilesEqual(const File1, File2: TFileName): Boolean;
@@ -362,7 +366,7 @@ begin
   WriteLn('All testcases passed');
 end;
 
-procedure Debug_EntroyTest(ADirToTest: string);
+procedure Debug_EntroyTest(const ADirToTest, ACsvOutPutFile: string);
 
   type
     TEntropyRatio = record
@@ -374,7 +378,7 @@ procedure Debug_EntroyTest(ADirToTest: string);
   var
     FileExtAnalysis: TDictionary<string, TEntropyRatio>;
 
-  function ZLibCompressRatio(InputFileName: string): Extended;
+  function ZLibCompressRatio(const InputFileName: string): Extended;
   var
     CompressInputStream: TFileStream;
     CompressOutputStream: TMemoryStream;
@@ -399,7 +403,7 @@ procedure Debug_EntroyTest(ADirToTest: string);
     end;
   end;
 
-  procedure AnalyzeFile(AFileName: string);
+  procedure AnalyzeFile(const AFileName: string);
   var
     entropy, ratio: Extended;
     er: TEntropyRatio;
@@ -425,7 +429,7 @@ procedure Debug_EntroyTest(ADirToTest: string);
     WriteLn(AFileName+#9+ExtractfileExt(AFileName)+#9+FloatTostr(entropy)+#9+FloatTostr(ratio));
   end;
 
-  procedure AnalyzeDir(DirName: string);
+  procedure AnalyzeDir(const DirName: string);
   var
     searchResult: TSearchRec;
   begin
@@ -459,8 +463,7 @@ var
 begin
   FileExtAnalysis := TDictionary<string, TEntropyRatio>.Create;
   try
-    // AnalyzeFile('Coder.exe');
-    AnalyzeDir('C:\');
+    AnalyzeDir(ADirToTest);
 
     sl := TStringList.Create;
     try
@@ -469,7 +472,7 @@ begin
       begin
         sl.Add(Enum.Key + #9 + FloatToStr(Enum.Value.entropySum/Enum.Value.num) + #9 + FloatToStr(Enum.Value.ratioSum/Enum.Value.num) + #9 + IntToStr(Enum.Value.num));
       end;
-      sl.SaveToFile('result.csv');
+      sl.SaveToFile(ACsvOutPutFile);
     finally
       FreeAndNil(sl);
     end;
@@ -479,11 +482,7 @@ begin
   end;
 end;
 
-procedure Debug_Test;
-begin
-  // Anything to be put here during development
-end;
-
+{$ENDIF}
 {$ENDREGION}
 
 var
@@ -618,22 +617,18 @@ begin
     end
     {$ENDREGION}
     {$REGION 'Debug commands'}
+    {$IFDEF Debug}
     else if SameText(ParamStr(1), Cmd_Debug) then
     begin
-      if SameText(ParamStr(2), 'Testcases') then
+      if SameText(ParamStr(2), Cmd_Debug_Testcases) and (ParamCount = 2) then
       begin
         Debug_Testcases;
         ExitCode := 0;
       end
-      else if SameText(ParamStr(2), 'EntropyTest') then
+      else if SameText(ParamStr(2), Cmd_Debug_EntropyTest) and (ParamCount = 4) then
       begin
         CheckDirectoryExists(ParamStr(3));
-        Debug_EntroyTest(ParamStr(3));
-        ExitCode := 0;
-      end
-      else if SameText(ParamStr(2), 'Test') then
-      begin
-        Debug_Test;
+        Debug_EntroyTest(ParamStr(3), ParamStr(4));
         ExitCode := 0;
       end
       else
@@ -641,6 +636,7 @@ begin
         raise Exception.Create('Unknown debug command');
       end;
     end
+    {$ENDIF}
     {$ENDREGION}
     {$REGION 'Utils'}
     else if SameText(ParamStr(1), Cmd_SecureDeleteFile) and (ParamCount = 2) then
@@ -688,7 +684,9 @@ begin
       WriteLn(Format('%s %s <File>     -- Wipes a file from a disk in a secure way', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_SecureDeleteFile]));
       WriteLn(Format('%s %s <Folder> -- Wipes a complete folder from a disk in a secure way', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_SecureDeleteFolder]));
       WriteLn(Format('%s %s                  -- Shows this command listing', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Help]));
-      //WriteLn(Format('%s %s <???>           -- Internal debug commands', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Debug]));
+      {$IFDEF Debug}
+      WriteLn(Format('%s %s <???>           -- Internal debug commands', [Uppercase(ExtractFileName(ParamStr(0))), Cmd_Debug]));
+      {$ENDIF}
 
       if ParamCount = 0 then
       begin
