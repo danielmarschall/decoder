@@ -1,9 +1,8 @@
 unit DecoderFmxMain;
 
 // TODO: Should we also offer SecureDelete in this GUI?
-// TODO: Make app multi-lingual!
+// TODO: Make CLI and FMX-App multi-lingual!
 // TODO: folder delete: forbid C: ?
-// TODO: set icon for EXE files
 // TODO: 7za impl
 // TODO: SVN alte quelltextordner verschieben
 // TODO: put versioninfo in EXE

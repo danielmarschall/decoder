@@ -1,7 +1,5 @@
 program CoderCLI;
 
-// TODO: Make CLI multi-lingual
-
 {$APPTYPE CONSOLE}
 
 {$R *.res}
