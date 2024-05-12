@@ -6,7 +6,7 @@
         <Projects Include="CoderCLI.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="DecoderFmx.dproj">
+        <Projects Include="CoderFMX.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -26,23 +26,23 @@
     <Target Name="CoderCLI:Make">
         <MSBuild Projects="CoderCLI.dproj" Targets="Make"/>
     </Target>
-    <Target Name="DecoderFmx">
-        <MSBuild Projects="DecoderFmx.dproj"/>
+    <Target Name="CoderFMX">
+        <MSBuild Projects="CoderFMX.dproj"/>
     </Target>
-    <Target Name="DecoderFmx:Clean">
-        <MSBuild Projects="DecoderFmx.dproj" Targets="Clean"/>
+    <Target Name="CoderFMX:Clean">
+        <MSBuild Projects="CoderFMX.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="DecoderFmx:Make">
-        <MSBuild Projects="DecoderFmx.dproj" Targets="Make"/>
+    <Target Name="CoderFMX:Make">
+        <MSBuild Projects="CoderFMX.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="CoderCLI;DecoderFmx"/>
+        <CallTarget Targets="CoderCLI;CoderFMX"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="CoderCLI:Clean;DecoderFmx:Clean"/>
+        <CallTarget Targets="CoderCLI:Clean;CoderFMX:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="CoderCLI:Make;DecoderFmx:Make"/>
+        <CallTarget Targets="CoderCLI:Make;CoderFMX:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

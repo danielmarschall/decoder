@@ -1,4 +1,4 @@
-program DecoderFmx;
+program CoderFMX;
 
 {$R *.dres}
 
