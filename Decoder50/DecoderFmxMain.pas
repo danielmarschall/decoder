@@ -4,7 +4,6 @@ unit DecoderFmxMain;
 // TODO: Make CLI and FMX-App multi-lingual!
 // TODO: folder delete: forbid C: ?
 // TODO: 7za impl
-// TODO: SVN alte quelltextordner verschieben
 // TODO: put versioninfo in EXE
 
 interface

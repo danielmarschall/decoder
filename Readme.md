@@ -12,6 +12,7 @@ New features in version 5.0:
 - Secure deletion of files and folders (only in CLI tool)
 - Command-line support
 - Drag and drop support
+- Completely re-written with the latest development tools (Delphi 12, DEC 6.5)
 
 
 **Disclaimer:** Use this software at your own risk! ViaThinkSoft is not responsbile for any damages which
