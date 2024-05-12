@@ -413,18 +413,6 @@ end;
 function ShannonEntropy(const filename: string; OnProgressProc: TDcProgressEvent=nil): Extended;
 var
   fs: TFileStream;
-
-  procedure Read(var Value; Size: Integer);
-  begin
-    fs.ReadBuffer(Value, Size);
-  end;
-
-  function ReadRaw(leng: integer): RawByteString;
-  begin
-    SetLength(Result, leng);
-    Read(Result[Low(Result)], Length(Result));
-  end;
-
 var
   p: Extended;
   i: int64;
@@ -448,7 +436,7 @@ begin
     if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, ProgrTask, Started);
     while fs.Position < fs.Size do
     begin
-      rbs := ReadRaw(Min(chunksize,fs.Size-fs.Position));
+      rbs := fs.ReadRawByteString(Min(chunksize,fs.Size-fs.Position));
       for i := Low(rbs) to High(rbs) do
         Inc(counts[Ord(rbs[i])]);
       Inc(ProgrPos);
@@ -567,6 +555,7 @@ end;
 
 function TStreamHelper.ReadRawByteString(len: integer): RawByteString;
 begin
+  if len = 0 then exit;  
   SetLength(Result, len);
   Read(Result[Low(Result)], Length(Result));
 end;
@@ -604,6 +593,7 @@ end;
 
 procedure TStreamHelper.WriteRawByteString(rb: RawByteString);
 begin
+  if rb = '' then exit;
   Write(rb[1], Length(rb));
 end;
 

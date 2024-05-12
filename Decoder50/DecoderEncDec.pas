@@ -95,8 +95,12 @@ const
     $1259d82a  // (De)Coder 5.0
   );
 
-  // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
-  DC4_OID = '1.3.6.1.4.1.37476.2.2.1.4';
+
+function DeCoder4X_GetOID(V: TDc4FormatVersion): string;
+begin
+  // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) stdX(X) }
+  result := '1.3.6.1.4.1.37476.2.2.1.4.'+IntToStr(Ord(V));
+end;
 
 function DC_DEC_ClassExistedInDEC51(const cn: string): boolean;
 begin
@@ -1241,6 +1245,11 @@ begin
       HMacKey := Key;
       {$ENDREGION}
 
+      {$REGION '0.5 Magic Sequence (only version 4+)'}
+      if (V>=fvDc50) then
+        tempstream.WriteRawByteString('[' + RawByteString(DeCoder4X_GetOID(V)) + ']' + #13#10);
+      {$ENDREGION}
+
       {$REGION '1. Flags (version 1+)'}
       if V >= fvDc40 then
       begin
@@ -1259,15 +1268,9 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '2. Version (version 1+)'}
-      if V>=fvDc40 then
+      {$REGION '2. Version (only version 1..3)'}
+      if (V>=fvDc40) and (V<fvDc50) then
         tempstream.WriteByte(Ord(V));
-      {$ENDREGION}
-
-      // TODO: Das vielleicht direkt an den Dateianfang und mit CRLF? Wär cool!
-      {$REGION '2.1 Magic Sequence (only version 4+)'}
-      if (V>=fvDc50) then
-        tempstream.WriteRawByteString('[' + DC4_OID + '.' + IntToStr(Ord(V)) + ']');
       {$ENDREGION}
 
       {$REGION '3. Filename (version 1+)'}
@@ -1303,7 +1306,10 @@ begin
         begin
           tmpWS := WideString(ExtractFileName(AFileName));
           SetLength(OrigName, Length(tmpWS)*SizeOf(WideChar));
-          Move(tmpWS[Low(tmpWS)], OrigName[Low(OrigName)], Length(tmpWS)*SizeOf(WideChar));
+          if Length(tmpWS) > 0 then
+            Move(tmpWS[Low(tmpWS)], OrigName[Low(OrigName)], Length(tmpWS)*SizeOf(WideChar))
+          else
+            OrigName := '';
         end;
         {$REGION 'Decide about filename key'}
         if FileNameUserPasswordEncrypted then
@@ -1366,7 +1372,6 @@ begin
           tempstream.WriteInt64(-1);
       end;
       {$ENDREGION}
-
 
       {$REGION '3.2 File Date/Time (version 4+)'}
       if V >= fvDc50 then
@@ -1574,6 +1579,7 @@ var
   ch: RawByteString;
   F: byte;
   V: TDc4FormatVersion;
+  V_Detected: boolean;
   Cipher: TDECCipher;
   Seed: RawByteString;
   tempstream: TFileStream;
@@ -1628,18 +1634,45 @@ begin
   OrigFileSize := -1;
   OrigFileDate := -1;
   outFileDidExist := FileExists(AOutput);
+  V_Detected := false;
+  V := fvHagenReddmannExample; // to avoid that the compiler complains
   try
     try
       try
-        // Is it the Hagen Reddmann example file format?
+        {$REGION 'Is it the Hagen Reddmann example file format?'}
         CipherClass := DC_DEC_CipherById(DC4_ID_BASES[fvHagenReddmannExample], Source.ReadLongBE, true, true);
-        if not Assigned(CipherClass) then
+        if Assigned(CipherClass) then
+        begin
+          V := fvHagenReddmannExample;
+          V_Detected := true;
+        end
+        else
+        begin
           Source.Position := 0;
+        end;
+        {$ENDREGION}
+
+        {$REGION '0.5 Magic sequence (version 4+)'}
+        if not V_Detected then
+        begin
+          for V := fvDc50 to High(TDc4FormatVersion) do
+          begin
+            MagicSeq := '[' + RawByteString(DeCoder4X_GetOID(V)) + ']' + #13#10;
+            if (Source.Size >= Length(MagicSeq)) and (Source.ReadRawByteString(Length(MagicSeq)) = MagicSeq) then
+            begin
+              V_Detected := true;
+              break;
+            end
+            else
+              Source.Position := 0;
+          end;
+        end;
+        {$ENDREGION}
 
         {$REGION '1. Flags (version 1+)'}
-        if not Assigned(CipherClass) then
+        if not V_Detected or (V_Detected and (V>=fvDc40)) then
         begin
-          // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
+          // Bit 0:    [Ver1+] Is packed folder (1) or a regular file (0)?
           // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
           // Bit 2:    Reserved
           // Bit 3:    Reserved
@@ -1653,21 +1686,20 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '2. Version (version 1+)'}
-        if not Assigned(CipherClass) then
+        {$REGION '2. Version byte (only version 1..3)'}
+        if not V_Detected then
         begin
           // 01 = (De)Coder 4.0
           // 02 = (De)Coder 4.1 Beta
           // 03 = (De)Coder 4.1 Final Cancelled (never released)
-          // 04 = (De)Coder 5.0
-          V := TDc4FormatVersion(Source.ReadByte); // if too big, it will automatically be set to fvHagenReddmannExample
-          if V = fvHagenReddmannExample then raise Exception.Create('Unsupported file format version');
-        end
-        else
-        begin
-          V := fvHagenReddmannExample;
+          V := TDc4FormatVersion(Source.ReadByte);
+          // if too big, it will automatically be set to the first element in the enum (=fvHagenReddmannExample)
+          if V <> fvHagenReddmannExample then V_Detected := true;
         end;
         {$ENDREGION}
+
+        if not V_Detected then
+          raise Exception.Create('Unsupported file format version. Please try downloading the latest version of (De)Coder');
 
         {$REGION 'Create output stream'}
         if not OnlyReadFileInfo then
@@ -1705,34 +1737,22 @@ begin
         else
           PasswordRBS := AnsiString(APassword); // version 0..3: Password treated as ANSI
 
-        {$REGION 'Decide about magic sequence / file terminus'}
+        {$REGION 'Decide about file terminus'}
         if (V = fvHagenReddmannExample) or (V = fvDc40) then
         begin
-          MagicSeq := '';
           FileTerminus := '';
         end
         else if V = fvDc41Beta then
         begin
-          MagicSeq := '';
           FileTerminus := RawByteString(TNetEncoding.Base64.Encode('DCTERMINUS'));
         end
         else if V = fvDc41FinalCancelled then
         begin
-          MagicSeq := '';
           FileTerminus := RawByteString(#$63#$F3#$DF#$89#$B7#$27#$20#$EA);
         end
         else
         begin
-          MagicSeq := RawByteString('[' + DC4_OID + '.' + IntToStr(Ord(V)) + ']');
           FileTerminus := '';
-        end;
-        {$ENDREGION}
-
-        {$REGION '2.1 Magic Sequence (only version 4+)'}
-        if MagicSeq <> '' then
-        begin
-          if Source.ReadRawByteString(Length(MagicSeq)) <> MagicSeq then
-            raise Exception.Create('Invalid magic sequence');
         end;
         {$ENDREGION}
 
