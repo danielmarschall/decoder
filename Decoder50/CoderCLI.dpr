@@ -17,12 +17,12 @@ uses
   DecoderFuncs in 'DecoderFuncs.pas',
   DecoderOldCiphers in 'DecoderOldCiphers.pas';
 
-procedure OnProgressProc(Size, Pos: Int64; State: TDECProgressState);
+procedure OnProgressProc(Size, Pos: Int64; const Task: string; State: TDcProgressState);
 begin
   case State of
-    Started:    Write(  #13 + Format('%6.2f',[0.00])+'% ...');
-    Processing: Write(  #13 + Format('%6.2f',[Pos/Size*100])+'% ...');
-    Finished:   WriteLn(#13 + Format('%6.2f',[100.00])+'% ... Done');
+    TDcProgressState.Started:    Write(  #13 + Format('%6.2f',[0.00])+'% ... ' + Task);
+    TDcProgressState.Processing: Write(  #13 + Format('%6.2f',[Pos/Size*100])+'% ... ' + Task);
+    TDcProgressState.Finished:   WriteLn(#13 + Format('%6.2f',[100.00])+'% ... ' + Task + ' = Done');
   end;
 end;
 

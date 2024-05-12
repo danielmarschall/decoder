@@ -42,7 +42,7 @@ object DecoderMainForm: TDecoderMainForm
     TextSettings.WordWrap = False
     TextSettings.Trimming = None
     Text = 'ViaThinkSoft (De)Coder 5.0'
-    TabOrder = 25
+    TabOrder = 27
   end
   object ShortInfoLabel: TLabel
     Anchors = [akLeft, akTop, akRight]
@@ -53,7 +53,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 28
+    TabOrder = 30
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All files (*.*)|*.*'
@@ -71,7 +71,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.Width = 479.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 20
+    TabOrder = 22
     Viewport.Width = 475.000000000000000000
     Viewport.Height = 118.000000000000000000
   end
@@ -128,5 +128,15 @@ object DecoderMainForm: TDecoderMainForm
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
     Left = 32
     Top = 160
+  end
+  object ProgressStepLabel: TLabel
+    Position.X = 440.000000000000000000
+    Position.Y = 175.000000000000000000
+    Size.Width = 191.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Please wait...'
+    TabOrder = 33
   end
 end

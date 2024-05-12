@@ -7,6 +7,10 @@ uses
   Math, DECHashBase, DECHashAuthentication, IOUtils;
 
 type
+  TDcProgressState = (Started, Processing, Finished);
+  TDcProgressEvent = reference to procedure(Size, Pos: Int64; const Task: string; State: TDcProgressState);
+
+type
   TStreamHelper = class helper for TStream
   public
     procedure Read(var Value; Size: Integer);
@@ -28,18 +32,18 @@ type
   // https://github.com/MHumm/DelphiEncryptionCompendium/issues/62
   TDECHashExtendedAuthentication = class helper for TDECHashAuthentication
     class function HMACFile(const Key: TBytes; const FileName: string;
-      const OnProgress:TDECProgressEvent = nil): TBytes;
+      const OnProgress: TDECProgressEvent = nil): TBytes;
     class function HMACStream(const Key: TBytes; const Stream: TStream; Size: Int64;
-      const OnProgress:TDECProgressEvent): TBytes;
+      const OnProgress: TDECProgressEvent = nil): TBytes;
   end;
 
-procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
-procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDcProgressEvent=nil);
+procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDcProgressEvent=nil);
 function RelToAbs(RelPath: string; BasePath: string=''): string;
 function SecureDeleteFile(const AFileName: string): boolean;
 function SecureDeleteFolder(const ADirName: string): boolean;
 function IsCompressedFileType(const AFileName: string): boolean;
-function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
+function ShannonEntropy(const filename: string; OnProgressProc: TDcProgressEvent=nil): Extended;
 function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
 function FileSizeHumanReadable(Bytes: Int64): string;
 procedure ExplorerNavigateToFile(const AFileName: string);
@@ -80,7 +84,7 @@ begin
 end;
 {$ENDIF}
 
-procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDcProgressEvent=nil);
 var
   CompressInputStream: TFileStream;
   CompressOutputStream: TFileStream;
@@ -88,17 +92,19 @@ var
   rbs: RawByteString;
 const
   ChunkSize = $100000; // value from System.Classes
+resourcestring
+  ProgrTask = 'ZLib compress';
 begin
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, TDECProgressState.Started);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, ProgrTask, TDcProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       CompressionStream:=TCompressionStream.Create(clMax, CompressOutputStream);
       try
         if Assigned(OnProgressProc) then
         begin
-          OnProgressProc(CompressInputStream.Size, CompressInputStream.Position, TDECProgressState.Processing);
+          OnProgressProc(CompressInputStream.Size, CompressInputStream.Position, ProgrTask, TDcProgressState.Processing);
           rbs := CompressInputStream.ReadRawByteString(Min(ChunkSize,CompressInputStream.Size-CompressInputStream.Position));
           CompressionStream.WriteRawByteString(rbs);
         end
@@ -112,13 +118,13 @@ begin
     finally
       FreeAndNil(CompressOutputStream);
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, TDECProgressState.Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, ProgrTask, TDcProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
 end;
 
-procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDECProgressEvent=nil);
+procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDcProgressEvent=nil);
 var
   CompressInputStream: TFileStream;
   CompressOutputStream: TFileStream;
@@ -126,17 +132,19 @@ var
   rbs: RawByteString;
 const
   ChunkSize = $100000; // value from System.Classes
+resourcestring
+  ProgrTask = 'ZLib decompress';
 begin
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, TDECProgressState.Started);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, ProgrTask, TDcProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       DecompressionStream := TDecompressionStream.Create(CompressInputStream);
       try
         if Assigned(OnProgressProc) then
         begin
-          OnProgressProc(DecompressionStream.Size, DecompressionStream.Position, TDECProgressState.Processing);
+          OnProgressProc(DecompressionStream.Size, DecompressionStream.Position, ProgrTask, TDcProgressState.Processing);
           rbs := DecompressionStream.ReadRawByteString(Min(ChunkSize,DecompressionStream.Size-DecompressionStream.Position));
           CompressOutputStream.WriteRawByteString(rbs);
         end
@@ -150,7 +158,7 @@ begin
     finally
       FreeAndNil(CompressOutputStream);
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, TDECProgressState.Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, ProgrTask, TDcProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
@@ -396,7 +404,7 @@ begin
     SameText(ExtractFileExt(AFileName), '.pptx');
 end;
 
-function ShannonEntropy(const filename: string; OnProgressProc: TDECProgressEvent=nil): Extended;
+function ShannonEntropy(const filename: string; OnProgressProc: TDcProgressEvent=nil): Extended;
 var
   fs: TFileStream;
 
@@ -420,6 +428,8 @@ var
   ProgrSize, ProgrPos: Int64;
 const
   chunksize = 4096; // bigger = faster
+resourcestring
+  ProgrTask = 'Calc shannon entropy';
 begin
   for i := Low(counts) to High(counts) do
     Counts[i] := 0;
@@ -429,20 +439,20 @@ begin
     filesize := fs.Size;
     ProgrPos := 0;
     ProgrSize := Filesize div chunksize;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, Started);
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, ProgrTask, Started);
     while fs.Position < fs.Size do
     begin
       rbs := ReadRaw(Min(chunksize,fs.Size-fs.Position));
       for i := Low(rbs) to High(rbs) do
         Inc(counts[Ord(rbs[i])]);
       Inc(ProgrPos);
-      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, Processing);
+      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, ProgrTask, Processing);
       {$IFNDEF Console}
       Application.ProcessMessages;
       if Application.Terminated then Abort;
       {$ENDIF}
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, ProgrTask, Finished);
 
     // Shannon's entropy
     // https://stackoverflow.com/questions/990477/how-to-calculate-the-entropy-of-a-file
@@ -613,7 +623,7 @@ end;
 
 class function TDECHashExtendedAuthentication.HMACStream(const Key: TBytes;
   const Stream: TStream; Size: Int64;
-  const OnProgress: TDECProgressEvent): TBytes;
+  const OnProgress: TDECProgressEvent = nil): TBytes;
 const
   CONST_UINT_OF_0x36 = $3636363636363636;
   CONST_UINT_OF_0x5C = $5C5C5C5C5C5C5C5C;

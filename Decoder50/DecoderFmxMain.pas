@@ -28,6 +28,7 @@ type
     MoreInfoLabel: TLabel;
     SaveDialog1: TSaveDialog;
     MetadataCheckbox: TCheckBox;
+    ProgressStepLabel: TLabel;
     procedure DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
       const Point: TPointF);
     procedure DropTarget1Click(Sender: TObject);
@@ -55,17 +56,20 @@ const
   TAG_DC4X_DECRYPT = 2;
   TAG_DC50_ENCRYPT = 3;
 
-procedure OnProgressProc(Size, Pos: Int64; State: TDECProgressState);
+procedure OnProgressProc(Size, Pos: Int64; const Task: string; State: TDCProgressState);
 begin
   DecoderMainForm.ProgressBar1.Min := 0;
   DecoderMainForm.ProgressBar1.Max := Size;
 
-  if (State = Finished) then
+  if (State = TDcProgressState.Finished) then
     DecoderMainForm.ProgressBar1.Value := DecoderMainForm.ProgressBar1.Max
   else
     DecoderMainForm.ProgressBar1.Value := Pos;
 
-  DecoderMainForm.ProgressBar1.Visible := State = Processing;
+  DecoderMainForm.ProgressBar1.Visible := State = TDcProgressState.Processing;
+
+  DecoderMainForm.ProgressStepLabel.Text := Task;
+  DecoderMainForm.ProgressStepLabel.Visible := State = TDcProgressState.Processing;
 
   Application.ProcessMessages;
   if Application.Terminated then
@@ -194,6 +198,7 @@ begin
     'The command line version can also decrypt old (De)Coder 2.x and 3.x files' + #13#10 +
     'and can wipe files and folders in a secure way.';
   ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
+  ProgressStepLabel.Visible := false;
   GuiShowElements([]);
   Application.Title := Caption; // because of Message dialog captions
   if ParamCount > 1 then

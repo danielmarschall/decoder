@@ -7,7 +7,7 @@ uses
   System.UITypes, DECCiphers, DECCipherBase, DECHash, DECHashBase,
   DECHashAuthentication, DECUtil, DECCipherFormats, 
   EncdDecd, System.NetEncoding, DECCRC, DECBaseClass, Generics.Collections,
-  DECRandom, System.IOUtils;
+  DECRandom, System.IOUtils, DecoderFuncs;
 
 type
   TDc4FormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50);
@@ -47,33 +47,33 @@ type
     OrigFileDate: UnixTimestamp; // or =-1 if hidden
   end;
 
-procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDECProgressEvent=nil);
-procedure DeCoder10_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDcProgressEvent=nil);
+procedure DeCoder10_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
 function DeCoder10_DetectFile(const AFileName: string): boolean;
 
-procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
-procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
+procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
 
-procedure DeCoder21_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
-procedure DeCoder21_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder21_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
+procedure DeCoder21_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 
-procedure DeCoder22_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
-procedure DeCoder22_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder22_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
+procedure DeCoder22_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 
-procedure DeCoder30_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
-procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder30_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
+procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 
-procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
-procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
+procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 
 function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
 
-procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
-function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDcProgressEvent=nil);
+function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 
 // Note: A password is only required for reading an user-key-encrypted filename (feature was only available in format version 3)
-function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
 {$IFDEF Debug}
@@ -84,7 +84,7 @@ procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDc4FormatVersion);
 implementation
 
 uses
-  DecoderOldCiphers, DecoderFuncs, DateUtils, StrUtils, Math;
+  DecoderOldCiphers, DateUtils, StrUtils, Math;
 
 const
   DC4_ID_BASES: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of Int64 = (
@@ -314,7 +314,7 @@ begin
 end;
 {$ENDIF}
 
-procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDcProgressEvent=nil);
 var
   Source: TFileStream;
   tempstream: TFileStream;
@@ -326,6 +326,8 @@ var
   outFileDidExist: boolean;
 const
   chunksize = 4096; // bigger = faster
+resourcestring
+  SDC1Encode = '(De)Coder 1.0 encoding';
 begin
   if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -333,14 +335,14 @@ begin
   tempstream := nil;
   try
     try
-      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, 0, TDECProgressState.Started);
+      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, 0, SDC1Encode, TDcProgressState.Started);
       tempstream := TFileStream.Create(AOutput, fmCreate);
       tempstream.WriteRawByteString('COD'+#1#1);
       for I := 1 to 27 do
         let[I] := AnsiChar(Chr(199+I));
       while Source.Position < Source.Size do
       begin
-        if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Position, TDECProgressState.Processing);
+        if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Position, SDC1Encode, TDcProgressState.Processing);
         rbsIn := Source.ReadRawByteString(Min(chunksize,Source.Size-Source.Position));
         rbsOut := '';
         for j := Low(rbsIn) to High(rbsIn) do
@@ -360,7 +362,7 @@ begin
         tempstream.WriteRawByteString(rbsOut);
       end;
       tempstream.WriteRawByteString(#1#1#1);
-      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Size, TDECProgressState.Finished);
+      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Size, SDC1Encode, TDcProgressState.Finished);
     finally
       FreeAndNil(Source);
       if Assigned(tempstream) then FreeAndNil(tempstream);
@@ -374,7 +376,7 @@ begin
   end;
 end;
 
-procedure DeCoder10_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder10_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
 var
   Source: TFileStream;
   tempstream: TFileStream;
@@ -391,6 +393,8 @@ var
   outFileDidExist: boolean;
 const
   chunksize = 4096*3; // bigger = faster. Must be multiple of 3
+resourcestring
+  SDC1Decode = '(De)Coder 1.0 decoding';
 begin
   if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -411,7 +415,7 @@ begin
       Source.Position := 5;
 
       tempstream := TFileStream.Create(AOutput, fmCreate);
-      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, 0, TDECProgressState.Started);
+      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, 0, SDC1Decode, TDcProgressState.Started);
       for ch := 'A' to 'Z' do
         let[Ord(ch)-Ord('A')+1] := ch;
       for I := 1 to 27 do
@@ -419,7 +423,7 @@ begin
       SetLength(b,3);
       while Source.Position < Source.Size-3 do
       begin
-        if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Position, TDECProgressState.Processing);
+        if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Position, SDC1Decode, TDCProgressState.Processing);
         rbsIn := Source.ReadRawByteString(Min(chunksize,Source.Size-Source.Position));
         rbsOut := '';
         for j := 0 to (Length(rbsIn)-1) div 3 do
@@ -455,7 +459,7 @@ begin
         tempstream.WriteRawByteString(rbsOut);
       end;
       SetLength(b,0);
-      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Size, TDECProgressState.Finished);
+      if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Size, SDC1Decode, TDcProgressState.Finished);
     finally
       FreeAndNil(Source);
       if Assigned(tempstream) then FreeAndNil(tempstream);
@@ -491,7 +495,7 @@ begin
   end;
 end;
 
-procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -508,7 +512,11 @@ begin
         Cipher := TCipher_VtsDeCoder20.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(''), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -526,7 +534,7 @@ begin
   end;
 end;
 
-procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -543,7 +551,11 @@ begin
         Cipher := TCipher_VtsDeCoder20.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(''), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -561,7 +573,7 @@ begin
   end;
 end;
 
-procedure DeCoder21_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder21_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -578,7 +590,11 @@ begin
         Cipher := TCipher_VtsDeCoder21.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -596,7 +612,7 @@ begin
   end;
 end;
 
-procedure DeCoder21_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder21_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -613,7 +629,11 @@ begin
         Cipher := TCipher_VtsDeCoder21.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -631,7 +651,7 @@ begin
   end;
 end;
 
-procedure DeCoder22_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder22_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -648,7 +668,11 @@ begin
         Cipher := TCipher_VtsDeCoder22.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -666,7 +690,7 @@ begin
   end;
 end;
 
-procedure DeCoder22_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder22_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -683,7 +707,11 @@ begin
         Cipher := TCipher_VtsDeCoder22.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -701,7 +729,7 @@ begin
   end;
 end;
 
-procedure DeCoder30_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder30_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -718,7 +746,11 @@ begin
         Cipher := TCipher_VtsDeCoder30.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -736,7 +768,7 @@ begin
   end;
 end;
 
-procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -753,7 +785,11 @@ begin
         Cipher := TCipher_VtsDeCoder30.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -771,7 +807,7 @@ begin
   end;
 end;
 
-procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -788,7 +824,11 @@ begin
         Cipher := TCipher_VtsDeCoder32.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -806,7 +846,7 @@ begin
   end;
 end;
 
-procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 var
   ssIn: TFileStream;
   ssOut: TFileStream;
@@ -823,7 +863,11 @@ begin
         Cipher := TCipher_VtsDeCoder32.Create;
         Cipher.Mode := cmECBx;
         Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
-        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, OnProgressProc);
+        TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+          end);
         Cipher.Done;
         Cipher.Free;
       finally
@@ -1030,7 +1074,7 @@ begin
   sl.Add('Message Authentication: ' + INTEGRITY_CHECK_INFO[fi.Parameters.Dc4FormatVersion]);
 end;
 
-procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDcProgressEvent=nil);
 var
   tempstream: TFileStream;
   FileNameKey: TBytes;
@@ -1370,7 +1414,11 @@ begin
         Source.Position := 0;
         if V = fvHagenReddmannExample then
           tempstream.WriteLongBE(Source.Size);
-        TDECFormattedCipher(Cipher).EncodeStream(Source, tempstream, source.size, OnProgressProc);
+        TDECFormattedCipher(Cipher).EncodeStream(Source, tempstream, source.size, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+          end);
       finally
         Cipher.Done;
       end;
@@ -1399,20 +1447,32 @@ begin
       if V = fvDc40 then
       begin
         Source.Position := 0;
-        TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
+        TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Calc hash', TDcProgressState(State))
+          end);
         tempstream.WriteRawBytes(HashResult);
       end
       else if V = fvDc41Beta then
       begin
         Source.position := 0;
-        TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
+        TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Calc hash', TDcProgressState(State))
+          end);
         HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+PasswordRBS, TFormat_Copy);
         tempstream.WriteRawByteString(HashResult2);
       end
       else if V = fvDc41FinalCancelled then
       begin
         Source.position := 0;
-        TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
+        TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Calc hash', TDcProgressState(State))
+          end);
         HashResult2 := TDECHashExtended(ahash).CalcString(
           BytesToRawByteString(HashResult) + Seed +
               TDECHashExtended(ahash).CalcString(
@@ -1425,7 +1485,11 @@ begin
       begin
         tmp64 := tempstream.Position;
         tempstream.Position := 0;
-        HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, OnProgressProc));
+        HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, procedure(Size, Pos: Int64; State: TDECProgressState)
+          begin
+            if Assigned(OnProgressProc) then
+              OnProgressProc(Size, Pos, 'Calc HMAC', TDcProgressState(State))
+          end));
         tempstream.Position := tmp64;
         tempstream.WriteRawByteString(HashResult2);
       end;
@@ -1461,7 +1525,7 @@ begin
   end;
 end;
 
-function _DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function _DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 resourcestring
   SInfoUnzipNotImplemented = 'Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool';
 var
@@ -1794,7 +1858,11 @@ begin
         begin
           bakSourcePosEncryptedData := Source.Position;
           Source.Position := 0;
-          HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), OnProgressProc));
+          HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), procedure(Size, Pos: Int64; State: TDECProgressState)
+            begin
+              if Assigned(OnProgressProc) then
+                OnProgressProc(Size, Pos, 'Verify HMAC', TDcProgressState(State))
+            end));
           Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
           if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
             raise Exception.Create('HMAC mismatch');
@@ -1816,7 +1884,11 @@ begin
           try
             if V = fvHagenReddmannExample then
             begin
-              TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, Source.ReadLongBE, OnProgressProc);
+              TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, Source.ReadLongBE, procedure(Size, Pos: Int64; State: TDECProgressState)
+                begin
+                  if Assigned(OnProgressProc) then
+                    OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+                end);
             end
             else
             begin
@@ -1825,7 +1897,11 @@ begin
               if (V>=fvDc50) and (Cipher.Mode = cmGCM) then Dec(iTmp, TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3); // field 9.2
               Dec(iTmp, ahash.DigestSize{Hash/HMAC}); // field 10
               Dec(iTmp, Length(FileTerminus)); // field 11
-              TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, iTmp, OnProgressProc);
+              TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, iTmp, procedure(Size, Pos: Int64; State: TDECProgressState)
+                begin
+                  if Assigned(OnProgressProc) then
+                    OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+                end);
             end;
           finally
             Cipher.Done;
@@ -1897,19 +1973,31 @@ begin
           if V = fvDc40 then
           begin
             tempstream.position := 0;
-            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
+            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
+              begin
+                if Assigned(OnProgressProc) then
+                  OnProgressProc(Size, Pos, 'Verify hash', TDcProgressState(State))
+              end);
             HashResult2 := BytesToRawByteString(HashResult);
           end
           else if V = fvDc41Beta then
           begin
             tempstream.position := 0;
-            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
+            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
+              begin
+                if Assigned(OnProgressProc) then
+                  OnProgressProc(Size, Pos, 'Verify hash', TDcProgressState(State))
+              end);
             HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+PasswordRBS, TFormat_Copy);
           end
           else if V = fvDc41FinalCancelled then
           begin
             tempstream.position := 0;
-            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
+            TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
+              begin
+                if Assigned(OnProgressProc) then
+                  OnProgressProc(Size, Pos, 'Verify hash', TDcProgressState(State))
+              end);
             HashResult2 := TDECHashExtended(ahash).CalcString(
               BytesToRawByteString(HashResult) + Seed +
                   TDECHashExtended(ahash).CalcString(
@@ -2013,12 +2101,12 @@ begin
   end;
 end;
 
-function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 begin
   result := _DeCoder4X_DecodeFile(AFileName, '', APassword, OnProgressProc);
 end;
 
-function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 begin
   if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   result := _DeCoder4X_DecodeFile(AFileName, AOutput, APassword, OnProgressProc);
