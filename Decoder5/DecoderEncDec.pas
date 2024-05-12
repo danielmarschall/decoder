@@ -69,11 +69,11 @@ procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString
 function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
 
-procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
-function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
+function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 
 // Note: A password is only required for reading an user-key-encrypted filename (feature was only available in format version 3)
-function DeCoder4X_FileInfo(const AFileName: String; const APassword: RawByteString=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
 {$IFDEF Debug}
@@ -1030,7 +1030,7 @@ begin
   sl.Add('Message Authentication: ' + INTEGRITY_CHECK_INFO[fi.Parameters.Dc4FormatVersion]);
 end;
 
-procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: RawByteString; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
+procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDECProgressEvent=nil);
 var
   tempstream: TFileStream;
   FileNameKey: TBytes;
@@ -1062,6 +1062,7 @@ var
   GCMAuthTagSizeInBytes: byte;
   tmpWS: WideString;
   outFileDidExist: boolean;
+  PasswordRBS: RawByteString;
 const
   // Measurement of 21367	files
   // ShanEntropy  AvgComprRatioZLibMax
@@ -1086,7 +1087,6 @@ begin
   IsZLibCompressed := false;
   IsFolder := DirectoryExists(AFileName);
   outFileDidExist := FileExists(AOutput);
-
   try
     try
       if IsFolder then
@@ -1125,6 +1125,11 @@ begin
       FileNameUserPasswordEncrypted := AParameters.ContainFileOrigName = fpEncryptWithUserKey;
       {$ENDREGION}
 
+      if V >= fvDc50 then
+        PasswordRBS := UTF8Encode(APassword)  // version 4+: Password treated as UTF-8
+      else
+        PasswordRBS := AnsiString(APassword); // version 0..3: Password treated as ANSI
+
       {$REGION 'Compress stream if the file type is not already compressed'}
       if IsZLibCompressed and (V>=fvDc40) then
       begin
@@ -1142,15 +1147,15 @@ begin
 
       {$REGION 'Generate key used by HMAC and Cipher'}
       if KDFVersion = kvKdfx then
-        Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        Key := TDECHashExtended(ahash).KDFx(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
       else if KDFVersion = kvKdf1 then
-        Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        Key := TDECHashExtended(ahash).KDF1(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
       else if KDFVersion = kvKdf2 then
-        Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        Key := TDECHashExtended(ahash).KDF2(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
       else if KDFVersion = kvKdf3 then
-        Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+        Key := TDECHashExtended(ahash).KDF3(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
       else if KDFVersion = kvPbkdf2 then
-        Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
+        Key := TDECHashExtended(ahash).PBKDF2(BytesOf(PasswordRBS), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
       else
         Assert(False);
       HMacKey := Key;
@@ -1400,7 +1405,7 @@ begin
       begin
         Source.position := 0;
         TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, OnProgressProc);
-        HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+APassword, TFormat_Copy);
+        HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+PasswordRBS, TFormat_Copy);
         tempstream.WriteRawByteString(HashResult2);
       end
       else if V = fvDc41FinalCancelled then
@@ -1410,7 +1415,7 @@ begin
         HashResult2 := TDECHashExtended(ahash).CalcString(
           BytesToRawByteString(HashResult) + Seed +
               TDECHashExtended(ahash).CalcString(
-                Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
+                Seed+TDECHashExtended(ahash).CalcString(Seed+PasswordRBS, TFormat_Copy)
               , TFormat_Copy)
         , TFormat_Copy);
         tempstream.WriteRawByteString(HashResult2);
@@ -1455,7 +1460,7 @@ begin
   end;
 end;
 
-function _DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function _DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 resourcestring
   SInfoUnzipNotImplemented = 'Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool';
 var
@@ -1494,6 +1499,7 @@ var
   iTmp: integer;
   OnlyReadFileInfo: boolean;
   outFileDidExist: boolean;
+  PasswordRBS: RawByteString;
 begin
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   tempstream := nil;
@@ -1563,8 +1569,14 @@ begin
         end;
         {$ENDREGION}
 
+        // Note in re Hagen Redmann example: From here, variable V can be used to check it
+
+        if V >= fvDc50 then
+          PasswordRBS := UTF8Encode(APassword)  // version 4+: Password treated as UTF-8
+        else
+          PasswordRBS := AnsiString(APassword); // version 0..3: Password treated as ANSI
+
         {$REGION 'Decide about magic sequence / file terminus'}
-        // Note in re Hagen Redmann example: Now, V can be used to check it
         if (V = fvHagenReddmannExample) or (V = fvDc40) then
         begin
           MagicSeq := '';
@@ -1758,17 +1770,17 @@ begin
                          Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
                 What I don't understand: How should the program know if the user password or the "hash" password is used??
           *)
-          if APassword = '' then raise Exception.Create('An empty password is not allowed');
+          if PasswordRBS = '' then raise Exception.Create('An empty password is not allowed');
           if KDFVersion = kvKdfx then
-            Key := TDECHashExtended(ahash).KDFx(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+            Key := TDECHashExtended(ahash).KDFx(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
           else if KDFVersion = kvKdf1 then
-            Key := TDECHashExtended(ahash).KDF1(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+            Key := TDECHashExtended(ahash).KDF1(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
           else if KDFVersion = kvKdf2 then
-            Key := TDECHashExtended(ahash).KDF2(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+            Key := TDECHashExtended(ahash).KDF2(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
           else if KDFVersion = kvKdf3 then
-            Key := TDECHashExtended(ahash).KDF3(BytesOf(APassword), BytesOf(Seed), Cipher.Context.KeySize)
+            Key := TDECHashExtended(ahash).KDF3(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
           else if KDFVersion = kvPbkdf2 then
-            Key := TDECHashExtended(ahash).PBKDF2(BytesOf(APassword), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
+            Key := TDECHashExtended(ahash).PBKDF2(BytesOf(PasswordRBS), BytesOf(Seed), PbkdfIterations, Cipher.Context.KeySize)
           else
             Assert(False);
 
@@ -1891,7 +1903,7 @@ begin
           begin
             tempstream.position := 0;
             TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, OnProgressProc);
-            HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+APassword, TFormat_Copy);
+            HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+PasswordRBS, TFormat_Copy);
           end
           else if V = fvDc41FinalCancelled then
           begin
@@ -1900,7 +1912,7 @@ begin
             HashResult2 := TDECHashExtended(ahash).CalcString(
               BytesToRawByteString(HashResult) + Seed +
                   TDECHashExtended(ahash).CalcString(
-                    Seed+TDECHashExtended(ahash).CalcString(Seed+APassword, TFormat_Copy)
+                    Seed+TDECHashExtended(ahash).CalcString(Seed+PasswordRBS, TFormat_Copy)
                   , TFormat_Copy)
             , TFormat_Copy);
           end
@@ -2000,12 +2012,12 @@ begin
   end;
 end;
 
-function DeCoder4X_FileInfo(const AFileName: String; const APassword: RawByteString=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 begin
   result := _DeCoder4X_DecodeFile(AFileName, '', APassword, OnProgressProc);
 end;
 
-function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: RawByteString; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDECProgressEvent=nil): TDC4FileInfo;
 begin
   if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   result := _DeCoder4X_DecodeFile(AFileName, AOutput, APassword, OnProgressProc);

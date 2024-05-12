@@ -1,12 +1,14 @@
 program DecoderFmx;
 
+{$R *.dres}
+
 uses
   System.StartUpCopy,
   FMX.Forms,
   FMX.Styles,
   System.SysUtils,
   System.IOUtils,
-  DecoderFmxMain in 'DecoderFmxMain.pas' {Form3},
+  DecoderFmxMain in 'DecoderFmxMain.pas' {DecoderMainForm},
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
   DecoderOldCiphers in 'DecoderOldCiphers.pas';
@@ -14,10 +16,10 @@ uses
 {$R *.res}
 
 begin
-  // Styles here: c:\Program Files (x86)\Embarcadero\Studio\23.0\Redist\styles\Fmx\
-  if TFile.Exists('Transparent.style') then
-    TStyleManager.SetStyleFromFile('Transparent.style');
+  // Styles taken from: c:\Program Files (x86)\Embarcadero\Studio\23.0\Redist\styles\Fmx\Transparent.style
+  // and included using "Project => Resources and images"
+  TStyleManager.TrySetStyleFromResource('FMX_STYLE');
   Application.Initialize;
-  Application.CreateForm(TForm3, Form3);
+  Application.CreateForm(TDecoderMainForm, DecoderMainForm);
   Application.Run;
 end.

@@ -16,7 +16,7 @@ type
   TDcGuiElements = set of TDcGuiElement;
 
 type
-  TForm3 = class(TForm)
+  TDecoderMainForm = class(TForm)
     DropTarget1: TDropTarget;
     ProgressBar1: TProgressBar;
     Label1: TLabel;
@@ -35,14 +35,14 @@ type
     procedure Button2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
-    ChosenFile: string;
-    DC4FileInfo: TDC4FileInfo;
+    FChosenFile: string;
+    FDC4FileInfo: TDC4FileInfo;
     procedure OpenFile(const AFileName: string);
     procedure GuiShowElements(AElements: TDcGuiElements);
   end;
 
 var
-  Form3: TForm3;
+  DecoderMainForm: TDecoderMainForm;
 
 implementation
 
@@ -58,18 +58,22 @@ const
 
 procedure OnProgressProc(Size, Pos: Int64; State: TDECProgressState);
 begin
-  Form3.ProgressBar1.Min := 0;
-  Form3.ProgressBar1.Max := Size;
+  DecoderMainForm.ProgressBar1.Min := 0;
+  DecoderMainForm.ProgressBar1.Max := Size;
 
   if (State = Finished) then
-    Form3.ProgressBar1.Value := Form3.ProgressBar1.Max
+    DecoderMainForm.ProgressBar1.Value := DecoderMainForm.ProgressBar1.Max
   else
-    Form3.ProgressBar1.Value := Pos;
+    DecoderMainForm.ProgressBar1.Value := Pos;
 
-  Form3.ProgressBar1.Visible := State = Processing;  
+  DecoderMainForm.ProgressBar1.Visible := State = Processing;
+
+  Application.ProcessMessages;
+  if Application.Terminated then
+    Abort;
 end;
 
-procedure TForm3.Button2Click(Sender: TObject);
+procedure TDecoderMainForm.Button2Click(Sender: TObject);
 var
   AOutput: string;
   fp: TDC4Parameters;
@@ -80,11 +84,11 @@ begin
       {$REGION '(De)Coder 1.0 decrypt'}
       TAG_DC10_DECRYPT:
       begin
-        SaveDialog1.FileName := ChangeFileExt(ChosenFile, '_decoded.txt');
+        SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          DeCoder10_DecodeFile(ChosenFile, AOutput, OnProgressProc);
+          DeCoder10_DecodeFile(FChosenFile, AOutput, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
         end;
       end;
@@ -92,11 +96,11 @@ begin
       {$REGION '(De)Coder 4.x/5.0 decrypt'}
       TAG_DC4X_DECRYPT:
       begin
-        SaveDialog1.FileName := DC4FileInfo.OrigFileName;
+        SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          DeCoder4X_DecodeFile(ChosenFile, AOutput, Edit1.Text, OnProgressProc);
+          DeCoder4X_DecodeFile(FChosenFile, AOutput, Edit1.Text, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
         end;
       end;
@@ -114,7 +118,7 @@ begin
           else
             break;
         end;
-        SaveDialog1.FileName := ChangeFileExt(ChosenFile, '.dc5');
+        SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
@@ -132,7 +136,7 @@ begin
             fp.ContainFileOrigDate := false;
           end;
           // TODO: UTF-8 passwords!
-          DeCoder4X_EncodeFile(ChosenFile, AOutput, Edit1.Text, fp, OnProgressProc);
+          DeCoder4X_EncodeFile(FChosenFile, AOutput, Edit1.Text, fp, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
         end;
       end;
@@ -144,7 +148,7 @@ begin
   end;
 end;
 
-procedure TForm3.DropTarget1Click(Sender: TObject);
+procedure TDecoderMainForm.DropTarget1Click(Sender: TObject);
 begin
   if OpenDialog1.Execute then
   begin
@@ -152,14 +156,14 @@ begin
   end;
 end;
 
-procedure TForm3.DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
+procedure TDecoderMainForm.DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
   const Point: TPointF);
 begin
   if Length(Data.Files) > 1 then raise Exception.Create('Please only choose one file!');
   OpenFile(Data.Files[0]);
 end;
 
-procedure TForm3.GuiShowElements(AElements: TDcGuiElements);
+procedure TDecoderMainForm.GuiShowElements(AElements: TDcGuiElements);
 begin
   Label4.Visible := gePassword in AElements;
   Edit1.Visible := gePassword in AElements;
@@ -177,10 +181,10 @@ begin
   if (geInfos in AElements) and not (geMetadataCheckbox in AElements) then
     Memo1.Height := CheckBox1.Position.Y + CheckBox1.Height - Memo1.Position.Y
   else
-    Memo1.Height := CheckBox1.Position.Y - (Form3.ClientHeight - (CheckBox1.Position.Y + CheckBox1.Height)) - Memo1.Position.Y;
+    Memo1.Height := CheckBox1.Position.Y - (DecoderMainForm.ClientHeight - (CheckBox1.Position.Y + CheckBox1.Height)) - Memo1.Position.Y;
 end;
 
-procedure TForm3.FormCreate(Sender: TObject);
+procedure TDecoderMainForm.FormCreate(Sender: TObject);
 begin
   Label2.Text :=
     'Built ' + DateTimeToStr(GetOwnBuildTimestamp) + #13#10 +
@@ -191,13 +195,13 @@ begin
   Application.Title := Caption; // because of Message dialog captions
 end;
 
-procedure TForm3.OpenFile(const AFileName: string);
+procedure TDecoderMainForm.OpenFile(const AFileName: string);
 var
   fp: TDC4Parameters;
 begin
   Memo1.Lines.Clear;
 
-  ChosenFile := AFileName;
+  FChosenFile := AFileName;
 
   {$REGION '(De)Coder 1.0 decrypt'}
   Label1.Text := ExtractFileName(OpenDialog1.FileName);
@@ -213,15 +217,15 @@ begin
 
   {$REGION '(De)Coder 4.x/5.0 decrypt'}
   try
-    DC4FileInfo := DeCoder4X_FileInfo(AFileName);
-    if DC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
+    FDC4FileInfo := DeCoder4X_FileInfo(AFileName);
+    if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
       Label2.Text := 'This file was encrypted using (De)Coder 5.0'
-    else if DC4FileInfo.Parameters.Dc4FormatVersion >= fvDc41Beta then
+    else if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc41Beta then
       Label2.Text := 'This file was encrypted using (De)Coder 4.1 Beta'
     else
       Label2.Text := 'This file was encrypted using (De)Coder 4.0';
     Label2.Text := Label2.Text + #13#10 + 'Do you want to decrypt it now?';
-    DeCoder4X_PrintFileInfo(DC4FileInfo, Memo1.Lines);
+    DeCoder4X_PrintFileInfo(FDC4FileInfo, Memo1.Lines);
     Button2.Tag := TAG_DC4X_DECRYPT;
     Button2.Text := 'Decrypt';
     GuiShowElements([gePassword, geStartButton, geInfos]);

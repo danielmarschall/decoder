@@ -1,4 +1,4 @@
-object Form3: TForm3
+object DecoderMainForm: TDecoderMainForm
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
@@ -42,7 +42,7 @@ object Form3: TForm3
     TextSettings.WordWrap = False
     TextSettings.Trimming = None
     Text = 'ViaThinkSoft (De)Coder 5.0'
-    TabOrder = 8
+    TabOrder = 16
   end
   object Label2: TLabel
     Anchors = [akLeft, akTop, akRight]
@@ -53,7 +53,7 @@ object Form3: TForm3
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 11
+    TabOrder = 19
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All files (*.*)|*.*'
@@ -71,7 +71,7 @@ object Form3: TForm3
     Size.Width = 479.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 5
+    TabOrder = 11
     Viewport.Width = 475.000000000000000000
     Viewport.Height = 118.000000000000000000
   end
@@ -99,7 +99,7 @@ object Form3: TForm3
     Position.Y = 134.000000000000000000
     TextSettings.Trimming = None
     Text = 'Password:'
-    TabOrder = 12
+    TabOrder = 13
   end
   object Label5: TLabel
     Position.X = 152.000000000000000000

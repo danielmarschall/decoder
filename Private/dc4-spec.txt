@@ -5,10 +5,10 @@ DC4 FILE FORMAT SPECIFICATION
 Type:		Encrypted file
 Contents:	Binary information
 Used by:	ViaThinkSoft (De)Coder 4.0
-		ViaThinkSoft (De)Coder 4.1
+		ViaThinkSoft (De)Coder 4.1 Beta
 		ViaThinkSoft (De)Coder 5.0
 Author:		Daniel Marschall
-Last update:	May, 10th 2024
+Last update:	May, 12th 2024
 
 
 CONTENTS
@@ -109,6 +109,7 @@ Offset	Type	Size		Content/Description
 0Ah	Binary	0-255		Seed (Random data)
 	Int32BE	4		Size of source data, big endian
 	Binary	var		DEC 5.1c encrypted data; Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
+					Note that the password is treated as ANSI
 	Byte	1		Size of DEC CalcMAC
 	Binary	0-255		DEC's "CalcMAC"; This is a C-MAC which is the encryption of the last block concatention feedback.
 ---------------------------------------------------------------------------------------------------
@@ -134,6 +135,7 @@ Offset	Type	Size		Content/Description
 					Password:       Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
 					Algorithm:	RIJNDAEL (AES)
 					Mode:		CTSx (proprietary to DEC)
+					Note that the password is treated as ANSI
 	Binary	var		Checksum of the data before encryption
 				Default hash configuration
 				Algorithm:	SHA 512
@@ -235,10 +237,12 @@ Offset	Type	Size		Content/Description
 	Binary	0-255		Seed (Random data)
 	Binary	var		With DEC 5.1c encrypted data, encrypted with password (read until file end minus the size of the checksum and the file terminus)
 					Password = Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
+					Note that the password is treated as ANSI
 	Binary	var		Secured checksum of the data before encryption
 					= Hash(Hash(Original Data) & Seed & User-Password)
 					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.
+					Note that the password is treated as ANSI
 	Binary	16		DC4-Terminus; Hardcoded value: "RENURVJNSU5VUw==" (BASE64: "DCTERMINUS")
 ---------------------------------------------------------------------------------------------------
 
@@ -267,6 +271,7 @@ Offset	Type	Size		Content/Description
 					Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
 				If offset 02h of this part has the value 01h:
 					Encryption-Password = Hash->KDfx(User-Password, Seed)
+					Note that the password is treated as ANSI
 				KDFx is proprietary to DEC
 	Int32BE	4		DEC 5.1c Idendity-Base, big endian; Default Idendity-Base: 0x19387612
 					If DEC 6.x is used, then the following changes are done:
@@ -353,10 +358,12 @@ Offset	Type	Size		Content/Description
 							Combined formula:
 							Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
 					[End]
+					Note that the password is treated as ANSI
 	Binary	var		Secured checksum of the data before encryption
 					= Hash(Hash(Original Data) & Seed & Hash(Seed & Hash(Seed & User-Password)))
 					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.
+					Note that the password is treated as ANSI
 	Binary	8		DC4-Terminus; Hardcoded value: 63 F3 DF 89 B7 27 20 EA
 ---------------------------------------------------------------------------------------------------
 
@@ -501,6 +508,7 @@ Offset	Type	Size		Content/Description
 					0x04	 32 bits (not recommended)
 	Binary	var		With DEC 6.5 encrypted data (read until file end minus the size of the checksum)
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
+					Note that the password is treated as UTF-8
 	Binary	0-255		DEC's "CalcMAC"; This is a C-MAC which is the encryption of the last block concatention feedback.
 				NOT present if cipher mode is ECB. Size is one cipher block.
 	Binary	0-255		GCM Auth Tag. Size as specified before.
@@ -510,6 +518,7 @@ Offset	Type	Size		Content/Description
 					with Key = Encryption-Password
 					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.
+					Note that the password is treated as UTF-8
 ---------------------------------------------------------------------------------------------------
 
 
@@ -520,6 +529,9 @@ Offset	Type	Size		Content/Description
 
   Other information about the file extension:
   https://fileinfo.com/extension/dc4
+  
+  OID which describes this file format:
+  https://hosted.oidplus.com/viathinksoft/?goto=oid%3A1.3.6.1.4.1.37476.2.2.1.4
 
   Delphi Encryption Compendium (DEC) downloadable at:
   https://github.com/MHumm/DelphiEncryptionCompendium
