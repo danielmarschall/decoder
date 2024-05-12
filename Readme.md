@@ -1,19 +1,22 @@
 
 # ViaThinkSoft (De)Coder 5.0
 
-(De)Coder is an encryption software developed by Daniel Marschall. It uses the high security AES encryption.
+(De)Coder is an encryption software developed by Daniel Marschall.
+It uses the high security AES encryption.
 
-New features in version 5.0:
+New and improved features in version 5.0:
 
 - Modern design
 - Newer algorithms
 - Backwards compatible to ALL previous (De)Coder versions
 - Inclusion of metadata (filename, size, date) is now optional
+- Available as GUI ("CoderFMX") or as command-line tool ("CoderCLI")
+- 32-bit and 64-bit binaries
 - Secure deletion of files and folders (only in CLI tool)
-- Command-line support
 - Drag and drop support
 - Completely re-written with the latest development tools (Delphi 12, DEC 6.5)
 - Encrypt and decrypt files or folders (integrated 7zip packer)
+- Translated to English
 
 
 **Disclaimer:** Use this software at your own risk! ViaThinkSoft is not responsbile for any damages which

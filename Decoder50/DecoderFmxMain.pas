@@ -40,6 +40,7 @@ type
     FDC4FileInfo: TDC4FileInfo;
     procedure OpenFile(const AFileName: string);
     procedure GuiShowElements(AElements: TDcGuiElements);
+    procedure GuiShowChosenFile;
   end;
 
 var
@@ -174,6 +175,11 @@ begin
   end;
 end;
 
+procedure TDecoderMainForm.GuiShowChosenFile;
+begin
+  OpenedFileLabel.Text := ExtractFileName(FChosenFile);
+end;
+
 procedure TDecoderMainForm.GuiShowElements(AElements: TDcGuiElements);
 begin
   PasswordEditLabel.Visible := gePassword in AElements;
@@ -245,10 +251,6 @@ begin
     MoreInfoMemo.Lines.Add('Folder name: ' + ExtractFileName(AFileName));
   MoreInfoMemo.Lines.Add('Location: ' + ExtractFilePath(AFileName));
 
-  FChosenFile := AFileName;
-
-  OpenedFileLabel.Text := ExtractFileName(FChosenFile);
-
   if FileExists(AFileName) then
   begin
 
@@ -259,6 +261,8 @@ begin
       EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
       EncryptDecryptButton.Text := 'Decrypt';
       GuiShowElements([geStartButton]);
+      FChosenFile := AFileName;
+      GuiShowChosenFile;
       Exit;
     end;
     {$ENDREGION}
@@ -277,13 +281,15 @@ begin
       EncryptDecryptButton.Tag := TAG_DC4X_DECRYPT;
       EncryptDecryptButton.Text := 'Decrypt';
       GuiShowElements([gePassword, geStartButton, geInfos]);
+      FChosenFile := AFileName;
+      GuiShowChosenFile;
       Exit;
     except
       on E: Exception do
       begin
         if AFileName.EndsWith('.dc4', true) or AFileName.EndsWith('.dc5', true) then
         begin
-          ShortInfoLabel.Text := 'This is not a valid (De)Coder 4.0/5.0 file!' + #13#10 + E.Message;
+          raise Exception.Create('This is not a valid (De)Coder 4.0/5.0 file!' + #13#10 + E.Message);
         end;
       end;
     end;
@@ -307,6 +313,8 @@ begin
   fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
   MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
   GuiShowElements([gePassword, geStartButton, geInfos, geMetadataCheckbox]);
+  FChosenFile := AFileName;
+  GuiShowChosenFile;
   {$ENDREGION}
 end;
 

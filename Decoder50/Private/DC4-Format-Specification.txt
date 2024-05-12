@@ -386,7 +386,7 @@ Offset	Type	Size		Content/Description
 					Bit 6:      Reserved
 					Bit 7/MSB:  Reserved
 01h	Byte	1		Version flag; Hardcoded value: 04h
-02h	Binary	27		Magic Sequence; Hardcoded value: "[1.3.6.1.4.1.37476.2.2.1.4]"
+02h	Binary	27		Magic Sequence; Hardcoded value: "[1.3.6.1.4.1.37476.2.2.1.4.4]"
 					This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) }
 1Bh	Byte	1		Size of the filename that follows
 1Ch	Binary	var		Original file name, UTF-8 Encoded; possible values:

@@ -1264,9 +1264,10 @@ begin
         tempstream.WriteByte(Ord(V));
       {$ENDREGION}
 
+      // TODO: Das vielleicht direkt an den Dateianfang und mit CRLF? Wär cool!
       {$REGION '2.1 Magic Sequence (only version 4+)'}
       if (V>=fvDc50) then
-        tempstream.WriteRawByteString('[' + DC4_OID + ']');
+        tempstream.WriteRawByteString('[' + DC4_OID + '.' + IntToStr(Ord(V)) + ']');
       {$ENDREGION}
 
       {$REGION '3. Filename (version 1+)'}
@@ -1722,7 +1723,7 @@ begin
         end
         else
         begin
-          MagicSeq := RawByteString('[' + DC4_OID + ']');
+          MagicSeq := RawByteString('[' + DC4_OID + '.' + IntToStr(Ord(V)) + ']');
           FileTerminus := '';
         end;
         {$ENDREGION}
