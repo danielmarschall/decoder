@@ -11,7 +11,8 @@ uses
   DecoderFmxMain in 'DecoderFmxMain.pas' {DecoderMainForm},
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
-  DecoderOldCiphers in 'DecoderOldCiphers.pas';
+  DecoderOldCiphers in 'DecoderOldCiphers.pas',
+  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas';
 
 {$R *.res}
 

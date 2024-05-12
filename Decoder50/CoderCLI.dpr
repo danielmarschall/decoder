@@ -15,7 +15,8 @@ uses
   Generics.Collections,
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
-  DecoderOldCiphers in 'DecoderOldCiphers.pas';
+  DecoderOldCiphers in 'DecoderOldCiphers.pas',
+  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas';
 
 procedure OnProgressProc(Size, Pos: Int64; const Task: string; State: TDcProgressState);
 begin
@@ -165,58 +166,58 @@ begin
   WriteLn('DeCoder4X_ValidateParameterBlock OK');
   WriteLn('');
 
-  DeCoder10_EncodeFile('TestData\dc10_example_in.txt', 'TestData\dc10_example_out.tmp', True, OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc10_example_out.tmp', 'TestData\dc10_example_out.txt'));
-  DeleteFile('TestData\dc10_example_out.tmp');
+  DeCoder10_EncodeFile('..\TestData\dc10_example_in.txt', '..\TestData\dc10_example_out.tmp', True, OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc10_example_out.tmp', '..\TestData\dc10_example_out.txt'));
+  DeleteFile('..\TestData\dc10_example_out.tmp');
   WriteLn('DC10 Encode OK');
   WriteLn('');
 
-  DeCoder10_DecodeFile('TestData\dc10_example_out.txt', 'TestData\dc10_example_in.tmp', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc10_example_in.tmp', 'TestData\dc10_example_in.txt'));
-  DeleteFile('TestData\dc10_example_in.tmp');
+  DeCoder10_DecodeFile('..\TestData\dc10_example_out.txt', '..\TestData\dc10_example_in.tmp', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc10_example_in.tmp', '..\TestData\dc10_example_in.txt'));
+  DeleteFile('..\TestData\dc10_example_in.tmp');
   WriteLn('DC10 Decode OK');
   WriteLn('');
 
-  DeCoder20_EncodeFile('TestData\dc20_256zero_in.txt', 'TestData\dc20_256zero_out.tmp', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc20_256zero_out.txt', 'TestData\dc20_256zero_out.tmp'));
-  DeleteFile('TestData\dc20_256zero_out.tmp');
-  DeCoder20_EncodeFile('TestData\dc20_test_in.txt', 'TestData\dc20_test_out.tmp', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc20_test_out.txt', 'TestData\dc20_test_out.tmp'));
-  DeleteFile('TestData\dc20_test_out.tmp');
+  DeCoder20_EncodeFile('..\TestData\dc20_256zero_in.txt', '..\TestData\dc20_256zero_out.tmp', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc20_256zero_out.txt', '..\TestData\dc20_256zero_out.tmp'));
+  DeleteFile('..\TestData\dc20_256zero_out.tmp');
+  DeCoder20_EncodeFile('..\TestData\dc20_test_in.txt', '..\TestData\dc20_test_out.tmp', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc20_test_out.txt', '..\TestData\dc20_test_out.tmp'));
+  DeleteFile('..\TestData\dc20_test_out.tmp');
   WriteLn('DC20 Encode OK');
   WriteLn('');
 
-  DeCoder22_EncodeFile('TestData\dc22_256zero_in.txt', 'TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc22_256zero_out_61.txt', 'TestData\dc22_256zero_out_61.tmp'));
-  DeleteFile('TestData\dc22_256zero_out_61.tmp');
-  DeCoder22_EncodeFile('TestData\dc22_test_in.txt', 'TestData\dc22_test_out_61.tmp', 61, OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc22_test_out_61.txt', 'TestData\dc22_test_out_61.tmp'));
-  DeleteFile('TestData\dc22_test_out_61.tmp');
+  DeCoder22_EncodeFile('..\TestData\dc22_256zero_in.txt', '..\TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc22_256zero_out_61.txt', '..\TestData\dc22_256zero_out_61.tmp'));
+  DeleteFile('..\TestData\dc22_256zero_out_61.tmp');
+  DeCoder22_EncodeFile('..\TestData\dc22_test_in.txt', '..\TestData\dc22_test_out_61.tmp', 61, OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc22_test_out_61.txt', '..\TestData\dc22_test_out_61.tmp'));
+  DeleteFile('..\TestData\dc22_test_out_61.tmp');
   WriteLn('DC22 Encode OK');
   WriteLn('');
 
-  DeCoder30_EncodeFile('TestData\dc30_256zero_in.txt', 'TestData\dc30_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc30_256zero_out_foobar.txt', 'TestData\dc30_256zero_out_foobar.tmp'));
-  DeleteFile('TestData\dc30_256zero_out_foobar.tmp');
-  DeCoder30_EncodeFile('TestData\dc30_test_in.txt', 'TestData\dc30_test_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc30_test_out_foobar.txt', 'TestData\dc30_test_out_foobar.tmp'));
-  DeleteFile('TestData\dc30_test_out_foobar.tmp');
+  DeCoder30_EncodeFile('..\TestData\dc30_256zero_in.txt', '..\TestData\dc30_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc30_256zero_out_foobar.txt', '..\TestData\dc30_256zero_out_foobar.tmp'));
+  DeleteFile('..\TestData\dc30_256zero_out_foobar.tmp');
+  DeCoder30_EncodeFile('..\TestData\dc30_test_in.txt', '..\TestData\dc30_test_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc30_test_out_foobar.txt', '..\TestData\dc30_test_out_foobar.tmp'));
+  DeleteFile('..\TestData\dc30_test_out_foobar.tmp');
   WriteLn('DC30 Encode OK');
   WriteLn('');
 
-  DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc32_256zero_out_foobar.txt', 'TestData\dc32_256zero_out_foobar.tmp'));
-  DeleteFile('TestData\dc32_256zero_out_foobar.tmp');
-  DeCoder32_EncodeFile('TestData\dc32_256zero_in.txt', 'TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc32_256zero_out_abcdefg.txt', 'TestData\dc32_256zero_out_abcdefg.tmp'));
-  DeleteFile('TestData\dc32_256zero_out_abcdefg.tmp');
-  DeCoder32_EncodeFile('TestData\dc32_test_in.txt', 'TestData\dc32_test_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert(Are2FilesEqual('TestData\dc32_test_out_foobar.txt', 'TestData\dc32_test_out_foobar.tmp'));
-  DeleteFile('TestData\dc32_test_out_foobar.tmp');
+  DeCoder32_EncodeFile('..\TestData\dc32_256zero_in.txt', '..\TestData\dc32_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc32_256zero_out_foobar.txt', '..\TestData\dc32_256zero_out_foobar.tmp'));
+  DeleteFile('..\TestData\dc32_256zero_out_foobar.tmp');
+  DeCoder32_EncodeFile('..\TestData\dc32_256zero_in.txt', '..\TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc32_256zero_out_abcdefg.txt', '..\TestData\dc32_256zero_out_abcdefg.tmp'));
+  DeleteFile('..\TestData\dc32_256zero_out_abcdefg.tmp');
+  DeCoder32_EncodeFile('..\TestData\dc32_test_in.txt', '..\TestData\dc32_test_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert(Are2FilesEqual('..\TestData\dc32_test_out_foobar.txt', '..\TestData\dc32_test_out_foobar.tmp'));
+  DeleteFile('..\TestData\dc32_test_out_foobar.tmp');
   WriteLn('DC32 Encode OK');
   WriteLn('');
 
-  DeCoder4X_DecodeFile('TestData\schloss.dc4', 'schloss_decoded.bmp', 'test', OnProgressProc);
+  DeCoder4X_DecodeFile('..\TestData\schloss.dc4', 'schloss_decoded.bmp', 'test', OnProgressProc);
   WriteLn('Decode DC41 Beta OK');
   WriteLn('');
 
@@ -689,7 +690,7 @@ begin
       WriteLn(Format('%s %-13s <File>     -- Wipes a file from a disk in a secure way', [OwnName, Cmd_SecureDeleteFile]));
       WriteLn(Format('%s %-13s <Folder>   -- Wipes a complete folder from a disk in a secure way', [OwnName, Cmd_SecureDeleteFolder]));
       {$IFDEF Debug}
-      WriteLn(Format('%s %-13s          -- Run internal testcases from folder TestData', [OwnName, Cmd_Debug_Testcases]));
+      WriteLn(Format('%s %-13s          -- Run internal testcases from folder ..\TestData', [OwnName, Cmd_Debug_Testcases]));
       WriteLn(Format('%s %-13s <DirName> <CSVResultFile> -- Run entropy test on directory', [OwnName, Cmd_Debug_EntropyTest]));
       {$ENDIF}
       WriteLn(Format('%s %-13s            -- Shows this command listing', [OwnName, Cmd_Help]));
