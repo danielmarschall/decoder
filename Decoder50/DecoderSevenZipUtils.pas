@@ -3,7 +3,7 @@ unit DecoderSevenZipUtils;
 interface
 
 uses
-  SysUtils, Windows, DecoderFuncs;
+  SysUtils, Windows, DecoderFuncs{$IFNDEF Console}, Fmx.Forms{$ENDIF};
 
 procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
 procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProgressEvent=nil);
@@ -39,14 +39,31 @@ begin
       state := TDcProgressState.Finished
     else
       state := TDcProgressState.Processing;
-    if (state = TDcProgressState.Started) and (PSevenZipProgressContext(sender)^.StartSent) then
-      state := TDcProgressState.Processing
-    else
-      PSevenZipProgressContext(sender)^.StartSent := true;
-    if (state = TDcProgressState.Finished) and (PSevenZipProgressContext(sender)^.FinishedSent) then
-      state := TDcProgressState.Processing
-    else
-      PSevenZipProgressContext(sender)^.FinishedSent := true;
+    if state = TDcProgressState.Started then
+    begin
+      if PSevenZipProgressContext(sender)^.StartSent then
+        state := TDcProgressState.Processing
+      else
+        PSevenZipProgressContext(sender)^.StartSent := true;
+    end;
+    if state = TDcProgressState.Finished then
+    begin
+      if PSevenZipProgressContext(sender)^.FinishedSent then
+        state := TDcProgressState.Processing
+      else
+        PSevenZipProgressContext(sender)^.FinishedSent := true;
+    end;
+
+
+
+    // TODO: writeln nicht richtig... da gibts noch ein problem???
+    (*
+100,00% ... Decode stream = Done
+100,00% ... ZLib decompress = Done
+100,00% ... 7zip Unpack folder = Done
+100,00% ... 7zip Unpack folderDelete file: hallohallo.dc5_tmp
+    *)
+
     PSevenZipProgressContext(sender)^.DecProgress(PSevenZipProgressContext(sender)^.Max, value, PSevenZipProgressContext(sender)^.Task, state);
   end;
   {$IFDEF Console}
@@ -80,7 +97,7 @@ begin
   ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
   ProgressCtx.Task := '7zip Pack folder';
   ProgressCtx.DecProgress := AOnProgress;
-  Arch := CreateOutArchive(CLSID_CFormat7z, SevenZipGetDll);
+  Arch := CreateOutArchive(CLSID_CFormat7z, SevenZipGetDll);     // TODO: also zip format
   Arch.AddFiles(AFolderName, '', '*', true);
   // Arch.AddStream(aStream, soReference, faArchive, CurrentFileTime, CurrentFileTime, 'folder\test.bin', false, false);
   SetCompressionLevel(Arch, 5);
@@ -98,7 +115,7 @@ begin
   ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
   ProgressCtx.Task := '7zip Unpack folder';
   ProgressCtx.DecProgress := AOnProgress;
-  Arch := CreateInArchive(CLSID_CFormat7z, SevenZipGetDll);
+  Arch := CreateInArchive(CLSID_CFormat7z, SevenZipGetDll);      // TODO: also zip format
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.OpenFile(AArchFile);
   Arch.ExtractTo(AFolder);

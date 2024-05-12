@@ -39,6 +39,7 @@ type
 
 procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressProc: TDcProgressEvent=nil);
 procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDcProgressEvent=nil);
+function RandStringFileNameFriendly(len: integer): string;
 function RelToAbs(RelPath: string; BasePath: string=''): string;
 function SecureDeleteFile(const AFileName: string): boolean;
 function SecureDeleteFolder(const ADirName: string): boolean;

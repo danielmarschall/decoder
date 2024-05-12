@@ -84,7 +84,7 @@ procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDc4FormatVersion);
 implementation
 
 uses
-  DecoderOldCiphers, DateUtils, StrUtils, Math;
+  DecoderOldCiphers, DecoderSevenZipUtils, DateUtils, StrUtils, Math;
 
 const
   DC4_ID_BASES: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of Int64 = (
@@ -1100,13 +1100,14 @@ var
   tmp64: Int64;
   IsZLibCompressed: boolean;
   IsFolder: boolean;
-  ATempFileName: string;
   PbkdfIterations: long;
   V: TDc4FormatVersion;
   GCMAuthTagSizeInBytes: byte;
   tmpWS: WideString;
   outFileDidExist: boolean;
   PasswordRBS: RawByteString;
+  ATempFileName: string; // If IsZLibCompressed, then it is a temporary .dc5_tmp file, otherwise undefined
+  SourceFile: string; // If IsFolder, then it is a temporary .7z file, otherwise it is AFileName
 const
   // Measurement of 21367	files
   // ShanEntropy  AvgComprRatioZLibMax
@@ -1130,23 +1131,44 @@ begin
   ahash := nil;
   IsZLibCompressed := false;
   IsFolder := DirectoryExists(AFileName);
+  if not IsFolder and not FileExists(AFileName) then
+    raise Exception.CreateFmt('File or folder %s not found', [AFileName]);
   outFileDidExist := FileExists(AOutput);
+  ATempFileName := '';
   try
     try
+      {$REGION 'Encrypt folder? => Pack it to a file (version 1+)'}
       if IsFolder then
       begin
-        // TODO: Implement Zipping (ver1-3 zip, ver4: 7zip)
-        // For ZIP, do not continue if the file size is 4GB+!!!
-        raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
+        if AParameters.Dc4FormatVersion >= fvDc50 then
+        begin
+          SourceFile := 'DecoderFolderTmp.7z'; // TODO: random name
+          SevenZipFolder(AFileName, SourceFile, OnProgressProc);
+        end
+        else if AParameters.Dc4FormatVersion >= fvDc40 then
+        begin
+          SourceFile := 'DecoderFolderTmp.zip'; // TODO: random name
+          SevenZipFolder(AFileName, SourceFile, OnProgressProc);
+        end
+        else
+        begin
+          raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
+        end;
+      end
+      else
+      begin
+        SourceFile := AFileName;
       end;
+      {$ENDREGION}
 
       {$REGION 'Transfer parameters from AParameters to the working variables'}
       V := AParameters.Dc4FormatVersion;
       case AParameters.ShouldBeZLibCompressed of
         Yes:   IsZLibCompressed := true;
         No:    IsZLibCompressed := false;
-        Auto:  IsZLibCompressed := not IsCompressedFileType(AFileName)
-                                    or (ShannonEntropy(AFileName, OnProgressProc) < ShannonEntropyTreshold);
+        Auto:  IsZLibCompressed := not IsFolder and
+                                   not IsCompressedFileType(SourceFile)
+                                    or (ShannonEntropy(SourceFile, OnProgressProc) < ShannonEntropyTreshold);
       end;
       KdfVersion := AParameters.KDF;
       PbkdfIterations := AParameters.PBKDF_Iterations;
@@ -1177,13 +1199,13 @@ begin
       {$REGION 'Compress stream if the file type is not already compressed'}
       if IsZLibCompressed and (V>=fvDc40) then
       begin
-        ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
-        ZLib_Compress(AFileName, ATempFileName, OnProgressProc);
+        ATempFileName := ChangeFileExt(SourceFile, '.dc5_tmp'); // TODO: random extension!
+        ZLib_Compress(SourceFile, ATempFileName, OnProgressProc);
         Source := TFileStream.Create(ATempFileName, fmOpenRead or fmShareDenyWrite);
       end
       else
       begin
-        Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
+        Source := TFileStream.Create(SourceFile, fmOpenRead or fmShareDenyWrite);
       end;
       {$ENDREGION}
 
@@ -1322,17 +1344,22 @@ begin
       {$REGION '3.1 File Size (version 4+)'}
       if V >= fvDc50 then
       begin
-        if AParameters.ContainFileOrigSize then
+        if AParameters.ContainFileOrigSize and IsFolder then
+          tempstream.WriteInt64(-1)  // TODO: Implement directory GetSize
+        else if AParameters.ContainFileOrigSize then
           tempstream.WriteInt64(Int64(TFile.GetSize(AFileName)))
         else
           tempstream.WriteInt64(-1);
       end;
       {$ENDREGION}
 
+
       {$REGION '3.2 File Date/Time (version 4+)'}
       if V >= fvDc50 then
       begin
-        if AParameters.ContainFileOrigDate then
+        if AParameters.ContainFileOrigDate and IsFolder then
+          tempstream.WriteInt64(-1) // TODO: Implement directory last write time
+        else if AParameters.ContainFileOrigDate then
           tempstream.WriteInt64(DateTimeToUnix(TFile.GetLastWriteTime(AFileName), false))
         else
           tempstream.WriteInt64(-1);
@@ -1511,10 +1538,10 @@ begin
       if Assigned(tempstream) then FreeAndNil(tempstream);
       if Assigned(Cipher) then FreeAndNil(Cipher);
       if Assigned(ahash) then FreeAndNil(ahash);
-      if IsZLibCompressed and (ATempFileName<>'') then
-      begin
+      if IsFolder and (SourceFile<>'') and FileExists(SourceFile) then
+        SecureDeleteFile(SourceFile); // delete temporary 7z/zip file
+      if IsZLibCompressed and (ATempFileName<>'') and FileExists(ATempFileName) then
         SecureDeleteFile(ATempFileName);
-      end;
     end;
   except
     try
@@ -1526,8 +1553,6 @@ begin
 end;
 
 function _DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
-resourcestring
-  SInfoUnzipNotImplemented = 'Note: Decrypting of folders is not possible. The archive was decrypted, but you must unpack it with an external tool';
 var
   Source: TFileStream;
   OrigFileSize: Int64;
@@ -1556,7 +1581,7 @@ var
   bakSourcePosEncryptedData: Int64;
   IsZLibCompressed: boolean;
   IsFolder: boolean;
-  ATempFileName: string;
+  ATempFileName: string; // Used if ZLibCompressed is true to show the temp file that will be used instead of AFileName
   PbkdfIterations: Long;
   OrigNameEncrypted: RawByteString;
   iBlockFillMode: Byte;
@@ -1566,6 +1591,8 @@ var
   outFileDidExist: boolean;
   PasswordRBS: RawByteString;
 begin
+  if not FileExists(AFileName) then
+    raise Exception.CreateFmt('File or folder %s not found', [AFileName]);
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   tempstream := nil;
   cipher := nil;
@@ -1607,7 +1634,7 @@ begin
         begin
           if not OnlyReadFileInfo then
           begin
-            ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp');
+            ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp'); // TODO: random extension!
             tempstream := TFileStream.Create(ATempFileName, fmCreate);
           end;
         end
@@ -2036,12 +2063,20 @@ begin
 
         if not OnlyReadFileInfo and IsFolder then
         begin
-          // TODO: Implement unzipping (ver1-3) or 7zip (ver4) to folder
-          {$IFDEF Console}
-          WriteLn(SInfoUnzipNotImplemented);
-          {$ELSE}
-          Windows.MessageBox(0, PChar(SInfoUnzipNotImplemented), '(De)Coder', MB_OK + MB_ICONINFORMATION);
-          {$ENDIF}
+          if V >= fvDc50 then
+          begin
+            // TODO: this is not good. AOutput needs .7z extension actually!!!
+            SevenZipExtract(AOutput, RelToAbs(AOutput + '_Extract'), OnProgressProc);
+          end
+          else if V >= fvDc40 then
+          begin
+            // TODO: this is not good. AOutput needs .zip extension actually!!!
+            SevenZipExtract(AOutput, RelToAbs(AOutput + '_Extract'), OnProgressProc);
+          end
+          else
+          begin
+            Assert(False);
+          end;
         end;
         {$ENDREGION}
 
@@ -2088,9 +2123,9 @@ begin
       if Assigned(Cipher) then FreeAndNil(Cipher);
       if Assigned(ahash) then FreeAndNil(ahash);
       if IsZLibCompressed and (ATempFileName<>'') and FileExists(ATempFileName) then
-      begin
         SecureDeleteFile(ATempFileName);
-      end;
+      if IsFolder and (AOutput<>'') and FileExists(AOutput) then
+        SecureDeleteFile(AOutput);
     end;
   except
     try

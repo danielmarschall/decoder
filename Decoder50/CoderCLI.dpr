@@ -582,7 +582,6 @@ begin
     {$REGION '(De)Coder 4.x / 5.x'}
     else if SameText(ParamStr(1), Cmd_DC50_EnCrypt_NoInfo) and (ParamCount = 4) then
     begin
-      CheckFileExists(ParamStr(2)); // TODO: If folder zipping is implemented, extend this check to also accept folders
       fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
       fp.ContainFileOrigName := fpHide;
       fp.ContainFileOrigSize := false;
@@ -592,7 +591,6 @@ begin
     end
     else if SameText(ParamStr(1), Cmd_DC50_EnCrypt_WithInfo) and (ParamCount = 4) then
     begin
-      CheckFileExists(ParamStr(2)); // TODO: If folder zipping is implemented, extend this check to also accept folders
       fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
       fp.ContainFileOrigName := fpExpose;
       fp.ContainFileOrigSize := true;

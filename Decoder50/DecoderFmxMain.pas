@@ -211,15 +211,14 @@ procedure TDecoderMainForm.OpenFile(const AFileName: string);
 var
   fp: TDC4Parameters;
 begin
-  // TODO: Once DecoderEncDec.pas implements 7za.exe support, remove this check
-  if DirectoryExists(AFileName) then
-    raise Exception.CreateFmt('Directories cannot be processed! Please compress them using ZIP/7zip/RAR first, before encrypting using (De)Coder', [AFileName]);
-
-  if not FileExists(AFileName) then
-    raise Exception.CreateFmt('File %s does not exist!', [AFileName]);
+  if not FileExists(AFileName) and not DirectoryExists(AFileName) then
+    raise Exception.CreateFmt('File or folder %s does not exist!', [AFileName]);
 
   MoreInfoMemo.Lines.Clear;
-  MoreInfoMemo.Lines.Add('File name: ' + ExtractFileName(AFileName));
+  if FileExists(AFileName) then
+    MoreInfoMemo.Lines.Add('File name: ' + ExtractFileName(AFileName))
+  else
+    MoreInfoMemo.Lines.Add('Folder name: ' + ExtractFileName(AFileName));
   MoreInfoMemo.Lines.Add('Location: ' + ExtractFilePath(AFileName));
 
   FChosenFile := AFileName;
@@ -267,9 +266,12 @@ begin
   ShortInfoLabel.Text := 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.' + #13#10 + 'Do you want to encrypt it now?';
   EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
   EncryptDecryptButton.Text := 'Encrypt';
-  MoreInfoMemo.Lines.Add('File type: ' + GetFileTypename(AFileName));
-  MoreInfoMemo.Lines.Add('File size: ' + FileSizeHumanReadable(TFile.GetSize(AFileName)));
-  MoreInfoMemo.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
+  if FileExists(AFileName) then
+  begin
+    MoreInfoMemo.Lines.Add('File type: ' + GetFileTypename(AFileName));
+    MoreInfoMemo.Lines.Add('File size: ' + FileSizeHumanReadable(TFile.GetSize(AFileName)));
+    MoreInfoMemo.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
+  end;
   fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
   MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
   GuiShowElements([gePassword, geStartButton, geInfos, geMetadataCheckbox]);

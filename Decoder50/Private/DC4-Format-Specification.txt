@@ -377,7 +377,7 @@ This file format was intended to be used by (De)Coder 5.0. The file-name extensi
 Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
 00h	Byte	1		Compress mode flag
-					Bit 0/LSB:  [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
+					Bit 0/LSB:  [Ver1+] Is 7zip compressed folder (1) or a regular file (0)?
 					Bit 1:      [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)? (default: 1 for regular files, 0 for ZIP folders)
 					Bit 2:      Reserved
 					Bit 3:      Reserved
