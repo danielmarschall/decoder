@@ -1707,9 +1707,9 @@ begin
           if IsFolder then
           begin
             if V >= fvDc50 then
-              ATempFileNameZipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z'
+              ATempFileNameZipOrDirectOutput := ExcludeTrailingPathDelimiter(AOutput) + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z'
             else if V >= fvDc50 then
-              ATempFileNameZipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip'
+              ATempFileNameZipOrDirectOutput := ExcludeTrailingPathDelimiter(AOutput) + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip'
             else
               Assert(False);
           end
@@ -1720,7 +1720,7 @@ begin
 
           if IsZLibCompressed then
           begin
-            ATempFileNameZLib := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.zlib';
+            ATempFileNameZLib := ChangeFileExt(AOutput, '_Tmp_' + RandStringFileNameFriendly(10) + '.zlib');
             tempstream := TFileStream.Create(ATempFileNameZLib, fmCreate);
           end
           else
