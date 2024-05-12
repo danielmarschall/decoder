@@ -22,17 +22,17 @@ type
     Label1: TLabel;
     OpenDialog1: TOpenDialog;
     Label2: TLabel;
-    Memo1: TMemo;
-    Edit1: TEdit;
-    Button2: TButton;
-    Label4: TLabel;
-    Label5: TLabel;
+    MoreInfoMemo: TMemo;
+    PasswordEdit: TEdit;
+    EncryptDecryptButton: TButton;
+    PasswordEditLabel: TLabel;
+    MoreInfoLabel: TLabel;
     SaveDialog1: TSaveDialog;
-    CheckBox1: TCheckBox;
+    MetadataCheckbox: TCheckBox;
     procedure DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
       const Point: TPointF);
     procedure DropTarget1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure EncryptDecryptButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
     FChosenFile: string;
@@ -73,7 +73,7 @@ begin
     Abort;
 end;
 
-procedure TDecoderMainForm.Button2Click(Sender: TObject);
+procedure TDecoderMainForm.EncryptDecryptButtonClick(Sender: TObject);
 var
   AOutput: string;
   fp: TDC4Parameters;
@@ -100,7 +100,7 @@ begin
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          DeCoder4X_DecodeFile(FChosenFile, AOutput, Edit1.Text, OnProgressProc);
+          DeCoder4X_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
         end;
       end;
@@ -113,7 +113,7 @@ begin
           // #0 means that the password char '*' is used
           if not InputQuery(Caption, #0 + 'Please repeat the password for encryption', RepeatedPassword) then
             Abort;
-          if RepeatedPassword <> Edit1.Text then
+          if RepeatedPassword <> PasswordEdit.Text then
             ShowMessage('Password mismatch!')  // TODO: can this box have style and icon?
           else
             break;
@@ -123,7 +123,7 @@ begin
         begin
           AOutput := SaveDialog1.FileName;
           fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
-          if CheckBox1.IsChecked then
+          if MetadataCheckbox.IsChecked then
           begin
             fp.ContainFileOrigName := fpExpose;
             fp.ContainFileOrigSize := true;
@@ -135,14 +135,13 @@ begin
             fp.ContainFileOrigSize := false;
             fp.ContainFileOrigDate := false;
           end;
-          // TODO: UTF-8 passwords!
-          DeCoder4X_EncodeFile(FChosenFile, AOutput, Edit1.Text, fp, OnProgressProc);
+          DeCoder4X_EncodeFile(FChosenFile, AOutput, PasswordEdit.Text, fp, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
         end;
       end;
       {$ENDREGION}
     end;
-    Edit1.Text := '';
+    PasswordEdit.Text := '';
   except
     ProgressBar1.Visible := false;
   end;
@@ -165,23 +164,23 @@ end;
 
 procedure TDecoderMainForm.GuiShowElements(AElements: TDcGuiElements);
 begin
-  Label4.Visible := gePassword in AElements;
-  Edit1.Visible := gePassword in AElements;
-  Label5.Visible := geInfos in AElements;
-  Memo1.Visible := geInfos in AElements;
-  CheckBox1.Visible := geMetadataCheckbox in AElements;
-  Button2.Visible := geStartButton in AElements;
-  if gePassword in AElements then Edit1.SetFocus;
+  PasswordEditLabel.Visible := gePassword in AElements;
+  PasswordEdit.Visible := gePassword in AElements;
+  MoreInfoLabel.Visible := geInfos in AElements;
+  MoreInfoMemo.Visible := geInfos in AElements;
+  MetadataCheckbox.Visible := geMetadataCheckbox in AElements;
+  EncryptDecryptButton.Visible := geStartButton in AElements;
+  if gePassword in AElements then PasswordEdit.SetFocus;
 
   if (geStartButton in AElements) and not (gePassword in AElements) then
-    Button2.Position.X := Edit1.Position.X
+    EncryptDecryptButton.Position.X := PasswordEdit.Position.X
   else
-    Button2.Position.X := Edit1.Position.X + Edit1.Width + 8;
+    EncryptDecryptButton.Position.X := PasswordEdit.Position.X + PasswordEdit.Width + 8;
 
   if (geInfos in AElements) and not (geMetadataCheckbox in AElements) then
-    Memo1.Height := CheckBox1.Position.Y + CheckBox1.Height - Memo1.Position.Y
+    MoreInfoMemo.Height := MetadataCheckbox.Position.Y + MetadataCheckbox.Height - MoreInfoMemo.Position.Y
   else
-    Memo1.Height := CheckBox1.Position.Y - (DecoderMainForm.ClientHeight - (CheckBox1.Position.Y + CheckBox1.Height)) - Memo1.Position.Y;
+    MoreInfoMemo.Height := MetadataCheckbox.Position.Y - (DecoderMainForm.ClientHeight - (MetadataCheckbox.Position.Y + MetadataCheckbox.Height)) - MoreInfoMemo.Position.Y;
 end;
 
 procedure TDecoderMainForm.FormCreate(Sender: TObject);
@@ -199,7 +198,7 @@ procedure TDecoderMainForm.OpenFile(const AFileName: string);
 var
   fp: TDC4Parameters;
 begin
-  Memo1.Lines.Clear;
+  MoreInfoMemo.Lines.Clear;
 
   FChosenFile := AFileName;
 
@@ -208,8 +207,8 @@ begin
   if DeCoder10_DetectFile(AFileName) then
   begin
     Label2.Text := 'This file was encrypted using (De)Coder 1.0' + #13#10 + 'Do you want to decrypt it now?';
-    Button2.Tag := TAG_DC10_DECRYPT;
-    Button2.Text := 'Decrypt';
+    EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
+    EncryptDecryptButton.Text := 'Decrypt';
     GuiShowElements([geStartButton]);
     Exit;
   end;
@@ -225,9 +224,9 @@ begin
     else
       Label2.Text := 'This file was encrypted using (De)Coder 4.0';
     Label2.Text := Label2.Text + #13#10 + 'Do you want to decrypt it now?';
-    DeCoder4X_PrintFileInfo(FDC4FileInfo, Memo1.Lines);
-    Button2.Tag := TAG_DC4X_DECRYPT;
-    Button2.Text := 'Decrypt';
+    DeCoder4X_PrintFileInfo(FDC4FileInfo, MoreInfoMemo.Lines);
+    EncryptDecryptButton.Tag := TAG_DC4X_DECRYPT;
+    EncryptDecryptButton.Text := 'Decrypt';
     GuiShowElements([gePassword, geStartButton, geInfos]);
     Exit;
   except
@@ -243,15 +242,15 @@ begin
 
   {$REGION 'Encrypt'}
   Label2.Text := 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.' + #13#10 + 'Do you want to encrypt it now?';
-  Button2.Tag := TAG_DC50_ENCRYPT;
-  Button2.Text := 'Encrypt';
-  Memo1.Lines.Add('File name: ' + ExtractFileName(AFileName));
-  Memo1.Lines.Add('Location: ' + ExtractFilePath(AFileName));
-  Memo1.Lines.Add('File type: ' + GetFileTypename(AFileName));
-  Memo1.Lines.Add('File size: ' + FileSizeHumanReadable(TFile.GetSize(AFileName)));
-  Memo1.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
+  EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
+  EncryptDecryptButton.Text := 'Encrypt';
+  MoreInfoMemo.Lines.Add('File name: ' + ExtractFileName(AFileName));
+  MoreInfoMemo.Lines.Add('Location: ' + ExtractFilePath(AFileName));
+  MoreInfoMemo.Lines.Add('File type: ' + GetFileTypename(AFileName));
+  MoreInfoMemo.Lines.Add('File size: ' + FileSizeHumanReadable(TFile.GetSize(AFileName)));
+  MoreInfoMemo.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
   fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
-  CheckBox1.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
+  MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
   // TODO: Add note about (De)Coder 2.x and 3.x
   GuiShowElements([gePassword, geStartButton, geInfos, geMetadataCheckbox]);
   {$ENDREGION}

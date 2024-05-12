@@ -61,7 +61,7 @@ object DecoderMainForm: TDecoderMainForm
     Left = 24
     Top = 24
   end
-  object Memo1: TMemo
+  object MoreInfoMemo: TMemo
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
     ReadOnly = True
@@ -75,7 +75,7 @@ object DecoderMainForm: TDecoderMainForm
     Viewport.Width = 475.000000000000000000
     Viewport.Height = 118.000000000000000000
   end
-  object Edit1: TEdit
+  object PasswordEdit: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 1
     Password = True
@@ -85,23 +85,23 @@ object DecoderMainForm: TDecoderMainForm
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
   end
-  object Button2: TButton
+  object EncryptDecryptButton: TButton
     Default = True
     Position.X = 352.000000000000000000
     Position.Y = 152.000000000000000000
     TabOrder = 2
     Text = 'Decrypt'
     TextSettings.Trimming = None
-    OnClick = Button2Click
+    OnClick = EncryptDecryptButtonClick
   end
-  object Label4: TLabel
+  object PasswordEditLabel: TLabel
     Position.X = 152.000000000000000000
     Position.Y = 134.000000000000000000
     TextSettings.Trimming = None
     Text = 'Password:'
     TabOrder = 13
   end
-  object Label5: TLabel
+  object MoreInfoLabel: TLabel
     Position.X = 152.000000000000000000
     Position.Y = 182.000000000000000000
     Size.Width = 450.000000000000000000
@@ -111,7 +111,7 @@ object DecoderMainForm: TDecoderMainForm
     Text = 'Technical information about this file:'
     TabOrder = 10
   end
-  object CheckBox1: TCheckBox
+  object MetadataCheckbox: TCheckBox
     Anchors = [akLeft, akBottom]
     Position.X = 152.000000000000000000
     Position.Y = 330.000000000000000000
