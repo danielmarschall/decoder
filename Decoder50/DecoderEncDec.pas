@@ -888,12 +888,12 @@ end;
 function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 begin
   result.Dc4FormatVersion := V;
-  if V < fvDc41Beta then
-    result.ShouldBeZLibCompressed := No
+  if V >= fvDc50 then
+    result.ShouldBeZLibCompressed := Auto
   else if V >= fvDc41Beta then
     result.ShouldBeZLibCompressed := Yes
   else
-    result.ShouldBeZLibCompressed := Auto;
+    result.ShouldBeZLibCompressed := No;
   result.KDF := kvKdfx;
   result.PBKDF_Iterations := 0; // only for KdfVersion=kvPbkdf2
   if V >= fvDc50 then
@@ -1106,7 +1106,15 @@ var
   tmpWS: WideString;
   outFileDidExist: boolean;
   PasswordRBS: RawByteString;
-  ATempFileName: string; // If IsZLibCompressed, then it is a temporary .dc5_tmp file, otherwise undefined
+  (*
+  IsFolder   IsZLib    SourceFile           ATempFileNameZLib       Source stream
+  ---------------------------------------------------------------------------------------
+  false      false     AFileName            undefined               AFileName
+  false      true      AFileName===========>AFileName.zlib          AFileName_tmp.zlib
+  true       false     AFileName_tmp.7z     undefined               AFileName_tmp.7z
+  true       true      AFileName_tmp.7z====>AFileName.zlib          AFileName_tmp.zlib
+  *)
+  ATempFileNameZLib: string; // If IsZLibCompressed, then it is a temporary .dc5_tmp file, otherwise undefined
   SourceFile: string; // If IsFolder, then it is a temporary .7z file, otherwise it is AFileName
 const
   // Measurement of 21367	files
@@ -1134,7 +1142,7 @@ begin
   if not IsFolder and not FileExists(AFileName) then
     raise Exception.CreateFmt('File or folder %s not found', [AFileName]);
   outFileDidExist := FileExists(AOutput);
-  ATempFileName := '';
+  ATempFileNameZLib := '';
   try
     try
       {$REGION 'Encrypt folder? => Pack it to a file (version 1+)'}
@@ -1142,12 +1150,12 @@ begin
       begin
         if AParameters.Dc4FormatVersion >= fvDc50 then
         begin
-          SourceFile := 'DecoderFolderTmp.7z'; // TODO: random name
+          SourceFile := ExcludeTrailingPathDelimiter(AFileName) + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z';
           SevenZipFolder(AFileName, SourceFile, OnProgressProc);
         end
         else if AParameters.Dc4FormatVersion >= fvDc40 then
         begin
-          SourceFile := 'DecoderFolderTmp.zip'; // TODO: random name
+          SourceFile := ExcludeTrailingPathDelimiter(AFileName) + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip';
           SevenZipFolder(AFileName, SourceFile, OnProgressProc);
         end
         else
@@ -1167,8 +1175,8 @@ begin
         Yes:   IsZLibCompressed := true;
         No:    IsZLibCompressed := false;
         Auto:  IsZLibCompressed := not IsFolder and
-                                   not IsCompressedFileType(SourceFile)
-                                    or (ShannonEntropy(SourceFile, OnProgressProc) < ShannonEntropyTreshold);
+                                   not IsCompressedFileType(SourceFile) and
+                                   (ShannonEntropy(SourceFile, OnProgressProc) < ShannonEntropyTreshold);
       end;
       KdfVersion := AParameters.KDF;
       PbkdfIterations := AParameters.PBKDF_Iterations;
@@ -1199,9 +1207,9 @@ begin
       {$REGION 'Compress stream if the file type is not already compressed'}
       if IsZLibCompressed and (V>=fvDc40) then
       begin
-        ATempFileName := ChangeFileExt(SourceFile, '.dc5_tmp'); // TODO: random extension!
-        ZLib_Compress(SourceFile, ATempFileName, OnProgressProc);
-        Source := TFileStream.Create(ATempFileName, fmOpenRead or fmShareDenyWrite);
+        ATempFileNameZLib := ChangeFileExt(AFileName, '_Tmp_' + RandStringFileNameFriendly(10) + '.zlib');
+        ZLib_Compress(SourceFile, ATempFileNameZLib, OnProgressProc);
+        Source := TFileStream.Create(ATempFileNameZLib, fmOpenRead or fmShareDenyWrite);
       end
       else
       begin
@@ -1540,8 +1548,8 @@ begin
       if Assigned(ahash) then FreeAndNil(ahash);
       if IsFolder and (SourceFile<>'') and FileExists(SourceFile) then
         SecureDeleteFile(SourceFile); // delete temporary 7z/zip file
-      if IsZLibCompressed and (ATempFileName<>'') and FileExists(ATempFileName) then
-        SecureDeleteFile(ATempFileName);
+      if IsZLibCompressed and (ATempFileNameZLib<>'') and FileExists(ATempFileNameZLib) then
+        SecureDeleteFile(ATempFileNameZLib);
     end;
   except
     try
@@ -1581,7 +1589,6 @@ var
   bakSourcePosEncryptedData: Int64;
   IsZLibCompressed: boolean;
   IsFolder: boolean;
-  ATempFileName: string; // Used if ZLibCompressed is true to show the temp file that will be used instead of AFileName
   PbkdfIterations: Long;
   OrigNameEncrypted: RawByteString;
   iBlockFillMode: Byte;
@@ -1590,6 +1597,16 @@ var
   OnlyReadFileInfo: boolean;
   outFileDidExist: boolean;
   PasswordRBS: RawByteString;
+  (*
+  IsFolder   IsZLib    ATempFileName7ipOrDirectOutput   ATempFileNameZLib    tempstream
+  ---------------------------------------------------------------------------------------
+  false      false     AOutput                          undefined            AOutput
+  false      true      AOutput                          AOutput_tmp.zlib     AOutput_tmp.zlib
+  true       false     AOutput_tmp.7z                   undefined            AOutput_tmp.7z
+  true       true      AOutput_tmp.7z                   AOutput_tmp.zlib     AOutput_tmp.zlib
+  *)
+  ATempFileNameZLib: string; // If ZLibCompressed, then =AOutput+.zlib, otherwise undefined
+  ATempFileName7ipOrDirectOutput: string; // If IsFolder, then =AOutput+.7z, else =AOutput
 begin
   if not FileExists(AFileName) then
     raise Exception.CreateFmt('File or folder %s not found', [AFileName]);
@@ -1600,7 +1617,8 @@ begin
   IsZLibCompressed := false;
   IsFolder := false;
   OnlyReadFileInfo := AOutput = '';
-  ATempFileName := '';
+  ATempFileNameZLib := '';
+  ATempFileName7ipOrDirectOutput := '';
   OrigFileSize := -1;
   OrigFileDate := -1;
   outFileDidExist := FileExists(AOutput);
@@ -1629,22 +1647,6 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION 'Create output stream'}
-        if IsZLibCompressed then
-        begin
-          if not OnlyReadFileInfo then
-          begin
-            ATempFileName := ChangeFileExt(AFileName, '.dc5_tmp'); // TODO: random extension!
-            tempstream := TFileStream.Create(ATempFileName, fmCreate);
-          end;
-        end
-        else
-        begin
-          if not OnlyReadFileInfo then
-            tempstream := TFileStream.Create(AOutput, fmCreate);
-        end;
-        {$ENDREGION}
-
         {$REGION '2. Version (version 1+)'}
         if not Assigned(CipherClass) then
         begin
@@ -1658,6 +1660,35 @@ begin
         else
         begin
           V := fvHagenReddmannExample;
+        end;
+        {$ENDREGION}
+
+        {$REGION 'Create output stream'}
+        if not OnlyReadFileInfo then
+        begin
+          if IsFolder then
+          begin
+            if V >= fvDc50 then
+              ATempFileName7ipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z'
+            else if V >= fvDc50 then
+              ATempFileName7ipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip'
+            else
+              Assert(False);
+          end
+          else
+          begin
+            ATempFileName7ipOrDirectOutput := AOutput;
+          end;
+
+          if IsZLibCompressed then
+          begin
+            ATempFileNameZLib := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.zlib';
+            tempstream := TFileStream.Create(ATempFileNameZLib, fmCreate);
+          end
+          else
+          begin
+            tempstream := TFileStream.Create(ATempFileName7ipOrDirectOutput, fmCreate);
+          end;
         end;
         {$ENDREGION}
 
@@ -2055,27 +2086,31 @@ begin
         {$ENDREGION}
 
         {$REGION 'Decompress stuff'}
-        if not OnlyReadFileInfo and IsZLibCompressed then
+        if not OnlyReadFileInfo then
         begin
           FreeAndNil(tempstream);
-          ZLib_Decompress(ATempFileName, AOutput, OnProgressProc);
-        end;
 
-        if not OnlyReadFileInfo and IsFolder then
-        begin
-          if V >= fvDc50 then
+          if IsZLibCompressed then
           begin
-            // TODO: this is not good. AOutput needs .7z extension actually!!!
-            SevenZipExtract(AOutput, RelToAbs(AOutput + '_Extract'), OnProgressProc);
-          end
-          else if V >= fvDc40 then
+            // If IsFolder, then decompress AOutput_tmp.zlib to AOutput_tmp.7z
+            //              else decompress AOutput_tmp.zlib to AOutput
+            ZLib_Decompress(ATempFileNameZLib, ATempFileName7ipOrDirectOutput, OnProgressProc);
+          end;
+
+          if IsFolder then
           begin
-            // TODO: this is not good. AOutput needs .zip extension actually!!!
-            SevenZipExtract(AOutput, RelToAbs(AOutput + '_Extract'), OnProgressProc);
-          end
-          else
-          begin
-            Assert(False);
+            if V >= fvDc50 then
+            begin
+              SevenZipExtract(ATempFileName7ipOrDirectOutput, RelToAbs(AOutput), OnProgressProc);
+            end
+            else if V >= fvDc40 then
+            begin
+              SevenZipExtract(ATempFileName7ipOrDirectOutput, RelToAbs(AOutput), OnProgressProc);
+            end
+            else
+            begin
+              Assert(False);
+            end;
           end;
         end;
         {$ENDREGION}
@@ -2122,10 +2157,10 @@ begin
       if Assigned(tempstream) then FreeAndNil(tempstream);
       if Assigned(Cipher) then FreeAndNil(Cipher);
       if Assigned(ahash) then FreeAndNil(ahash);
-      if IsZLibCompressed and (ATempFileName<>'') and FileExists(ATempFileName) then
-        SecureDeleteFile(ATempFileName);
-      if IsFolder and (AOutput<>'') and FileExists(AOutput) then
-        SecureDeleteFile(AOutput);
+      if IsZLibCompressed and (ATempFileNameZLib<>'') and FileExists(ATempFileNameZLib) then
+        SecureDeleteFile(ATempFileNameZLib);
+      if IsFolder and (ATempFileName7ipOrDirectOutput<>'') and FileExists(ATempFileName7ipOrDirectOutput) then
+        SecureDeleteFile(ATempFileName7ipOrDirectOutput);
     end;
   except
     try

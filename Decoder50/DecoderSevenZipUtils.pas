@@ -26,6 +26,7 @@ type
 function SevenZipProgress(sender: Pointer; total: boolean; value: int64): HRESULT; stdcall;
 var
   state: TDcProgressState;
+  docall: boolean;
 begin
   if total then
   begin
@@ -33,12 +34,20 @@ begin
   end
   else if Assigned(PSevenZipProgressContext(sender)^.DecProgress) then
   begin
+    docall := true;
     if value = 0 then
-      state := TDcProgressState.Started
+    begin
+      state := TDcProgressState.Started;
+      PSevenZipProgressContext(sender)^.FinishedSent := false;
+    end
     else if value = PSevenZipProgressContext(sender)^.Max then
-      state := TDcProgressState.Finished
+    begin
+      state := TDcProgressState.Finished;
+    end
     else
+    begin
       state := TDcProgressState.Processing;
+    end;
     if state = TDcProgressState.Started then
     begin
       if PSevenZipProgressContext(sender)^.StartSent then
@@ -49,22 +58,12 @@ begin
     if state = TDcProgressState.Finished then
     begin
       if PSevenZipProgressContext(sender)^.FinishedSent then
-        state := TDcProgressState.Processing
+        docall := false // state := TDcProgressState.Processing
       else
         PSevenZipProgressContext(sender)^.FinishedSent := true;
     end;
-
-
-
-    // TODO: writeln nicht richtig... da gibts noch ein problem???
-    (*
-100,00% ... Decode stream = Done
-100,00% ... ZLib decompress = Done
-100,00% ... 7zip Unpack folder = Done
-100,00% ... 7zip Unpack folderDelete file: hallohallo.dc5_tmp
-    *)
-
-    PSevenZipProgressContext(sender)^.DecProgress(PSevenZipProgressContext(sender)^.Max, value, PSevenZipProgressContext(sender)^.Task, state);
+    if docall then
+      PSevenZipProgressContext(sender)^.DecProgress(PSevenZipProgressContext(sender)^.Max, value, PSevenZipProgressContext(sender)^.Task, state);
   end;
   {$IFDEF Console}
   Result := S_OK;
