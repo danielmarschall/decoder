@@ -2,6 +2,11 @@ unit DecoderFmxMain;
 
 // TODO: Should we also offer SecureDelete in this GUI?
 // TODO: Make app multi-lingual!
+// TODO: folder delete: forbid C: ?
+// TODO: set icon for EXE files
+// TODO: 7za impl
+// TODO: SVN alte quelltextordner verschieben
+// TODO: put versioninfo in EXE
 
 interface
 
@@ -19,9 +24,9 @@ type
   TDecoderMainForm = class(TForm)
     DropTarget1: TDropTarget;
     ProgressBar1: TProgressBar;
-    Label1: TLabel;
+    OpenedFileLabel: TLabel;
     OpenDialog1: TOpenDialog;
-    Label2: TLabel;
+    ShortInfoLabel: TLabel;
     MoreInfoMemo: TMemo;
     PasswordEdit: TEdit;
     EncryptDecryptButton: TButton;
@@ -114,7 +119,7 @@ begin
           if not InputQuery(Caption, #0 + 'Please repeat the password for encryption', RepeatedPassword) then
             Abort;
           if RepeatedPassword <> PasswordEdit.Text then
-            ShowMessage('Password mismatch!')  // TODO: can this box have style and icon?
+            MessageDlg('Passwords do not match!', TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOk], 0)
           else
             break;
         end;
@@ -185,28 +190,42 @@ end;
 
 procedure TDecoderMainForm.FormCreate(Sender: TObject);
 begin
-  Label2.Text :=
+  ShortInfoLabel.Text :=
     'Built ' + DateTimeToStr(GetOwnBuildTimestamp) + #13#10 +
     'Developed by Daniel Marschall - www.daniel-marschall.de' + #13#10 +
     'FREEWARE - Licensed under the terms of the Apache 2.0 License';
   ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
   GuiShowElements([]);
   Application.Title := Caption; // because of Message dialog captions
+  if ParamCount > 1 then
+    MessageDlg('Please only choose one file!', TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOK], 0)
+  else if ParamCount = 1 then
+    OpenFile(ParamStr(1));
 end;
 
 procedure TDecoderMainForm.OpenFile(const AFileName: string);
 var
   fp: TDC4Parameters;
 begin
+  // TODO: Once DecoderEncDec.pas implements 7za.exe support, remove this check
+  if DirectoryExists(AFileName) then
+    raise Exception.CreateFmt('Directories cannot be processed! Please compress them using ZIP/7zip/RAR first, before encrypting using (De)Coder', [AFileName]);
+
+  if not FileExists(AFileName) then
+    raise Exception.CreateFmt('File %s does not exist!', [AFileName]);
+
   MoreInfoMemo.Lines.Clear;
+  MoreInfoMemo.Lines.Add('File name: ' + ExtractFileName(AFileName));
+  MoreInfoMemo.Lines.Add('Location: ' + ExtractFilePath(AFileName));
 
   FChosenFile := AFileName;
 
+  OpenedFileLabel.Text := ExtractFileName(FChosenFile);
+
   {$REGION '(De)Coder 1.0 decrypt'}
-  Label1.Text := ExtractFileName(OpenDialog1.FileName);
   if DeCoder10_DetectFile(AFileName) then
   begin
-    Label2.Text := 'This file was encrypted using (De)Coder 1.0' + #13#10 + 'Do you want to decrypt it now?';
+    ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 1.0' + #13#10 + 'Do you want to decrypt it now?';
     EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
     EncryptDecryptButton.Text := 'Decrypt';
     GuiShowElements([geStartButton]);
@@ -218,12 +237,12 @@ begin
   try
     FDC4FileInfo := DeCoder4X_FileInfo(AFileName);
     if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
-      Label2.Text := 'This file was encrypted using (De)Coder 5.0'
+      ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 5.0'
     else if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc41Beta then
-      Label2.Text := 'This file was encrypted using (De)Coder 4.1 Beta'
+      ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 4.1 Beta'
     else
-      Label2.Text := 'This file was encrypted using (De)Coder 4.0';
-    Label2.Text := Label2.Text + #13#10 + 'Do you want to decrypt it now?';
+      ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 4.0';
+    ShortInfoLabel.Text := ShortInfoLabel.Text + #13#10 + 'Do you want to decrypt it now?';
     DeCoder4X_PrintFileInfo(FDC4FileInfo, MoreInfoMemo.Lines);
     EncryptDecryptButton.Tag := TAG_DC4X_DECRYPT;
     EncryptDecryptButton.Text := 'Decrypt';
@@ -234,18 +253,16 @@ begin
     begin
       if AFileName.EndsWith('.dc4', true) or AFileName.EndsWith('.dc5', true) then
       begin
-        Label2.Text := 'This is not a valid (De)Coder 4.0/5.0 file!' + #13#10 + E.Message;
+        ShortInfoLabel.Text := 'This is not a valid (De)Coder 4.0/5.0 file!' + #13#10 + E.Message;
       end;
     end;
   end;
   {$ENDREGION}
 
   {$REGION 'Encrypt'}
-  Label2.Text := 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.' + #13#10 + 'Do you want to encrypt it now?';
+  ShortInfoLabel.Text := 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.' + #13#10 + 'Do you want to encrypt it now?';
   EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
   EncryptDecryptButton.Text := 'Encrypt';
-  MoreInfoMemo.Lines.Add('File name: ' + ExtractFileName(AFileName));
-  MoreInfoMemo.Lines.Add('Location: ' + ExtractFilePath(AFileName));
   MoreInfoMemo.Lines.Add('File type: ' + GetFileTypename(AFileName));
   MoreInfoMemo.Lines.Add('File size: ' + FileSizeHumanReadable(TFile.GetSize(AFileName)));
   MoreInfoMemo.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
