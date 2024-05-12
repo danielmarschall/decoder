@@ -1146,6 +1146,7 @@ begin
       tempstream := TFileStream.Create(AOutput, fmCreate);
 
       {$REGION 'Generate key used by HMAC and Cipher'}
+      // Note: "MGF1" is "KDF1" just without seed. So we do not need to implement MGF1 at all.
       if KDFVersion = kvKdfx then
         Key := TDECHashExtended(ahash).KDFx(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
       else if KDFVersion = kvKdf1 then
