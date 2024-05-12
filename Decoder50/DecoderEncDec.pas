@@ -70,7 +70,7 @@ function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
 
 procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDcProgressEvent=nil);
-function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_DecodeFile(const AFileName: string; var AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 
 // Note: A password is only required for reading an user-key-encrypted filename (feature was only available in format version 3)
 function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
@@ -1035,7 +1035,12 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 begin
   sl.Add('File Format: (De)Coder 4.x/5.x Encrypted File');
   sl.Add('Sub-Format: ' + DC4_SUBFORMAT_VERSION[fi.Parameters.Dc4FormatVersion]);
-  sl.Add('Is compressed folder: ' + YesNo(fi.IsCompressedFolder));
+  if fi.IsCompressedFolder and (fi.Parameters.Dc4FormatVersion >= fvDc50) then
+    sl.Add('Is compressed folder: Yes (7-Zip format)')
+  else if fi.IsCompressedFolder and (fi.Parameters.Dc4FormatVersion >= fvDc40) then
+    sl.Add('Is compressed folder: Yes (ZIP format)')
+  else
+    sl.Add('Is compressed folder: No');
   sl.Add('Data additionally ZLib-compressed: ' + YesNo(fi.IsZLibCompressed));
   if fi.OrigFileName = '' then
     sl.Add('Original filename: unknown')
@@ -1560,7 +1565,7 @@ begin
   end;
 end;
 
-function _DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
+function _DeCoder4X_DecodeFile(const AFileName: string; var AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 var
   Source: TFileStream;
   OrigFileSize: Int64;
@@ -1598,7 +1603,7 @@ var
   outFileDidExist: boolean;
   PasswordRBS: RawByteString;
   (*
-  IsFolder   IsZLib    ATempFileName7ipOrDirectOutput   ATempFileNameZLib    tempstream
+  IsFolder   IsZLib    ATempFileNameZipOrDirectOutput   ATempFileNameZLib    tempstream
   ---------------------------------------------------------------------------------------
   false      false     AOutput                          undefined            AOutput
   false      true      AOutput                          AOutput_tmp.zlib     AOutput_tmp.zlib
@@ -1606,7 +1611,7 @@ var
   true       true      AOutput_tmp.7z                   AOutput_tmp.zlib     AOutput_tmp.zlib
   *)
   ATempFileNameZLib: string; // If ZLibCompressed, then =AOutput+.zlib, otherwise undefined
-  ATempFileName7ipOrDirectOutput: string; // If IsFolder, then =AOutput+.7z, else =AOutput
+  ATempFileNameZipOrDirectOutput: string; // If IsFolder, then =AOutput+.7z, else =AOutput
 begin
   if not FileExists(AFileName) then
     raise Exception.CreateFmt('File or folder %s not found', [AFileName]);
@@ -1618,7 +1623,7 @@ begin
   IsFolder := false;
   OnlyReadFileInfo := AOutput = '';
   ATempFileNameZLib := '';
-  ATempFileName7ipOrDirectOutput := '';
+  ATempFileNameZipOrDirectOutput := '';
   OrigFileSize := -1;
   OrigFileDate := -1;
   outFileDidExist := FileExists(AOutput);
@@ -1669,15 +1674,15 @@ begin
           if IsFolder then
           begin
             if V >= fvDc50 then
-              ATempFileName7ipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z'
+              ATempFileNameZipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z'
             else if V >= fvDc50 then
-              ATempFileName7ipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip'
+              ATempFileNameZipOrDirectOutput := AOutput + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip'
             else
               Assert(False);
           end
           else
           begin
-            ATempFileName7ipOrDirectOutput := AOutput;
+            ATempFileNameZipOrDirectOutput := AOutput;
           end;
 
           if IsZLibCompressed then
@@ -1687,7 +1692,7 @@ begin
           end
           else
           begin
-            tempstream := TFileStream.Create(ATempFileName7ipOrDirectOutput, fmCreate);
+            tempstream := TFileStream.Create(ATempFileNameZipOrDirectOutput, fmCreate);
           end;
         end;
         {$ENDREGION}
@@ -2094,18 +2099,33 @@ begin
           begin
             // If IsFolder, then decompress AOutput_tmp.zlib to AOutput_tmp.7z
             //              else decompress AOutput_tmp.zlib to AOutput
-            ZLib_Decompress(ATempFileNameZLib, ATempFileName7ipOrDirectOutput, OnProgressProc);
+            ZLib_Decompress(ATempFileNameZLib, ATempFileNameZipOrDirectOutput, OnProgressProc);
           end;
 
           if IsFolder then
           begin
-            if V >= fvDc50 then
+            if V >= fvDc40 then
             begin
-              SevenZipExtract(ATempFileName7ipOrDirectOutput, RelToAbs(AOutput), OnProgressProc);
-            end
-            else if V >= fvDc40 then
-            begin
-              SevenZipExtract(ATempFileName7ipOrDirectOutput, RelToAbs(AOutput), OnProgressProc);
+              try
+                // version 1..3 = ZIP
+                // version 4+ = 7zip
+                SevenZipExtract(ATempFileNameZipOrDirectOutput, RelToAbs(AOutput), OnProgressProc);
+              except
+                // Can happen if the 7z.*.dll files are missing. Let the user unpack themselves
+                // Remove the temp stuff from the name
+                if RenameFile(ATempFileNameZipOrDirectOutput, AOutput + ExtractFileExt(ATempFileNameZipOrDirectOutput)) then
+                begin
+                  // and let the calling procedure know that the name is different
+                  AOutput := AOutput + ExtractFileExt(ATempFileNameZipOrDirectOutput);
+                end
+                else
+                begin
+                  // and let the calling procedure know that the name is different
+                  AOutput := ATempFileNameZipOrDirectOutput;
+                end;
+                // and avoid that the file is deleted (if renaming failed)
+                ATempFileNameZipOrDirectOutput := '';
+              end;
             end
             else
             begin
@@ -2159,8 +2179,8 @@ begin
       if Assigned(ahash) then FreeAndNil(ahash);
       if IsZLibCompressed and (ATempFileNameZLib<>'') and FileExists(ATempFileNameZLib) then
         SecureDeleteFile(ATempFileNameZLib);
-      if IsFolder and (ATempFileName7ipOrDirectOutput<>'') and FileExists(ATempFileName7ipOrDirectOutput) then
-        SecureDeleteFile(ATempFileName7ipOrDirectOutput);
+      if IsFolder and (ATempFileNameZipOrDirectOutput<>'') and FileExists(ATempFileNameZipOrDirectOutput) then
+        SecureDeleteFile(ATempFileNameZipOrDirectOutput);
     end;
   except
     try
@@ -2172,11 +2192,14 @@ begin
 end;
 
 function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
+var
+  dummy: string;
 begin
-  result := _DeCoder4X_DecodeFile(AFileName, '', APassword, OnProgressProc);
+  dummy := '';
+  result := _DeCoder4X_DecodeFile(AFileName, dummy, APassword, OnProgressProc);
 end;
 
-function DeCoder4X_DecodeFile(const AFileName, AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_DecodeFile(const AFileName: string; var AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
 begin
   if AOutput = '' then raise Exception.Create('Output filename must not be empty');
   result := _DeCoder4X_DecodeFile(AFileName, AOutput, APassword, OnProgressProc);

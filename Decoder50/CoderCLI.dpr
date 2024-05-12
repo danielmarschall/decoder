@@ -493,6 +493,7 @@ var
   fp: TDC4Parameters;
   fi: TDC4FileInfo;
   sl: TStringList;
+  OutputFile: string;
   OwnName: string;
 
 begin
@@ -601,7 +602,8 @@ begin
     else if SameText(ParamStr(1), Cmd_DC50_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
-      DeCoder4X_DecodeFile(ParamStr(2), ParamStr(3), ParamStr(4), OnProgressProc);
+      OutputFile := ParamStr(3);
+      DeCoder4X_DecodeFile(ParamStr(2), OutputFile, ParamStr(4), OnProgressProc);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC50_FileInfo) and (ParamCount = 2) then

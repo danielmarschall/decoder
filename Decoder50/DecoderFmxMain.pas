@@ -208,9 +208,13 @@ begin
     'FREEWARE - Licensed under the terms of the Apache 2.0 License' + #13#10 +
     #13#10 +
     #13#10 +
-    'Please note that you can also use (De)Coder as command line tool' + #13#10 +
-    'The command line version can also decrypt old (De)Coder 2.x and 3.x files' + #13#10 +
-    'and can wipe files and folders in a secure way.';
+    'Please note that (De)Coder also comes with a command-line tool,' + #13#10 +
+    'which can additionally decrypt old (De)Coder 2.x and 3.x files,' + #13#10 +
+    'and it can also wipe files and folders in a secure way.' + #13#10 +
+    #13#10 +
+    #13#10 +
+    'Please use this tool at your own risk! Files can only be decrypted with the' + #13#10 +
+    'correct passwords, and they must be 100% free of damage!';
   ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
   ProgressStepLabel.Visible := false;
   GuiShowElements([]);
