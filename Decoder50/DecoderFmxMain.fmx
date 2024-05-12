@@ -42,18 +42,18 @@ object DecoderMainForm: TDecoderMainForm
     TextSettings.WordWrap = False
     TextSettings.Trimming = None
     Text = 'ViaThinkSoft (De)Coder 5.0'
-    TabOrder = 19
+    TabOrder = 25
   end
   object ShortInfoLabel: TLabel
     Anchors = [akLeft, akTop, akRight]
     Position.X = 152.000000000000000000
     Position.Y = 57.000000000000000000
     Size.Width = 479.000000000000000000
-    Size.Height = 69.000000000000000000
+    Size.Height = 292.000000000000000000
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 22
+    TabOrder = 28
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All files (*.*)|*.*'
@@ -71,7 +71,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.Width = 479.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 14
+    TabOrder = 20
     Viewport.Width = 475.000000000000000000
     Viewport.Height = 118.000000000000000000
   end

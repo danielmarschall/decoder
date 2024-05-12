@@ -1,10 +1,6 @@
 unit DecoderFmxMain;
 
-// TODO: Should we also offer SecureDelete in this GUI?
 // TODO: Make CLI and FMX-App multi-lingual!
-// TODO: folder delete: forbid C: ?
-// TODO: 7za impl
-// TODO: put versioninfo in EXE
 
 interface
 
@@ -108,7 +104,7 @@ begin
         end;
       end;
       {$ENDREGION}
-      {$REGION 'Encrypt'}
+      {$REGION '(De)Coder 5.0 encrypt'}
       TAG_DC50_ENCRYPT:
       begin
         while true do
@@ -191,7 +187,12 @@ begin
   ShortInfoLabel.Text :=
     'Built ' + DateTimeToStr(GetOwnBuildTimestamp) + #13#10 +
     'Developed by Daniel Marschall - www.daniel-marschall.de' + #13#10 +
-    'FREEWARE - Licensed under the terms of the Apache 2.0 License';
+    'FREEWARE - Licensed under the terms of the Apache 2.0 License' + #13#10 +
+    #13#10 +
+    #13#10 +
+    'Please note that you can also use (De)Coder as command line tool' + #13#10 +
+    'The command line version can also decrypt old (De)Coder 2.x and 3.x files' + #13#10 +
+    'and can wipe files and folders in a secure way.';
   ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
   GuiShowElements([]);
   Application.Title := Caption; // because of Message dialog captions
@@ -257,7 +258,7 @@ begin
   end;
   {$ENDREGION}
 
-  {$REGION 'Encrypt'}
+  {$REGION '(De)Coder 5.0 encrypt'}
   ShortInfoLabel.Text := 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.' + #13#10 + 'Do you want to encrypt it now?';
   EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
   EncryptDecryptButton.Text := 'Encrypt';
@@ -266,7 +267,6 @@ begin
   MoreInfoMemo.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
   fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
   MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
-  // TODO: Add note about (De)Coder 2.x and 3.x
   GuiShowElements([gePassword, geStartButton, geInfos, geMetadataCheckbox]);
   {$ENDREGION}
 end;

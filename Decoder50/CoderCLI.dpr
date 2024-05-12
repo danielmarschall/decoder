@@ -659,6 +659,7 @@ begin
       OwnName := ChangeFileExt(Uppercase(ExtractFileName(ParamStr(0))),'');
 
       WriteLn(Format('%-35s Built %s', ['ViaThinkSoft (De)Coder 5.0', DateTimeToStr(GetOwnBuildTimestamp)]));
+      WriteLn(Format('%-35s %s', ['Developed by Daniel Marschall', 'www.daniel-marschall.de']));
       WriteLn(Format('FREEWARE - Licensed under the terms of the Apache 2.0 License', []));
       WriteLn('');
 
@@ -683,6 +684,7 @@ begin
       WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.2 format (INSECURE)', [OwnName, Cmd_DC32_EnCrypt]));
       WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.2 format (INSECURE)', [OwnName, Cmd_DC32_DeCrypt]));
       WriteLn('');
+
       WriteLn('=== Extras ===');
       WriteLn(Format('%s %-13s <File>     -- Wipes a file from a disk in a secure way', [OwnName, Cmd_SecureDeleteFile]));
       WriteLn(Format('%s %-13s <Folder>   -- Wipes a complete folder from a disk in a secure way', [OwnName, Cmd_SecureDeleteFolder]));
@@ -696,9 +698,9 @@ begin
       begin
         ExitCode := 0;
         WriteLn('');
-        WriteLn('Press any key to exit...');
+        Write('Press any key to exit...');
         ReadLn;
-        Exit;
+        WriteLn('');
       end
       else if (ParamCount=1) and (SameText(ParamStr(1), Cmd_Help) or SameText(ParamStr(1), '--help') or SameText(ParamStr(1), '/?')) then
         ExitCode := 0
@@ -723,8 +725,9 @@ begin
     WriteLn('');
     WriteLn('Exit code: ' + IntToStr(ExitCode));
     WriteLn('');
-    WriteLn('Press any key to continue...');
+    Write('Press any key to continue...');
     ReadLn;
+    WriteLn('');
   end;
   {$WARN SYMBOL_PLATFORM ON}
   {$ENDIF}

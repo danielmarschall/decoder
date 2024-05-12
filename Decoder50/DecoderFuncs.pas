@@ -280,6 +280,8 @@ var
   ADirNameAbs: string;
   IsDriveOrShareRoot: boolean;
 begin
+  // TODO: Forbid to wipe C: ?
+
   if not DirectoryExists(ADirName) then Exit(False);
   result := true;
 

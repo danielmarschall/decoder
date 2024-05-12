@@ -120,9 +120,15 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_MajorVer>5</VerInfo_MajorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=(De)Coder 5.0 (Command Line);FileVersion=5.0.0.0;InternalName=Coder5;LegalCopyright=(C) 2001-2024 Daniel Marschall / ViaThinkSot;LegalTrademarks=;OriginalFilename=CoderCLI.32.exe;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=(De)Coder;ProductVersion=5.0;Comments=www.daniel-marschall.de</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_MajorVer>5</VerInfo_MajorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=(De)Coder 5.0 (Command Line);FileVersion=5.0.0.0;InternalName=Coder5;LegalCopyright=(C) 2001-2024 Daniel Marschall / ViaThinkSoft;LegalTrademarks=;OriginalFilename=CoderCLI.64.exe;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=(De)Coder;ProductVersion=5.0;Comments=www.daniel-marschall.de</VerInfo_Keys>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
