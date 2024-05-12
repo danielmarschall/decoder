@@ -80,9 +80,9 @@ begin
   // Extract 7z.dll from the 32 an 64 bit installer binaries
   // Do not take the 7za.dll ones from the extra archive
   {$IFDEF Win64}
-  result := '7z64.dll';
+  result := '7z.64.dll';
   {$ELSE}
-  result := '7z32.dll';
+  result := '7z.32.dll';
   {$ENDIF}
   if not FileExists(Result) then
     raise Exception.CreateFmt('File %s not found. Therefore, cannot compress or uncompress folders.', [result]);
@@ -96,14 +96,17 @@ begin
   ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
   ProgressCtx.Task := '7zip Pack folder';
   ProgressCtx.DecProgress := AOnProgress;
-  Arch := CreateOutArchive(CLSID_CFormat7z, SevenZipGetDll);     // TODO: also zip format
+  if AArchFile.EndsWith('.7z', true) then
+    Arch := CreateOutArchive(CLSID_CFormat7z, SevenZipGetDll)
+  else if AArchFile.EndsWith('.zip', true) then
+    Arch := CreateOutArchive(CLSID_CFormatZip, SevenZipGetDll)
+  else
+    raise Exception.Create('File extension missing for SevenZipFolder()');
   Arch.AddFiles(AFolderName, '', '*', true);
-  // Arch.AddStream(aStream, soReference, faArchive, CurrentFileTime, CurrentFileTime, 'folder\test.bin', false, false);
   SetCompressionLevel(Arch, 5);
   SevenZipSetCompressionMethod(Arch, m7BZip2);
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.SaveToFile(AArchFile);
-  // Arch.SaveToStream(aStream);
 end;
 
 procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProgressEvent=nil);
@@ -114,7 +117,12 @@ begin
   ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
   ProgressCtx.Task := '7zip Unpack folder';
   ProgressCtx.DecProgress := AOnProgress;
-  Arch := CreateInArchive(CLSID_CFormat7z, SevenZipGetDll);      // TODO: also zip format
+  if AArchFile.EndsWith('.7z', true) then
+    Arch := CreateInArchive(CLSID_CFormat7z, SevenZipGetDll)
+  else if AArchFile.EndsWith('.zip', true) then
+    Arch := CreateInArchive(CLSID_CFormatZip, SevenZipGetDll)
+  else
+    raise Exception.Create('File extension missing for SevenZipExtract()');
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.OpenFile(AArchFile);
   Arch.ExtractTo(AFolder);

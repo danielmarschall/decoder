@@ -289,7 +289,12 @@ var
   ADirNameAbs: string;
   IsDriveOrShareRoot: boolean;
 begin
-  // TODO: Forbid to wipe C: ?
+  if SameText(ADirName, 'C:\') or
+     SameText(ADirName, 'C:/') or
+     SameText(ADirName, 'C:') then
+  begin
+    raise Exception.Create('This program will not destroy your computer.');
+  end;
 
   if not DirectoryExists(ADirName) then Exit(False);
   result := true;

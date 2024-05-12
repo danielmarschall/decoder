@@ -11,13 +11,14 @@ object DecoderMainForm: TDecoderMainForm
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
+  OnShow = FormShow
   DesignerMasterStyle = 0
   object DropTarget1: TDropTarget
     Filter = '*'
     Position.X = 8.000000000000000000
     Position.Y = 8.000000000000000000
     TabOrder = 0
-    Text = 'Click or drag file here'
+    Text = 'Click or drag file or folder here'
     OnDropped = DropTarget1Dropped
     OnClick = DropTarget1Click
   end
@@ -42,7 +43,7 @@ object DecoderMainForm: TDecoderMainForm
     TextSettings.WordWrap = False
     TextSettings.Trimming = None
     Text = 'ViaThinkSoft (De)Coder 5.0'
-    TabOrder = 27
+    TabOrder = 31
   end
   object ShortInfoLabel: TLabel
     Anchors = [akLeft, akTop, akRight]
@@ -53,7 +54,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 30
+    TabOrder = 34
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All files (*.*)|*.*'
@@ -71,7 +72,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.Width = 479.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 22
+    TabOrder = 26
     Viewport.Width = 475.000000000000000000
     Viewport.Height = 118.000000000000000000
   end

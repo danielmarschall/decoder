@@ -1353,7 +1353,7 @@ begin
       if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigSize and IsFolder then
-          tempstream.WriteInt64(-1)  // TODO: Implement directory GetSize
+          tempstream.WriteInt64(-1)  // TODO (not so important): Implement directory GetSize
         else if AParameters.ContainFileOrigSize then
           tempstream.WriteInt64(Int64(TFile.GetSize(AFileName)))
         else
@@ -1366,7 +1366,7 @@ begin
       if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigDate and IsFolder then
-          tempstream.WriteInt64(-1) // TODO: Implement directory last write time
+          tempstream.WriteInt64(-1) // TODO (not so important): Implement directory last write time
         else if AParameters.ContainFileOrigDate then
           tempstream.WriteInt64(DateTimeToUnix(TFile.GetLastWriteTime(AFileName), false))
         else

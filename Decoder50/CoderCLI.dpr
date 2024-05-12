@@ -662,7 +662,7 @@ begin
       WriteLn(Format('FREEWARE - Licensed under the terms of the Apache 2.0 License', []));
       WriteLn('');
 
-      WriteLn('=== Encrypting and decrypting ===');
+      WriteLn('=== Encrypting and decrypting files or folders ===');
       WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using (De)Coder 5.0', [OwnName, Cmd_DC50_EnCrypt_NoInfo]));
       WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Same as %s, but with metadata name+size+date', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Cmd_DC50_EnCrypt_NoInfo]));
       WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a (De)Coder 4.x or 5.x encrypted file', [OwnName, Cmd_DC50_DeCrypt]));

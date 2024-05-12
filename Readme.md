@@ -13,6 +13,7 @@ New features in version 5.0:
 - Command-line support
 - Drag and drop support
 - Completely re-written with the latest development tools (Delphi 12, DEC 6.5)
+- Encrypt and decrypt files or folders (integrated 7zip packer)
 
 
 **Disclaimer:** Use this software at your own risk! ViaThinkSoft is not responsbile for any damages which
