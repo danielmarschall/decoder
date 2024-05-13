@@ -1,2 +1,6 @@
 
 https://github.com/danielmarschall/d7zip
+
+which originates to the original source code
+https://code.google.com/archive/p/d7zip/source/default/source
+with a few improvements (modification remarks at the file header)
