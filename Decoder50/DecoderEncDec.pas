@@ -1693,9 +1693,11 @@ begin
           // 01 = (De)Coder 4.0
           // 02 = (De)Coder 4.1 Beta
           // 03 = (De)Coder 4.1 Final Cancelled (never released)
-          V := TDc4FormatVersion(Source.ReadByte);
-          // if too big, it will automatically be set to the first element in the enum (=fvHagenReddmannExample)
-          if V <> fvHagenReddmannExample then V_Detected := true;
+          iTmp := Source.ReadByte;
+          if (iTmp < {Low(TDc4FormatVersion)}Ord(fvDc40)) or (iTmp > {High(TDc4FormatVersion)}Ord(fvDc41FinalCancelled)) then
+            raise Exception.Create('Format not supported');
+          V := TDc4FormatVersion(iTmp);
+          V_Detected := true;
         end;
         {$ENDREGION}
 
@@ -1895,7 +1897,13 @@ begin
         // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
         // For PBKDF2, a DWORD with the iterations follows
         if V >= fvDc50 then
-          KdfVersion := TKdfVersion(Source.ReadByte)
+        begin
+          iTmp := Source.ReadByte;
+          if (iTmp<Ord(Low(TKdfVersion))) or (iTmp>Ord(High(TKdfVersion))) then
+            KdfVersion := kvUnknown
+          else
+            KdfVersion := TKdfVersion(iTmp);
+        end
         else
           KdfVersion := kvKdfx;
         if KDFVersion = kvUnknown then {this will also be set if the value is too big}
@@ -1920,7 +1928,9 @@ begin
                          Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
                 What I don't understand: How should the program know if the user password or the "hash" password is used??
           *)
-          if PasswordRBS = '' then raise Exception.Create('An empty password is not allowed');
+          if PasswordRBS = '' then
+            raise Exception.Create('An empty password is not allowed');
+
           if KDFVersion = kvKdfx then
             Key := TDECHashExtended(ahash).KDFx(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
           else if KDFVersion = kvKdf1 then
