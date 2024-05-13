@@ -16,7 +16,8 @@ uses
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
   DecoderOldCiphers in 'DecoderOldCiphers.pas',
-  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas';
+  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas',
+  sevenzip in 'VCL_SevenZip\sevenzip.pas';
 
 procedure OnProgressProc(Size, Pos: Int64; const Task: string; State: TDcProgressState);
 begin

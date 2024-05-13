@@ -103,7 +103,6 @@ begin
   else
     raise Exception.Create('File extension missing for SevenZipFolder()');
   Arch.AddFiles(AFolderName, '', '*', true);
-  // TODO: hidden folders are not packed!!!!!!!
   SetCompressionLevel(Arch, 5);
   SevenZipSetCompressionMethod(Arch, m7BZip2);
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
