@@ -6,7 +6,7 @@ uses
   SysUtils, DECCipherBase, DECCipherFormats, DECTypes;
 
 type
-  TCipher_RepeatingXorSequence = class (TDECFormattedCipher)
+  TCipher_RepeatingXorSequence = class(TDECFormattedCipher)
   strict private
     FKey: PUInt8Array;
     FKeySize: Integer;
@@ -20,13 +20,15 @@ type
     class function Context: TCipherContext; override;
   end;
 
+  TCipher_VtsDeCoderOldCipher = class abstract (TCipher_RepeatingXorSequence);
+
   // TCipher_VtsDeCoder10 does not exist as DEC Cipher,
   // because this is a cipher that changes the size of the blocks
   // It is implemented in DecoderEncDec.pas
 
   // XOR-Stream 00 01 02 03 ... FF 00 01 ...
   // No key provided
-  TCipher_VtsDeCoder20 = class(TCipher_RepeatingXorSequence)
+  TCipher_VtsDeCoder20 = class(TCipher_VtsDeCoderOldCipher)
   strict protected
     procedure DoInit(const Key; Size: Integer); override;
   public
@@ -36,19 +38,19 @@ type
   // The exact implementation is not 100% sure because the binaries and
   // source of this version are lost.
   // It is porbably the same as Version 2.2, just with the key 0..255 instead 0..256
-  TCipher_VtsDeCoder21 = class(TCipher_RepeatingXorSequence)
+  TCipher_VtsDeCoder21 = class(TCipher_VtsDeCoderOldCipher)
   strict protected
     procedure DoInit(const Key; Size: Integer); override;
   end;
 
   // XOR-Stream 60 61 62 ... FF 00 01 ...    if key is 60, etc.
-  TCipher_VtsDeCoder22 = class(TCipher_RepeatingXorSequence)
+  TCipher_VtsDeCoder22 = class(TCipher_VtsDeCoderOldCipher)
   strict protected
     procedure DoInit(const Key; Size: Integer); override;
   end;
 
   // XOR-Stream repeated password, e.g. "foobarfoobarfoobar", etc.
-  TCipher_VtsDeCoder30 = class(TCipher_RepeatingXorSequence)
+  TCipher_VtsDeCoder30 = class(TCipher_VtsDeCoderOldCipher)
   strict protected
     procedure DoInit(const Key; Size: Integer); override;
   end;
@@ -58,13 +60,13 @@ type
   // Since Beta 3.3 has the same output as 3.0, it is very likely that
   // 3.1 was either like 3.0 or faulty like 3.2. One of these.
   (*
-  TCipher_VtsDeCoder31 = class(TCipher_VtsDeCoder30);
+  TCipher_VtsDeCoder31 = class(TCipher_VtsDeCoderOldCipher);
   *)
 
   // (De)Coder 3.2 probably had a faulty implementation.
   // The XOR stream was "oobarr" instead of "foobar"
   // Version 3.0 and 3.3 beta were OK.  Unsure if 3.1 was OK
-  TCipher_VtsDeCoder32 = class(TCipher_RepeatingXorSequence)
+  TCipher_VtsDeCoder32 = class(TCipher_VtsDeCoderOldCipher)
   strict protected
     procedure DoInit(const Key; Size: Integer); override;
   end;

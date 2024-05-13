@@ -96,7 +96,6 @@ const
     // * = can be changed in the file format
   );
 
-
 function DeCoder4X_GetOID(V: TDc4FormatVersion): string;
 begin
   // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) stdX(X) }
@@ -162,7 +161,7 @@ begin
             (cn = 'THash_Whirlpool1');
 end;
 
-function DC_DEC_Identity(IdentityBase: Int64; ClassName: string; dc51compat: boolean): Int64;
+function DC_DEC_Identity(IdentityBase: Int64; const ClassName: string; dc51compat: boolean): Int64;
 var
   Signature: AnsiString;
   cn: string;
@@ -176,15 +175,13 @@ begin
     if cn = 'TCipher_AES'{DEC6.0} then cn := 'TCipher_Rijndael'{DEC5.1};
     if cn = 'TCipher_Magma' then cn := 'TCipher_Gost'; // TCipher_Magma is an alias for TCipher_Gost
 
-    // You must not use DC2 or DC3 ciphers in DC4/DC5 files
-    // Also, these ciphers/hashes were not available in older DEC, so we don't accept them
-    if StartsText('TCipher_VtsDeCoder', cn) or
-       not DC_DEC_ClassExistedInDEC51(cn) then
+    // These ciphers/hashes were not available in older DEC, so we don't accept them
+    if not DC_DEC_ClassExistedInDEC51(cn) then
     begin
       Exit(-1); // raise Exception.Create('This DEC class did not exist in old DEC 5.1c');
     end;
 
-    Signature := AnsiString   (StringOfChar(#$5A, 256 - Length(cn)) + AnsiUpperCase(cn));
+    Signature := AnsiString(StringOfChar(#$5A, 256 - Length(cn)) + AnsiUpperCase(cn));
     Result := CRC32(IdentityBase, Signature[1], Length(Signature));
   end
   else
@@ -214,7 +211,7 @@ begin
   if NoException then
     result := nil
   else
-    raise Exception.CreateFmt('Hash ID %.8x with base %.8x not found', [Identity, IdentityBase]);
+    raise Exception.CreateFmt('Hash ID 0x%.8x with base 0x%.8x not found', [Identity, IdentityBase]);
 end;
 
 function DC_DEC_CipherById(IdentityBase, Identity: Int64; dc51compat: boolean; NoException: boolean=false): TDECCipherClass;
@@ -226,7 +223,7 @@ begin
   begin
     c := p.Value;
     if (c <> nil) and
-       not StartsText('TCipher_VtsDeCoder', c.ClassName) and
+       not c.InheritsFrom(TCipher_VtsDeCoderOldCipher) and
        (Identity = DC_DEC_Identity(IdentityBase, c.ClassName, dc51compat)) then
     begin
       result := TDecCipherClass(c);
@@ -236,7 +233,7 @@ begin
   if NoException then
     result := nil
   else
-    raise Exception.CreateFmt('Cipher ID %.8x with base %.8x not found', [Identity, IdentityBase]);
+    raise Exception.CreateFmt('Cipher ID 0x%.8x with base 0x%.8x not found', [Identity, IdentityBase]);
 end;
 
 {$IFDEF Debug}
@@ -293,14 +290,14 @@ begin
     begin
       c := p.Value;
       cn := c.ClassName;
-      if StartsText('TCipher_VtsDeCoder', cn) then continue;
-      if (V<fvDc50) and (cn='TCipher_AES') then cn := 'TCipher_Rijndael';
+      if c.InheritsFrom(TCipher_VtsDeCoderOldCipher) then continue;
+      if (V<fvDc50) and (cn='TCipher_AES') then cn := 'TCipher_Rijndael';  // TCipher_Rijndael (DEC5.x) was renamed to TCipher_AES (DEC6.x)
       if (V<fvDc50) and not DC_DEC_ClassExistedInDEC51(cn) then continue;
       addinfo := '';
       if (V<fvDc50) and (cn='TCipher_Shark') then addinfo := ', faulty implementation';
       if (V<fvDc50) and (cn='TCipher_SCOP') then addinfo := ', faulty implementation?';
       if (V<fvDc50) and (cn='TCipher_Rijndael') then addinfo := ', default';
-      if (V>=fvDc50) and (cn='TCipher_AES') then addinfo := ', default';
+      if (V>=fvDc50) and (cn='TCipher_AES') then addinfo := ', default'; // TCipher_Rijndael was renamed to TCipher_AES
       sl.Add(
         '0x'+IntToHex(DC_DEC_Identity(DC4_ID_BASES[V], cn, V<fvDc50), 8) + #9 +
         cn +
@@ -318,6 +315,10 @@ begin
   end;
 end;
 {$ENDIF}
+
+const
+  DC10_HEAD = 'COD'+#1#1;
+  DC10_FOOT = #1#1#1;
 
 procedure DeCoder10_EncodeFile(const AFileName, AOutput: String; ForceUpperCase: boolean; OnProgressProc: TDcProgressEvent=nil);
 var
@@ -342,7 +343,7 @@ begin
     try
       if Assigned(OnProgressProc) then OnProgressProc(Source.Size, 0, SDC1Encode, TDcProgressState.Started);
       tempstream := TFileStream.Create(AOutput, fmCreate);
-      tempstream.WriteRawByteString('COD'+#1#1);
+      tempstream.WriteRawByteString(DC10_HEAD);
       for I := 1 to 27 do
         let[I] := AnsiChar(Chr(199+I));
       while Source.Position < Source.Size do
@@ -366,7 +367,7 @@ begin
         end;
         tempstream.WriteRawByteString(rbsOut);
       end;
-      tempstream.WriteRawByteString(#1#1#1);
+      tempstream.WriteRawByteString(DC10_FOOT);
       if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Size, SDC1Encode, TDcProgressState.Finished);
     finally
       FreeAndNil(Source);
@@ -407,17 +408,18 @@ begin
   tempstream := nil;
   try
     try
-      if (Source.Size < 5+3) or ((Source.Size-5) mod 3 <> 0) then
+      if (Source.Size < Length(DC10_HEAD)+Length(DC10_FOOT)) or
+         ((Source.Size-Length(DC10_HEAD)-Length(DC10_FOOT)) mod 3 <> 0) then
         wrongFormat := true
       else
       begin
-        rbs := Source.ReadRawByteString(5);
-        Source.Position := Source.Size - 3;
-        wrongFormat := (rbs <> 'COD'+#1#1) or (Source.ReadRawByteString(3) <> #1#1#1);
+        rbs := Source.ReadRawByteString(Length(DC10_HEAD));
+        Source.Position := Source.Size - Length(DC10_FOOT);
+        wrongFormat := (rbs <> DC10_HEAD) or (Source.ReadRawByteString(Length(DC10_FOOT)) <> DC10_FOOT);
       end;
       if wrongFormat then
         raise Exception.Create('This file was not encrypted with (De)Coder 1.0');
-      Source.Position := 5;
+      Source.Position := Length(DC10_HEAD);
 
       tempstream := TFileStream.Create(AOutput, fmCreate);
       if Assigned(OnProgressProc) then OnProgressProc(Source.Size, 0, SDC1Decode, TDcProgressState.Started);
@@ -426,7 +428,7 @@ begin
       for I := 1 to 27 do
         inl[I] := AnsiChar(Chr(199+I));
       SetLength(b,3);
-      while Source.Position < Source.Size-3 do
+      while Source.Position < Source.Size-Length(DC10_FOOT) do
       begin
         if Assigned(OnProgressProc) then OnProgressProc(Source.Size, Source.Position, SDC1Decode, TDCProgressState.Processing);
         rbsIn := Source.ReadRawByteString(Min(chunksize,Source.Size-Source.Position));
@@ -1393,6 +1395,7 @@ begin
       {$ENDREGION}
 
       {$REGION '5. Cipher identity (version 0 and 2+)'}
+      Assert(not CipherClass.InheritsFrom(TCipher_VtsDeCoderOldCipher)); // You must not use DC2 or DC3 ciphers in DC4/DC5 files
       if V <> fvDc40 then
         tempstream.WriteLongBE(DC_DEC_Identity(idBase, CipherClass.ClassName, V<fvDc50));
       {$ENDREGION}
@@ -2167,6 +2170,7 @@ begin
         end;
         {$ENDREGION}
 
+        {$REGION 'Output file info and parameters'}
         ZeroMemory(@result, Sizeof(result));
         result.IsZLibCompressed := IsZLibCompressed;
         result.IsCompressedFolder := IsFolder;
@@ -2200,6 +2204,7 @@ begin
         else
           result.Parameters.GCMAuthTagSizeInBytes := 0;
         DeCoder4X_ValidateParameterBlock(result.Parameters); // Should always pass
+        {$ENDREGION}
       except
         if Assigned(tempstream) then ProtectStream(tempstream);
         raise;
