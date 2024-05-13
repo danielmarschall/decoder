@@ -1108,6 +1108,10 @@ function T7zInArchive.GetStream(index: Cardinal;
   var outStream: ISequentialOutStream; askExtractMode: NAskMode): HRESULT;
 var
   path: string;
+  LFileHnd: THandle;
+  LFileAttr: Cardinal;
+  ft1, ft2, ft3: TFileTime;
+  V: OleVariant;
 begin
   try
     if askExtractMode = kExtract then
@@ -1125,7 +1129,37 @@ begin
           path := FExtractPath + GetItemPath(index);
           ForceDirectories(ExtractFilePath(path));
           outStream := T7zStream.Create(TFileStream.Create(path, fmCreate), soOwned);
+        end
+        else
+        begin
+          // Daniel Marschall 13.05.2024
+          path := FExtractPath + GetItemPath(index);
+          ForceDirectories(path);
         end;
+
+        // Daniel Marschall 13.05.2024
+        LFileAttr := 0;
+        SetFileAttributes(PChar(path), Cardinal(GetItemProp(index, kpidAttributes)));
+        LFileHnd := CreateFile(PChar(Path), GENERIC_WRITE, FILE_SHARE_WRITE, nil,
+          OPEN_EXISTING, LFileAttr, 0);
+        try
+          ft1.dwLowDateTime := Lo(Int64(GetItemProp(index, kpidCreationTime)));
+          ft1.dwHighDateTime := Hi(Int64(GetItemProp(index, kpidCreationTime)));
+          ft2.dwLowDateTime := Lo(Int64(GetItemProp(index, kpidLastAccessTime)));
+          ft2.dwHighDateTime := Hi(Int64(GetItemProp(index, kpidLastAccessTime)));
+
+          // TODO: geht nicht, weil der stream das datum scheinbar überschreibt beim schließen!
+          V := GetItemProp(index, kpidLastWriteTime);
+          if TPropVariant(V).vt = VT_FILETIME then
+          begin
+            ft3 := TPropVariant(V).filetime;
+            SetFileTime(LFileHnd, nil, nil, @ft3);
+          end;
+
+        finally
+          CloseHandle(LFileHnd);
+        end;
+
       end;
     Result := S_OK;
   except
@@ -1494,7 +1528,7 @@ type
     SourceMode: TSourceMode;
     Stream: TStream;
     Attributes: Cardinal;
-    CreationTime, LastWriteTime: TFileTime;
+    CreationTime, LastWriteTime, LastAccessTime: TFileTime;
     Path: UnicodeString;
     IsFolder, IsAnti: boolean;
     FileName: TFileName;
@@ -1544,36 +1578,78 @@ var
     f: TSearchRec;
     i: integer;
     item: T7zBatchItem;
+    alsoIncludeEmptyFolders: boolean;
   begin
+    // Partially Re-written by Daniel Marschall to inclide empty and hidden dirs, 13 May 2024
+
+    alsoIncludeEmptyFolders := false;
+    for i := 0 to willlist.Count - 1 do
+    begin
+      if willlist[i] = '*' then
+      begin
+        alsoIncludeEmptyFolders := true;
+      end;
+    end;
+
     if recurse then
     begin
-      if FindFirst(p + '*.*', faDirectory, f) = 0 then
+      if FindFirst(p + '*', faDirectory or faReadOnly or faHidden or faSysFile or faArchive, f) = 0 then
       repeat
-        if (f.Name[1] <> '.') then
-          Traverse(IncludeTrailingPathDelimiter(p + f.Name));
+        if (f.Name <> '.') and (f.Name <> '..') then
+        begin
+          if DirectoryExists(IncludeTrailingPathDelimiter(p) + f.Name) then
+          begin
+            Traverse(IncludeTrailingPathDelimiter(p) + f.Name);
+
+            if alsoIncludeEmptyFolders then
+            begin
+              item := T7zBatchItem.Create;
+              Item.SourceMode := smFile;
+              item.Stream := nil;
+              item.FileName := IncludeTrailingPathDelimiter(p) + f.Name;
+              item.Path := copy(item.FileName, lencut, length(item.FileName) - lencut + 1);
+              if path <> '' then
+                item.Path := IncludeTrailingPathDelimiter(path) + item.Path;
+              item.CreationTime := f.FindData.ftCreationTime;
+              item.LastWriteTime := f.FindData.ftLastWriteTime;
+              item.LastAccessTime := f.FindData.ftLastAccessTime;
+              item.Attributes := f.FindData.dwFileAttributes;
+              item.Size := f.Size;
+              item.IsFolder := true;
+              item.IsAnti := False;
+              item.Ownership := soOwned;
+              FBatchList.Add(item);
+            end;
+
+          end;
+        end;
       until FindNext(f) <> 0;
       SysUtils.FindClose(f);
     end;
 
     for i := 0 to willlist.Count - 1 do
     begin
-      if FindFirst(p + willlist[i], faReadOnly or faHidden or faSysFile or faArchive, f) = 0 then
+      if FindFirst(IncludeTrailingPathDelimiter(p) + willlist[i], faReadOnly or faHidden or faSysFile or faArchive, f) = 0 then
       repeat
-        item := T7zBatchItem.Create;
-        Item.SourceMode := smFile;
-        item.Stream := nil;
-        item.FileName := p + f.Name;
-        item.Path := copy(item.FileName, lencut, length(item.FileName) - lencut + 1);
-        if path <> '' then
-          item.Path := IncludeTrailingPathDelimiter(path) + item.Path;
-        item.CreationTime := f.FindData.ftCreationTime;
-        item.LastWriteTime := f.FindData.ftLastWriteTime;
-        item.Attributes := f.FindData.dwFileAttributes;
-        item.Size := f.Size;
-        item.IsFolder := false;
-        item.IsAnti := False;
-        item.Ownership := soOwned;
-        FBatchList.Add(item);
+        if (f.Name <> '.') and (f.Name <> '..') then
+        begin
+          item := T7zBatchItem.Create;
+          Item.SourceMode := smFile;
+          item.Stream := nil;
+          item.FileName := IncludeTrailingPathDelimiter(p) + f.Name;
+          item.Path := copy(item.FileName, lencut, length(item.FileName) - lencut + 1);
+          if path <> '' then
+            item.Path := IncludeTrailingPathDelimiter(path) + item.Path;
+          item.CreationTime := f.FindData.ftCreationTime;
+          item.LastWriteTime := f.FindData.ftLastWriteTime;
+          item.LastAccessTime := f.FindData.ftLastAccessTime;
+          item.Attributes := f.FindData.dwFileAttributes;
+          item.Size := f.Size;
+          item.IsFolder := false;
+          item.IsAnti := False;
+          item.Ownership := soOwned;
+          FBatchList.Add(item);
+        end;
       until FindNext(f) <> 0;
       SysUtils.FindClose(f);
     end;
@@ -1602,6 +1678,8 @@ begin
   item.Attributes := Attributes;
   item.CreationTime := CreationTime;
   item.LastWriteTime := LastWriteTime;
+  item.LastAccessTime.dwLowDateTime := 0;
+  item.LastAccessTime.dwHighDateTime := 0;
   item.Path := Path;
   item.IsFolder := IsFolder;
   item.IsAnti := IsAnti;
@@ -1683,6 +1761,11 @@ begin
           TPropVariant(value).vt := VT_FILETIME;
           TPropVariant(value).filetime := item.LastWriteTime;
         end;
+      kpidLastAccessTime:
+        begin
+          TPropVariant(value).vt := VT_FILETIME;
+          TPropVariant(value).filetime := item.LastAccessTime;
+        end;
       kpidPath:
         begin
           if item.Path <> '' then
@@ -1701,7 +1784,7 @@ begin
         end;
       kpidIsAnti: value := item.IsAnti;
     else
-     // beep(0,0);
+      // beep(0,0);
     end;
     Result := S_OK;
   except
