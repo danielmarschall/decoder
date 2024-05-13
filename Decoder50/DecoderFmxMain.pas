@@ -149,6 +149,7 @@ begin
     PasswordEdit.Text := '';
   except
     ProgressBar1.Visible := false;
+    raise;
   end;
 end;
 

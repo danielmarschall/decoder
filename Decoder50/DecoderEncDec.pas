@@ -1949,7 +1949,7 @@ begin
             end));
           Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
           if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
-            raise Exception.Create('HMAC mismatch');
+            raise Exception.Create('HMAC mismatch. The password is probably wrong or the file is corrupt.');
           Source.Position := bakSourcePosEncryptedData;
         end;
         {$ENDREGION}
