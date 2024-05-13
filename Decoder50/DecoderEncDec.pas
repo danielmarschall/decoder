@@ -89,10 +89,11 @@ uses
 const
   DC4_ID_BASES: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of Int64 = (
     $84485225, // Hagen Reddmann Example (no .dc4 files)
-    $59178954, // (De)Coder 4.0 (identities not used)
-    $84671842, // (De)Coder 4.1 beta
-    $19387612, // (De)Coder 4.1 final (cancelled)
+    $59178954, // (De)Coder 4.0
+    $84671842, // (De)Coder 4.1 beta*
+    $19387612, // (De)Coder 4.1 final (cancelled)*
     $1259d82a  // (De)Coder 5.0
+    // * = can be changed in the file format
   );
 
 
@@ -189,7 +190,7 @@ begin
   else
   begin
     // Code copied from TDECObject.Identity
-    // we cannot use TDECClassList.ClassByIdentity, because it does not allow switching of IdentifyBase
+    // we cannot use TDECClassList.ClassByIdentity, because it does not allow switching of IdentityBase
     Signature := RawByteString(StringOfChar(#$5A, 256 - Length(cn)) + UpperCase(cn));
     Result := CRC32(IdentityBase, Signature[Low(Signature)], Length(Signature) * SizeOf(Signature[Low(Signature)]));
   end;
@@ -1385,9 +1386,9 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '4. IdBase (only version 2+)'}
+      {$REGION '4. IdBase (only version 2 and 3)'}
       idBase := DC4_ID_BASES[V];
-      if V >= fvDc41Beta then
+      if (V >= fvDc41Beta) and (V < fvDc50) then
         tempstream.WriteLongBE(idBase);
       {$ENDREGION}
 
@@ -1818,11 +1819,11 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '4. IdBase (only version 2+)'}
-        if (V = fvHagenReddmannExample) or (V = fvDc40) then
-          idBase := DC4_ID_BASES[V] // hardcoded
+        {$REGION '4. IdBase (only version 2 and 3)'}
+        if (V >= fvDc41Beta) and (V < fvDc50) then
+          idBase := Source.ReadLongBE
         else
-          idBase := Source.ReadLongBE;
+          idBase := DC4_ID_BASES[V];
         {$ENDREGION}
 
         {$REGION '5. Cipher identity (only version 0 or 2+)'}

@@ -394,8 +394,7 @@ Offset	Type	Size		Content/Description
 					- Redacted (empty string "", default)
 	Int64LE	8		Original File Size in Bytes, little endian. -1 if redacted (default).
 	Int64LE	8		Original File Date/Time, little endian. Unix Timestamp or -1 if redacted (default).
-	Int32BE	4		DEC 6.5 Idendity-Base, big endian; Default Idendity-Base: 0x1259D82A.
-	Int32BE	4		DEC 6.5 Cipher idendity, big endian. If the default identitiy base 0x1259D82A is used, then the identities are:
+	Int32BE	4		DEC 6.5 Cipher idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
 					0x0005E9C6	TCipher_2DDES (KeySize: 16, BlockSize: 16, BufferSize: 16)
 					0x03676321	TCipher_RC4 (KeySize: 256, BlockSize: 1, BufferSize: 16)
 					0x067B1B39	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -443,7 +442,7 @@ Offset	Type	Size		Content/Description
 					0x08	ECBx	Electronic Code Book
 					0x09	GCM	Galois Counter Mode
 					0x0A	CTS3	double CBC, with less secure padding of truncated final block (deprecated)
-	Int32BE	4		DEC 6.5 Hash idendity, big endian. If the default identitiy base 0x1259D82A is used, then the identities are
+	Int32BE	4		DEC 6.5 Hash idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
 					0x01DCD639	THash_SHA3_256 (DigestSize: 32, BlockSize: 136)
 					0x0BE5E708	THash_SHA1 (DigestSize: 20, BlockSize: 64)
 					0x2F5EA7BA	THash_Keccak_224 (DigestSize: 28, BlockSize: 144)
@@ -523,12 +522,12 @@ Offset	Type	Size		Content/Description
 
 == [APPENDIX A] Links to websites ==
 
-  Source code and program "(De)Coder" downloadable at:
-  https://www.viathinksoft.com/projects/decoder
+  Latest version of this specification:
+  https://github.com/danielmarschall/decoder/blob/master/Decoder50/Private/DC4-Format-Specification.txt
 
-  Other information about the file extension:
-  https://fileinfo.com/extension/dc4
-  
+  Source code and program "(De)Coder" downloadable at:
+  https://github.com/danielmarschall/decoder/
+
   OID which describes this file format:
   https://hosted.oidplus.com/viathinksoft/?goto=oid%3A1.3.6.1.4.1.37476.2.2.1.4
 

@@ -1,6 +1,0 @@
-
-https://github.com/geoffsmith82/d7zip/tree/master
-
-Includes pull requests:
-- https://github.com/geoffsmith82/d7zip/pull/8
-- https://github.com/geoffsmith82/d7zip/pull/9
