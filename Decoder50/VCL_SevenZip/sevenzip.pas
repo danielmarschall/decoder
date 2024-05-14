@@ -21,18 +21,18 @@
 // - Added format GUIDS: TE, UEFIc, UEFIs
 // - Fix Range Check Exception in RINOK(); https://github.com/geoffsmith82/d7zip/pull/8
 // - Avoid unhandled Delphi Exceptions crashing the DLL parent process; https://github.com/geoffsmith82/d7zip/pull/9
-// - Implemented packing and unpacking of empty directories and hidden files
-// - Implemented restoring of the file attributes and modification times
+// - Implemented packing of empty directories, folders which begin with a dot, and hidden files; https://github.com/geoffsmith82/d7zip/pull/10
+// - Implemented restoring of the file attributes and modification times; https://github.com/geoffsmith82/d7zip/pull/11
 
 // TODO:
-// - Sub-folders are not packed! Data loss!
 // - Check what they have done: https://github.com/zedalaye/d7zip/commit/149de16032fe461796857e5eee22c70858cdb4b9
 //                              https://github.com/search?q=d7zip&type=repositories
+//                              + Forks with useful commits?
 
 unit sevenzip;
 {$ALIGN ON}
 {$MINENUMSIZE 4}
-{$WARN SYMBOL_PLATFORM OFF}	
+{$WARN SYMBOL_PLATFORM OFF}
 
 interface
 uses SysUtils, Windows, ActiveX, Classes, Contnrs, System.IOUtils, Math;
@@ -540,7 +540,6 @@ CODER_INTERFACE(ICompressSetCoderProperties, 0x21)
   private
     FStream: TStream;
     FOwnership: TStreamOwnership;
-    // Daniel Marschall 13.05.2024
     FFileName: string;
     FWriteTime: TDateTime;
   protected
@@ -854,7 +853,6 @@ type
     function GetInArchive: IInArchive;
     function GetItemProp(const Item: Cardinal; prop: PROPID): OleVariant;
   protected
-    // Daniel Marschall 13.05.2024
     function GetItemWriteTime(const index: integer): TDateTime;
     function GetItemAttributes(const index: integer): DWORD;
     // I7zInArchive
@@ -1110,7 +1108,6 @@ end;
 
 function T7zInArchive.GetItemAttributes(const index: integer): DWORD;
 begin
-  // Daniel Marschall 13.05.2024
   result := DWORD(GetItemProp(index, kpidAttributes));
 end;
 
@@ -1161,11 +1158,9 @@ begin
         end
         else
         begin
-          // Daniel Marschall 13.05.2024
           path := FExtractPath + GetItemPath(index);
           ForceDirectories(path);
         end;
-        // Daniel Marschall 13.05.2024
         SetFileAttributes(PChar(path), GetItemAttributes(index));
       end;
     Result := S_OK;
@@ -1315,7 +1310,6 @@ function T7zInArchive.GetItemWriteTime(const index: integer): TDateTime;
 var
   v: OleVariant;
 begin
-  // Daniel Marschall 13.05.2024
   v := GetItemProp(index, kpidLastWriteTime);
   if TPropVariant(v).vt = VT_FILETIME then
   begin
@@ -1433,8 +1427,6 @@ begin
   inherited Create;
   FStream := Stream;
   FOwnership := Ownership;
-
-  // Daniel Marschall, 13.05.2024
   FFileName := filename;
   FWriteTime := writeTime;
 end;
@@ -1447,7 +1439,7 @@ begin
     FStream := nil;
   end;
 
-  // Daniel Marschall, 13.05.2024
+  // TODO: Shouldn't this be done somewhere else? Is the flush method the correct place (if flush=finished)?
   if (FFileName<>'') and (CompareValue(FWriteTime,0)<>0) then
     TFile.SetLastWriteTime(FFilename, FWriteTime);
 
@@ -1612,8 +1604,6 @@ var
     item: T7zBatchItem;
     alsoIncludeEmptyFolders: boolean;
   begin
-    // Partially Re-written by Daniel Marschall to inclide empty and hidden dirs, 13 May 2024
-
     alsoIncludeEmptyFolders := false;
     for i := 0 to willlist.Count - 1 do
     begin
@@ -1625,7 +1615,7 @@ var
 
     if recurse then
     begin
-      if FindFirst(p + '*', faDirectory or faReadOnly or faHidden or faSysFile or faArchive, f) = 0 then
+      if FindFirst(IncludeTrailingPathDelimiter(p) + '*', faDirectory or faReadOnly or faHidden or faSysFile or faArchive, f) = 0 then
       repeat
         if (f.Name <> '.') and (f.Name <> '..') then
         begin
