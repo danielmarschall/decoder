@@ -19,10 +19,22 @@ New and improved features in version 5.0:
 - Translated to English
 
 
-**Disclaimer:** Use this software at your own risk! ViaThinkSoft is not responsbile for any damages which
+## Disclaimer
+
+Use this software at your own risk! ViaThinkSoft is not responsbile for any damages which
 may be caused by the usage of this software. Especially when encrypting files, a damaged file,
 a forgotten password or a mistyped password will lead to an irreversible loss of your data.
-ViaThinkSoft is not liable for any program bugs or data loss.
+The developers are not liable for any program bugs or data loss.
+
 Please always backup your unencrypted data before using (De)Coder, or if you choose to delete the
 original unencrypted files, then check at least if the decryption works as expected.
 Please do not download or use the software if you do not agree with these conditions.
+
+
+## Credits
+
+This product uses the following third party components:
+
+- [Delphi Encryption Compendium](https://github.com/MHumm/DelphiEncryptionCompendium/) (License: Apache 2.0)
+- [7zip](https://7-zip.org/) DLL files by Igor Pavlov (License: LGPL)
+- [7zip Wrapper for Delphi](https://github.com/danielmarschall/d7zip/) by Henri Gourvest (License: MPL1.1)
