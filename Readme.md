@@ -23,6 +23,13 @@ A few features like shell integration and installer have been removed,
 to keep the product simple and clean.
 
 
+## Screenshots
+
+![Original file](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot1.png)
+
+![Encoded file](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot2.png)
+
+
 ## Disclaimer
 
 Use this software at your own risk! ViaThinkSoft is not responsible for any damages which

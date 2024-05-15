@@ -1,0 +1,96 @@
+
+Das von Daniel Marschall entwickelte Programm (De)Coder ist nun nach sehr langer Pause in Version 4.0 erschienen. Es gibt etliche Neuerungen und nun eine optimale Datensicherheit durch den AES-Standard.
+
+Es gibt folgende Neuerungen:
+
+[list]
+[*] [b]Multilinguale Unterstützung[/b]
+(De)Coder kann über leicht zu bearbeitende INI-Dateien in verschiedene Sprachen übersetzt werden, da das Hauptprogramm Sprachneutral entwickelt wurde. Die Sprachen Englisch, Französisch und Deutsch werden von ViaThinkSoft bereitgestellt. Die meisten Steuerelemente von (De)Coder akzeptieren mehrzeilige Einträge (### Sequenz in der Sprachdatei) und passen sich der Länge des Eintrages an.
+
+[*] [b]Prozessfortschrittserkennung und Abbruchreaktionen[/b]
+(De)Coder zeigt Ihnen bei jeder Aktion (z.B. Verschlüsselung) den genauen Stand in Prozentangaben an. Somit kann bei großen Dateien eingeschätzt werden, wie lange der Prozess noch dauert. Desweiteren kann mitten bei einer Aktion das Programm abgebrochen werden. Trotz einer Abbruchreaktion wird (De)Coder versuchen, die temporären Dateien zu vernichten.
+
+[*] [b]Hoher Sicherheitsstandard[/b]
+(De)Coder 4.0 verwendet erstmals moderne und weltweit verwendete Algorithmen. Es wird der symmetrische Block-Cipher-Algorithmus "Rijndael" (AES) verwendet. Das Passwort des Ciphers wird durch das Benutzerpasswort und einen 128-Bit Seed, der Zufallswerte enthält, über den Hash-Algorithmus "SHA 512" mit 512 Bit festgelegt. Somit ist jede Datei verschieden - auch wenn sie immer mit dem selben Kennwort verschlüsselt wird. Durch diese Methode kann das Benutzerpasswort unmöglich ermittelt werden. Als Cipher-Modus wird CTS verwendet. Dies ist ein doppelter CBC.
+
+[*] [b]Korrektheit des Benutzerkennworts wird ermittelt[/b]
+Nachdem eine Datei entschlüsselt wurde, wird anhand eines Datei Hashs (wieder mit SHA 512) ermitelt, ob die Datei korrekt entschlüsselt wurde - ist dies nicht der Fall, ist oftmals das Benutzerkennwort falsch.
+
+[*] [b]Befehlszeilenunterstützung[/b]
+Sie können (De)Coder alle Befehle über die Windows-Konsole geben, die sie auch visuell ausführen können. Somit können Sie Ver- und Entschlüsselungen über eine Stapelverarbeitungsdatei ausführen oder (De)Coder in einem anderen Programm durch Aufruf mit Parametern verwenden. (De)Coder arbeitet im Hintergrund und kommt bei dem Befehlszeilenaufruf nicht zum Vorschein.
+
+[*] [b]Drag und Drop-Unterstützung[/b]
+Sie können Dateien und Ordner einfach in das (De)Coder fenster schieben, um Sie zu öffnen.
+
+[*] [b]Eigener Dateityp (*.dc4) - frei konfigurierbar[/b]
+(De)Coder 4.0 besitzt ein eigenes Dateiformat, dass die Erweiterung DC4 besitzt. Sowohl verschlüsselte Ordner als auch verschlüsselte Dateien werden zu den DC4 Dateien, die auf Benutzerwunsch auch (De)Coder 4.0 zugewiesen werden können.
+
+[*] [b]Kontextmenüeintrag für Dateien und Ordner - frei konfigurierbar[/b]
+Auf Benutzerwunsch können auch den Dateien und Ordnern ein Kontextmenüeintrag zugewiesen werden, sodass Sie (De)Coder noch schneller öffnen können.
+
+[*] [b]Installer / Uninstaller[/b]
+(De)Coder 4.0 verfügt über einen mehrsprachigen Installer sowie Uninstaler, um sich optimal in das System zu integrieren.
+
+[*] [b]Schutz vor Keyloggern[/b]
+Seit Version 4.1 sind die Passwortfelder vor softwarebasierenden Keyloggern geschützt, die Tastendrücke abfangen. Nach jeder Eingabe wird ein wenig Datenmüll, der von der Länge her variiert, gesendet, vom Eingabefeld jedoch ignoriert.
+
+[*] [b]Sicheres Löschen[/b]
+Seit Version 4.1 bietet (De)Coder die Möglickeit an, seperate Daten und Ordner vollständig sicher zu löschen.
+
+[*] [b]Sicheres Verschieben[/b]
+Seit Version 4.1 können Sie Dateien und Ordner sicher verschieben. Dies ist ein Kopierprozess mit anschließender sicheren Löschung.
+
+[*] [b]Direktes Öffnen[/b]
+Seit Version 4.1 können Sie verschlüsselte Dateien und Ordner direkt öffnen, ohne Sie an einen bestimmten Ort abzuspeichern.
+
+[*] [b]Höchste Sicherheit[/b]
+Seit Version 4.1 löscht (De)Coder alle temporären Dateien sowie ZIP-Überstände durch mehrmaliges Überschreiben, um Daten auf dem freien Speicherplatz der Festplatte zu schützen.
+
+[*] [b]Dateilisten[/b]
+(De)Coder unterstützt seit Version 4.1 das Anlegen und Verwalten von Dateilisten - dies sind automatisch angelegte ZIP-Archive (begrenzt auf 2,0 GB). Dadurch können Ordner und Dateien direkt in eine DC4-Datei geschoben werden, ohne dass diese vorher in einen Windows-Ordner verschoben werden müssen.
+[/list]
+
+[b]Information:[/b] (De)Coder 4.0 ist nicht kompatibel mit seinen Vorgängern. Das bedeutet, dass Dateien, die mit älteren Versionen von (De)Coder verschlüsselt wurden, nicht mehr eingelesen werden können. Aufgrund der geringen Sicherheit der alten Versionen werden diese auch nicht mehr bei den offiziellen Downloadquellen zum Download angeboten. Wenn Sie alte Dateien besitzen und nicht mehr über die Software, können Sie alte Versionen von (De)Coder [downloadlink=231]hier[/downloadlink] herunterladen.
+
+[b]Disclaimer:[/b] Die Benutzung unserer Software geschieht auf eigene Gefahr! ViaThinkSoft haftet nicht für Schäden die durch die Benutzung dieser Software entstehen könnten. Insbesondere bei der Verschlüsselung führt z.B. eine beschädigte Datei oder ein versehentlich falsch eingegebenes oder vergessenes Passwort zum unwiderruflichen Verlust Ihrer Daten. ViaThinkSoft haftet nicht für Programmfehler und/oder verlorene Daten. Führen Sie stets ein Backup der Originaldateien durch, bevor Sie (De)Coder nutzen und überprüfen Sie stets durch Probe-Entschlüsselung ob die Verschlüsselung einwandfrei verlaufen ist. Bitte laden Sie die Software nicht herunter bzw. installieren Sie die Software nicht, wenn Sie mit den Bedingungen nicht einverstanden sind.
+
+[b]Information:[/b] Beziehen Sie (De)Coder niemals von anderen Quellen. Nur von ViaThinkSoft kompilierte und zertifizierte Fassungen gewährleisen Ihren Schutz.
+
+Bitte beachten Sie, dass (De)Coder 4.1 aufgrund eines Datenverlustes nicht weiterentwickelt werden kann. Es wird jedoch eine Version 5 in Erwägung gezogen, die mit asymmetrischer Verschlüsselung arbeitet und plattformunabhängig sein wird.
+
+
+
+
+
+---
+
+
+
+[img]/pics/decoder.png[/img]
+
+(De)Coder is an encryption software for files and folders developed by Daniel Marschall. It uses the AES encryption.
+
+New features:
+[list]
+[*] Multilingual support
+[*] Progress detection and cancellation reactions
+[*] High safety standard
+[*] Accuracy of the user password is determined
+[*] Command-line support
+[*] Drag and drop support
+[*] Own file type ([*].dc4) - configurable
+[*] Context menu entry for files and folders - free configurable
+[*] Installer / Uninstaller
+[/list]
+
+Version 4.1 contains a number of innovations and improvements. Some of them are:
+[list]
+[*] Protection against keyloggers
+[*] Secure delete
+[*] Safe move
+[*] Direct open
+[*] Maximum security
+[*] File lists
+[/list]
+
+[b]Disclaimer:[/b] Use this software at your own risk! ViaThinkSoft is not responsbile for any damages which may be caused by the usage of this software. Especially when encrypting files, a damaged file, a forgotten password or a mistyped password will lead to an irreversible loss of your data. ViaThinkSoft is not liable for any program bugs or data loss. Please always backup your unencrypted data before using (De)Coder. Please do not download or install the software if you do not agree with these conditions.

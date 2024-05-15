@@ -38,6 +38,9 @@ type
   private
     FChosenFile: string;
     FDC4FileInfo: TDC4FileInfo;
+    InitOpenedFileLabelSize: Single;
+    InitOpenedFileLabelWidth: Single;
+    procedure ChangeOpenedFileLabelText(const AText: string);
     procedure OpenFile(const AFileName: string);
     procedure GuiShowElements(AElements: TDcGuiElements);
     procedure GuiShowChosenFile;
@@ -193,9 +196,25 @@ begin
   end;
 end;
 
+procedure TDecoderMainForm.ChangeOpenedFileLabelText(const AText: string);
+begin
+  If OpenedFileLabel.Tag = 0 then
+  begin
+    OpenedFileLabel.Tag := 1;
+    InitOpenedFileLabelSize := OpenedFileLabel.TextSettings.Font.Size;
+    InitOpenedFileLabelWidth := OpenedFileLabel.Width;
+    OpenedFileLabel.AutoSize := true;
+    OpenedFileLabel.TextSettings.WordWrap := false;
+  end;
+  OpenedFileLabel.Text := AText;
+  OpenedFileLabel.TextSettings.Font.Size := InitOpenedFileLabelSize;
+  while (OpenedFileLabel.Width > InitOpenedFileLabelWidth) and (OpenedFileLabel.TextSettings.Font.Size >= 1) do
+    OpenedFileLabel.TextSettings.Font.Size := OpenedFileLabel.TextSettings.Font.Size - 0.1;
+end;
+
 procedure TDecoderMainForm.GuiShowChosenFile;
 begin
-  OpenedFileLabel.Text := ExtractFileName(FChosenFile);
+  ChangeOpenedFileLabelText(ExtractFileName(FChosenFile));
 end;
 
 procedure TDecoderMainForm.GuiShowElements(AElements: TDcGuiElements);
