@@ -89,30 +89,35 @@ begin
       {$REGION '(De)Coder 1.0 decrypt'}
       TAG_DC10_DECRYPT:
       begin
+        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
           DeCoder10_DecodeFile(FChosenFile, AOutput, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
+          PasswordEdit.Text := '';
         end;
       end;
       {$ENDREGION}
       {$REGION '(De)Coder 4.x/5.0 decrypt'}
       TAG_DC4X_DECRYPT:
       begin
+        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
           DeCoder4X_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
+          PasswordEdit.Text := '';
         end;
       end;
       {$ENDREGION}
       {$REGION '(De)Coder 5.0 encrypt'}
       TAG_DC50_ENCRYPT:
       begin
+        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         while true do
         begin
           // #0 means that the password char '*' is used
@@ -142,14 +147,15 @@ begin
           end;
           DeCoder4X_EncodeFile(FChosenFile, AOutput, PasswordEdit.Text, fp, OnProgressProc);
           ExplorerNavigateToFile(AOutput);
+          PasswordEdit.Text := '';
         end;
       end;
       {$ENDREGION}
     end;
-    PasswordEdit.Text := '';
-  except
+  finally
     ProgressBar1.Visible := false;
-    raise;
+    if TButton(Sender).Tag < 0 then
+      TButton(Sender).Tag := -TButton(Sender).Tag; // allow clicking again
   end;
 end;
 
