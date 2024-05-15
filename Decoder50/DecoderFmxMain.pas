@@ -90,7 +90,9 @@ begin
       TAG_DC10_DECRYPT:
       begin
         TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+        SaveDialog1.Filter := 'Text files (*.txt)|*.txt|All files (*.*)|*.*';
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
+        SaveDialog1.DefaultExt := 'txt';
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
@@ -104,7 +106,11 @@ begin
       TAG_DC4X_DECRYPT:
       begin
         TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+        if PasswordEdit.Text = '' then exit;
+        SaveDialog1.Filter := 'All files (*.*)|*.*';
         SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
+        SaveDialog1.DefaultExt := ExtractFileExt(FDC4FileInfo.OrigFileName);
+        SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2, Length(SaveDialog1.DefaultExt)-1);
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
@@ -118,9 +124,12 @@ begin
       TAG_DC50_ENCRYPT:
       begin
         TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+        if PasswordEdit.Text = '' then exit;
         while true do
         begin
           // #0 means that the password char '*' is used
+          RepeatedPassword := '';
+          Application.ProcessMessages; // Otherwise, the text "Please repeat the password for encryption" vanishes if the user has entered the password wrong once
           if not InputQuery(Caption, #0 + 'Please repeat the password for encryption', RepeatedPassword) then
             Abort;
           if RepeatedPassword <> PasswordEdit.Text then
@@ -128,7 +137,9 @@ begin
           else
             break;
         end;
+        SaveDialog1.Filter := 'Encrypted files (*.dc4;*.dc5)|*.dc4;*.dc5|All files (*.*)|*.*';
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
+        SaveDialog1.DefaultExt := 'dc5';
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
