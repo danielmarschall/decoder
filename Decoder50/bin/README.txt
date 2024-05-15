@@ -4,7 +4,6 @@
 (De)Coder is an encryption software developed by Daniel Marschall.
 It uses the high-security AES encryption.
 
-
 ## New and improved features in version 5.0
 
 - Modern design
@@ -23,16 +22,6 @@ It uses the high-security AES encryption.
 A few features like shell integration and installer have been removed,
 to keep the product simple and clean.
 
-
-## Screenshots
-
-![Original file](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot1.png)
-
-![Encoded file](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot2.png)
-
-![Command line tool](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot3.png)
-
-
 ## Disclaimer
 
 Use this software at your own risk! ViaThinkSoft is not responsible for any damages which
@@ -44,15 +33,15 @@ Please always backup your unencrypted data before using (De)Coder, or if you cho
 original unencrypted files, then check at least if the decryption works as expected.
 Please do not download or use the software if you do not agree with these conditions.
 
-
 ## License and Credits
 
 (De)Coder is licensed under the terms of the Apache 2.0 license,
 which means you can use it for free (also commercially),
-and the [source code is publicly available](https://github.com/danielmarschall/decoder) for everyone to use/learn/extend.
+and the source code is publicly available for everyone to use/learn/extend:
+https://github.com/danielmarschall/decoder
 
 This product uses the following third-party components:
 
-- [Delphi Encryption Compendium](https://github.com/MHumm/DelphiEncryptionCompendium/) (License: Apache 2.0)
-- [7zip](https://7-zip.org/) DLL files by Igor Pavlov (License: LGPL)
-- [7zip Wrapper for Delphi](https://github.com/danielmarschall/d7zip/) by Henri Gourvest (License: MPL1.1)
+- Delphi Encryption Compendium: https://github.com/MHumm/DelphiEncryptionCompendium/ (License: Apache 2.0)
+- 7zip DLL files by Igor Pavlov: https://7-zip.org/ (License: LGPL)
+- 7zip Wrapper for Delphi by Henri Gourvest: https://github.com/danielmarschall/d7zip/ (License: MPL1.1)
