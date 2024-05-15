@@ -29,6 +29,8 @@ to keep the product simple and clean.
 
 ![Encoded file](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot2.png)
 
+![Command line tool](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot3.png)
+
 
 ## Disclaimer
 
