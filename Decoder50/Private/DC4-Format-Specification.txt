@@ -8,7 +8,7 @@ Used by:	ViaThinkSoft (De)Coder 4.0
 		ViaThinkSoft (De)Coder 4.1 Beta
 		ViaThinkSoft (De)Coder 5.0
 Author:		Daniel Marschall
-Last update:	May, 12th 2024
+Last update:	May, 15th 2024
 
 
 CONTENTS
@@ -494,16 +494,16 @@ Offset	Type	Size		Content/Description
 					0x03	KDF3
 					0x04	KDFx (default, proprietary to DEC)
 					0x05	PBKDF2
-	Int32LE	4		PBKDF iterations (ONLY present if KDF Version = 0x05), little endian
-	Byte	1		Size of GCM Auth Tag in bytes (only present if cipher mode is GCM)
+	Int32LE	0-4		PBKDF iterations (ONLY present if KDF Version = 0x05), little endian
+	Byte	0-1		Size of GCM Auth Tag in bytes (only present if cipher mode is GCM)
 				Usual lengths are:
-					0x10	128 bits (default)
-					0x0f	120 bits
-					0x0e	112 bits
-					0x0d	104 bits
-					0x0c	 96 bits
-					0x08	 64 bits (not recommended)
 					0x04	 32 bits (not recommended)
+					0x08	 64 bits (not recommended)
+					0x0c	 96 bits
+					0x0d	104 bits
+					0x0e	112 bits
+					0x0f	120 bits
+					0x10	128 bits (default)
 	Binary	var		With DEC 6.5 encrypted data (read until file end minus the size of the checksum)
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
 					Note that the password is treated as UTF-8
