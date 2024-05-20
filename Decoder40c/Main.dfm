@@ -335,7 +335,7 @@ object MainForm: TMainForm
     Top = 216
   end
   object dlg_save_enc: TSaveDialog
-    DefaultExt = '.dc4'
+    DefaultExt = 'dc4'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 80
     Top = 216
