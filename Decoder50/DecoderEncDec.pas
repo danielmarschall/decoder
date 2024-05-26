@@ -1923,14 +1923,6 @@ begin
         {$REGION 'Generate key used by HMAC and Cipher'}
         if not OnlyReadFileInfo then
         begin
-          (* TODO: Not implemented for version 3 (actually, I don't understand this description anymore):
-                      The "special-checksum" of a file can be used as the user password.
-                      The formula is:
-                         User-Password = Hash(File-Contents)
-                      Combined formula:
-                         Encryption-Password = Hash->KDfx(Hash(File-Contents), Seed)
-                What I don't understand: How should the program know if the user password or the "hash" password is used??
-          *)
           if PasswordRBS = '' then
             raise Exception.Create('An empty password is not allowed');
 
