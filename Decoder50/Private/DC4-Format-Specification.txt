@@ -499,7 +499,7 @@ Offset	Type	Size		Content/Description
 					0x04	KDFx (default, proprietary to DEC)
 					0x05	PBKDF2
 	Int32LE	0-4		PBKDF iterations (ONLY present if KDF Version = 0x05), little endian
-	Byte	0-1		Size of GCM Auth Tag in bytes (only present if cipher mode is GCM)
+	Byte	0-1		Size of GCM Auth Tag in bytes (ONLY present if cipher mode is GCM)
 				Usual lengths are:
 					0x04	 32 bits (not recommended)
 					0x08	 64 bits (not recommended)
@@ -511,10 +511,13 @@ Offset	Type	Size		Content/Description
 	Binary	var		With DEC 6.5 encrypted data (read until file end minus the size of the checksum)
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
 					Note that the password is treated as UTF-8
-	Binary	0-255		DEC's "CalcMAC"; This is a C-MAC which is the encryption of the last block concatention feedback.
-				NOT present if cipher mode is ECB. Size is one cipher block.
-	Binary	0-255		GCM Auth Tag. Size as specified before.
-				ONLY present if cipher mode is GCM).
+	Binary	0-255		DEC's "CalcMAC"
+					This is a C-MAC which is the encryption of the last block concatention feedback.
+					Size is one cipher block.
+					(NOT present if cipher mode is ECB)
+	Binary	0-255		GCM Auth Tag
+					Size as specified before.
+					(ONLY present if cipher mode is GCM)
 	Binary	var		HMAC checksum (Encrypt-then-HMAC)
 					= HMAC(HMacKey, Whole encrypted file except HMAC part)
 					with Key = Encryption-Password
