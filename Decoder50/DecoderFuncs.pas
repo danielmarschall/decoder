@@ -394,20 +394,79 @@ end;
 function IsCompressedFileType(const AFileName: string): boolean;
 begin
   result :=
-    SameText(ExtractFileExt(AFileName), '.zip') or
-    SameText(ExtractFileExt(AFileName), '.7z') or
-    SameText(ExtractFileExt(AFileName), '.rar') or
-    SameText(ExtractFileExt(AFileName), '.gz') or
-    SameText(ExtractFileExt(AFileName), '.xz') or
-    SameText(ExtractFileExt(AFileName), '.mp3') or
-    SameText(ExtractFileExt(AFileName), '.mp4') or
-    SameText(ExtractFileExt(AFileName), '.png') or
-    SameText(ExtractFileExt(AFileName), '.gif') or
-    SameText(ExtractFileExt(AFileName), '.jpg') or
-    SameText(ExtractFileExt(AFileName), '.jpeg') or
-    SameText(ExtractFileExt(AFileName), '.docx') or
-    SameText(ExtractFileExt(AFileName), '.xlsx') or
-    SameText(ExtractFileExt(AFileName), '.pptx');
+    // Compressed archive formats
+    // TODO: Get more formats here (but only the compressed ones!): https://en.wikipedia.org/wiki/List_of_archive_formats
+    SameText(ExtractFileExt(AFileName), '.zip')  or // .zip - ZIP archive
+    SameText(ExtractFileExt(AFileName), '.7z')   or // .7z - 7-Zip archive
+    SameText(ExtractFileExt(AFileName), '.rar')  or // .rar - RAR archive
+    SameText(ExtractFileExt(AFileName), '.gz')   or // .gz - GZIP file (often combined with tar)
+    SameText(ExtractFileExt(AFileName), '.xz')   or // .xz - XZ archive (often combined with tar)
+    SameText(ExtractFileExt(AFileName), '.bz2')  or // .bz2 - BZ2 archive (often combined with tar)
+    SameText(ExtractFileExt(AFileName), '.tgz')  or // .tgz - TAR archive compressed with GZIP.
+    SameText(ExtractFileExt(AFileName), '.zst')  or // .zst - Zstandard compressed file
+    SameText(ExtractFileExt(AFileName), '.cab')  or // .cab - Microsoft Cabinet file
+    // Microsoft Office Formats
+    SameText(ExtractFileExt(AFileName), '.docx') or // .docx - Microsoft Word document
+    SameText(ExtractFileExt(AFileName), '.docm') or // .docm - Microsoft Word document macro-enabled
+    SameText(ExtractFileExt(AFileName), '.dotx') or // .dotx - Word templates
+    SameText(ExtractFileExt(AFileName), '.dotm') or // .dotm - Word template macro-enabled
+    SameText(ExtractFileExt(AFileName), '.xlsx') or // .xlsx - Microsoft Excel spreadsheet
+    SameText(ExtractFileExt(AFileName), '.xlsm') or // .xlsm - Microsoft Excel spreadsheet macro-enabled
+    SameText(ExtractFileExt(AFileName), '.xlam') or // .xlam - Excel macro-enabled add-ins
+    SameText(ExtractFileExt(AFileName), '.pptx') or // .pptx - Microsoft PowerPoint presentation
+    SameText(ExtractFileExt(AFileName), '.pptm') or // .pptm - Microsoft PowerPoint presentation macro-enabled
+    SameText(ExtractFileExt(AFileName), '.potx') or // .potx - PowerPoint templates
+    SameText(ExtractFileExt(AFileName), '.potm') or // .potm - PowerPoint templates macro-enabled
+    SameText(ExtractFileExt(AFileName), '.vsdx') or // .vsdx - Microsoft Visio diagram
+    // OpenDocument Formats (but they could also be a single XML file according to Wikipedia?!)
+    SameText(ExtractFileExt(AFileName), '.odt')  or // .odt - OpenDocument Text document
+    SameText(ExtractFileExt(AFileName), '.ods')  or // .ods - OpenDocument Spreadsheet
+    SameText(ExtractFileExt(AFileName), '.odp')  or // .odp - OpenDocument Presentation
+    SameText(ExtractFileExt(AFileName), '.odg')  or // .odg - OpenDocument Graphics
+    SameText(ExtractFileExt(AFileName), '.ott')  or // .ott - OpenDocument Text document template
+    SameText(ExtractFileExt(AFileName), '.ots')  or // .ots - OpenDocument Spreadsheet template
+    SameText(ExtractFileExt(AFileName), '.otp')  or // .otp - OpenDocument Presentation template
+    SameText(ExtractFileExt(AFileName), '.oxt')  or // .oxt - LibreOffice extensions
+    // Audio formats
+    SameText(ExtractFileExt(AFileName), '.mp3')  or // .mp3 - MPEG audio
+    SameText(ExtractFileExt(AFileName), '.aac')  or // .aac - Advanced Audio Codec
+    SameText(ExtractFileExt(AFileName), '.flac') or // .flac - Free Lossless Audio Codec
+    SameText(ExtractFileExt(AFileName), '.ogg')  or // .ogg - Ogg Vorbis
+    SameText(ExtractFileExt(AFileName), '.wma')  or // .wma - Windows Media Audio (lossy, sometimes compressed)
+    // Video formats
+    SameText(ExtractFileExt(AFileName), '.mp4')  or // .mp4 - MPEG-4 video
+    SameText(ExtractFileExt(AFileName), '.webm') or // .webm - WebM video
+    SameText(ExtractFileExt(AFileName), '.mkv')  or // .mkv - Matroska video
+    SameText(ExtractFileExt(AFileName), '.avi')  or // .avi - Audio Video Interleave. Uncompressed video is rare; often uses lossy codecs.
+    SameText(ExtractFileExt(AFileName), '.wmv')  or // .wmv - Windows Media Video (lossy, compressed)
+    // Picture formats
+    SameText(ExtractFileExt(AFileName), '.png')  or // .png - Portable Network Graphics
+    SameText(ExtractFileExt(AFileName), '.gif')  or // .gif - Graphics Interchange Format
+    SameText(ExtractFileExt(AFileName), '.jpg')  or // .jpg, .jpeg, .jfif - JPEG image
+    SameText(ExtractFileExt(AFileName), '.jpeg') or // .jpg, .jpeg, .jfif - JPEG image
+    SameText(ExtractFileExt(AFileName), '.jfif') or // .jpg, .jpeg, .jfif - JPEG image
+    SameText(ExtractFileExt(AFileName), '.webp') or // .webp - WebP image
+    SameText(ExtractFileExt(AFileName), '.svgz') or // .svgz - Compressed SVG (Scalable Vector Graphics)
+    // Other formats
+    SameText(ExtractFileExt(AFileName), '.epub') or // .epub - eBook format
+    SameText(ExtractFileExt(AFileName), '.jar')  or // .jar - Java Archive
+    SameText(ExtractFileExt(AFileName), '.apk')  or // .apk - Android application package
+    SameText(ExtractFileExt(AFileName), '.kmz')  or // .kmz - Google Earth data file (compressed version of KML)
+    SameText(ExtractFileExt(AFileName), '.xpi')  or // .xpi - Mozilla Firefox browser extension
+    SameText(ExtractFileExt(AFileName), '.war')  or // .war / .ear - Java web applications
+    SameText(ExtractFileExt(AFileName), '.ear')  or // .war / .ear - Java web applications
+    SameText(ExtractFileExt(AFileName), '.appx') or // .appx / .msix - Windows application package formats
+    SameText(ExtractFileExt(AFileName), '.msix') or // .appx / .msix - Windows application package formats
+    SameText(ExtractFileExt(AFileName), '.ipa')  or // .ipa - iOS application archive
+    SameText(ExtractFileExt(AFileName), '.cb7')  or // .cb7 - Comic Book 7z archive
+    SameText(ExtractFileExt(AFileName), '.cba')  or // .cba - Comic Book ACE archive
+    SameText(ExtractFileExt(AFileName), '.cbr')  or // .cbr - Comic Book RAR archive
+    SameText(ExtractFileExt(AFileName), '.cbt')  or // .cbt - Comic Book TAR archive
+    SameText(ExtractFileExt(AFileName), '.cbz')  or // .cbz - Comic Book ZIP archive
+    SameText(ExtractFileExt(AFileName),'.pkpass') or// .pkpass - Apple Wallet pass files, ZIP based
+    SameText(ExtractFileExt(AFileName), '.azw')  or // .azw - Amazon Kindle eBook format (old), compressed except metadata
+    SameText(ExtractFileExt(AFileName), '.azw3') or // .azw3 - Amazon Kindle eBook format "HF8", ZIP based
+    SameText(ExtractFileExt(AFileName), '.kfx');    // .kfx - Amazon Kindle eBook format, compressed
 end;
 
 function ShannonEntropy(const filename: string; OnProgressProc: TDcProgressEvent=nil): Extended;

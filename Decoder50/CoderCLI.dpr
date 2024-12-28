@@ -660,6 +660,9 @@ begin
       WriteLn('Caution! You are about to delete this folder and all of its contents:');
       WriteLn(RelToAbs(ParamStr(2)));
       WriteLn('');
+      // TODO: The countdown is good to avoid that someone deletes important files,
+      //       but on the other hand, we should have a flag which disables the countdown.
+      //       Otherwise this CLI tool is probably not good for some use-cases.
       CountDown('Press Ctrl+C to cancel or wait to continue: ', DeleteFolderCountDown);
       WriteLn('');
       SecureDeleteFolder(ParamStr(2));

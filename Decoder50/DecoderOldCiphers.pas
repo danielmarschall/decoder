@@ -37,7 +37,7 @@ type
 
   // The exact implementation is not 100% sure because the binaries and
   // source of this version are lost.
-  // It is porbably the same as Version 2.2, just with the key 0..255 instead 0..256
+  // It is probably the same as Version 2.2, just with the key 0..255 instead 0..256
   TCipher_VtsDeCoder21 = class(TCipher_VtsDeCoderOldCipher)
   strict protected
     procedure DoInit(const Key; Size: Integer); override;
@@ -224,7 +224,7 @@ procedure TCipher_VtsDeCoder32.DoInit(const Key; Size: Integer);
 var
   b: TBytes;
 begin
-  // Convert "foobar" to "oobarr" (faulty implementation)
+  // Convert "foobar" to "oobarr" (probably faulty implementation)
   SetLength(b, Size+1);
   Move(Key, b[0], Size);
   try

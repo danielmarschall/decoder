@@ -8,7 +8,7 @@ Used by:	ViaThinkSoft (De)Coder 4.0
 		ViaThinkSoft (De)Coder 4.1 Beta
 		ViaThinkSoft (De)Coder 5.0
 Author:		Daniel Marschall
-Last update:	May, 27th 2024
+Last update:	December, 28th 2024
 
 
 CONTENTS
@@ -34,6 +34,8 @@ This file format is NOT used by (De)Coder.
 It is only the guideline of the DC4-Format.
 Hagen Reddmann posted the demo-algorithm in this topic:
 https://www.delphipraxis.net/66783-sichere-verschluesselung-von-dateien-mit-dem-dec-5-1-a.html (in German)
+
+The internal file format version is 0.
 
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
@@ -121,15 +123,17 @@ Offset	Type	Size		Content/Description
 This file format is used by (De)Coder 4.0
 The Idendity-Base of this file format is 0x59178954 (but identities are not used).
 
+The file format version is 1 (mentioned in the version field).
+
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
 00h	Byte	1		Compress mode flag
 					00h: Uncompressed file - Default in (De)Coder 4.0
 					01h: Folder compressed with ZIP - Default in (De)Coder 4.0
-01h	Byte	1		Version flag; Hardcoded value: 01h.
+01h	Byte	1		File format version; Hardcoded value: 01h.
 02h	String	var		Original file name, ANSI encoded
-	Byte	1		Terminus Value: 1Fh ("?")
+	Byte	1		Terminus Value: 0x1F ("?")
 	Binary	16		Seed (Random data. Default size: 16 bytes = 0x10
 	Binary	var		DEC 5.1c encrypted data (read until file end minus the size of the checksum)
 					Password:       Hash->KDfx(User-Password, Seed); KDFx is proprietary to DEC
@@ -149,17 +153,19 @@ Offset	Type	Size		Content/Description
 
 This file format is used by (De)Coder 4.1 Public Beta 1 through (De)Coder 4.1 Public Beta 4b.
 
+The file format version is 2 (mentioned in the version field).
+
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
 00h	Byte	1		Compress mode flag
-					00h: Uncompressed file
-					01h: Folder compressed with ZIP
-					02h: ZLib-compressed file - Default in (De)Coder 4.1
-					03h: ZLib-compressed folder, packed ZIP - Default in (De)Coder 4.1
-01h	Byte	1		Version flag; Hardcoded value: 02h
+					0x00	Uncompressed file
+					0x01	Folder compressed with ZIP
+					0x02	ZLib-compressed file - Default in (De)Coder 4.1
+					0x03	ZLib-compressed folder, packed ZIP - Default in (De)Coder 4.1
+01h	Byte	1		File format version; Hardcoded value: 0x02
 02h	Binary	var		Original file name, ANSI encoded, in BASE64 (binary)
-	Byte	1		Terminus Value: 1Fh ("?")
+	Byte	1		Terminus Value: 0x1F ("?")
 	Int32BE	4		DEC 5.1c Idendity-Base, big endian; Default 0x84671842
 					If DEC 6.x is used, then the following changes are done:
 					- Use old DEC 5.1c algorithm to determine the identify.
@@ -252,24 +258,26 @@ Offset	Type	Size		Content/Description
 
 This file format was intended to be used by the final version of (De)Coder 4.1, which was never finished and never released.
 
+The file format version is 3 (mentioned in the version field).
+
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
 00h	Byte	1		Compress mode flag
-					00h: Uncompressed file
-					01h: Folder compressed with ZIP
-					02h: ZLib-compressed file - Default in (De)Coder 4.1
-					03h: ZLib-compressed folder, packed ZIP - Default in (De)Coder 4.1
-01h	Byte	1		Version flag; Hardcoded value: 03h
+					0x00	Uncompressed file
+					0x01	Folder compressed with ZIP
+					0x02	ZLib-compressed file - Default in (De)Coder 4.1
+					0x03	ZLib-compressed folder, packed ZIP - Default in (De)Coder 4.1
+01h	Byte	1		File format version; Hardcoded value: 0x03
 02h	Byte	1		Filename encrypted with User-Password?
-					00h: No
-					01h: Yes
+					0x00	No
+					0x01	Yes
 03h	Int32BE	4		Size (in bytes) of the encrypted filename that follows, big endian
 07h	Binary	var		Original file name, not null-terminated WideString (UTF-16)
 				Encrypted with DEC 5.1c (cipher/hash see below)
-				If offset 02h of this part has the value 00h:
-					Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
-				If offset 02h of this part has the value 01h:
+				If offset 0x02 of this part has the value 0x00:
+					Encryption-Password = Hash->KDfx(0x5E 0xD1 0x6B 0x12 0x7D 0xB4 0xC4 0x3C, Seed)
+				If offset 0x02 of this part has the value 0x01:
 					Encryption-Password = Hash->KDfx(User-Password, Seed)
 					Note that the password is treated as ANSI
 				KDFx is proprietary to DEC
@@ -356,7 +364,7 @@ Offset	Type	Size		Content/Description
 					Size dependend on the hash algorithm (DigestSize).
 					The algorithms of DEC give out a hash with the length 16-64.
 					Note that the password is treated as ANSI
-	Binary	8		DC4-Terminus; Hardcoded value: 63 F3 DF 89 B7 27 20 EA
+	Binary	8		DC4-Terminus; Hardcoded value: 0x63 0xF3 0xDF 0x89 0xB7 0x27 0x20 0xEA
 ---------------------------------------------------------------------------------------------------
 
 
@@ -364,6 +372,8 @@ Offset	Type	Size		Content/Description
 ==========================================
 
 This file format is used by (De)Coder 5.0. The file-name extension can be dc4 or dc5.
+
+The file format version is 4 (mentioned in the last arc of the OID in the magic sequence).
 
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
@@ -434,6 +444,8 @@ Offset	Type	Size		Content/Description
 					0x08	ECBx	Electronic Code Book
 					0x09	GCM	Galois Counter Mode
 					0x0A	CTS3	double CBC, with less secure padding of truncated final block (deprecated)
+					Note: According to tests, all cipher modes can handle truncated final blocks, except ECB,
+					      this requires an input file with a size which is a multiple of 16 bytes.
 	Int32BE	4		DEC 6.5 Hash idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
 					0x01DCD639	THash_SHA3_256 (DigestSize: 32, BlockSize: 136)
 					0x0BE5E708	THash_SHA1 (DigestSize: 20, BlockSize: 64)
@@ -491,10 +503,10 @@ Offset	Type	Size		Content/Description
 				Usual lengths are:
 					0x04	 32 bits (not recommended)
 					0x08	 64 bits (not recommended)
-					0x0c	 96 bits
-					0x0d	104 bits
-					0x0e	112 bits
-					0x0f	120 bits
+					0x0C	 96 bits
+					0x0D	104 bits
+					0x0E	112 bits
+					0x0F	120 bits
 					0x10	128 bits (default)
 	Binary	var		With DEC 6.5 encrypted data (read until file end minus the size of the checksum)
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)

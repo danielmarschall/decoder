@@ -914,7 +914,7 @@ begin
     result.SeedSize := 16;
   if V = fvHagenReddmannExample then
     result.HashClass := THash_SHA1
-  else if V<fvDc50 then
+  else if V < fvDc50 then
     result.HashClass := THash_SHA512
   else
     result.HashClass := THash_SHA3_512;
@@ -1122,9 +1122,9 @@ var
   IsFolder   IsZLib    SourceFile           ATempFileNameZLib       Source stream
   ---------------------------------------------------------------------------------------
   false      false     AFileName            undefined               AFileName
-  false      true      AFileName===========>AFileName.zlib          AFileName_tmp.zlib
+  false      true      AFileName===========>AFileName.z             AFileName_tmp.z
   true       false     AFileName_tmp.7z     undefined               AFileName_tmp.7z
-  true       true      AFileName_tmp.7z====>AFileName.zlib          AFileName_tmp.zlib
+  true       true      AFileName_tmp.7z====>AFileName.z             AFileName_tmp.z
   *)
   ATempFileNameZLib: string; // If IsZLibCompressed, then it is a temporary .dc5_tmp file, otherwise undefined
   SourceFile: string; // If IsFolder, then it is a temporary .7z file, otherwise it is AFileName
@@ -1219,7 +1219,7 @@ begin
       {$REGION 'Compress stream if the file type is not already compressed'}
       if IsZLibCompressed and (V>=fvDc40) then
       begin
-        ATempFileNameZLib := ChangeFileExt(AFileName, '_Tmp_' + RandStringFileNameFriendly(10) + '.zlib');
+        ATempFileNameZLib := ChangeFileExt(AFileName, '_Tmp_' + RandStringFileNameFriendly(10) + '.z');
         ZLib_Compress(SourceFile, ATempFileNameZLib, OnProgressProc);
         Source := TFileStream.Create(ATempFileNameZLib, fmOpenRead or fmShareDenyWrite);
       end
@@ -1617,11 +1617,11 @@ var
   IsFolder   IsZLib    ATempFileNameZipOrDirectOutput   ATempFileNameZLib    tempstream
   ---------------------------------------------------------------------------------------
   false      false     AOutput                          undefined            AOutput
-  false      true      AOutput                          AOutput_tmp.zlib     AOutput_tmp.zlib
+  false      true      AOutput                          AOutput_tmp.z        AOutput_tmp.z
   true       false     AOutput_tmp.7z                   undefined            AOutput_tmp.7z
-  true       true      AOutput_tmp.7z                   AOutput_tmp.zlib     AOutput_tmp.zlib
+  true       true      AOutput_tmp.7z                   AOutput_tmp.z        AOutput_tmp.z
   *)
-  ATempFileNameZLib: string; // If ZLibCompressed, then =AOutput+.zlib, otherwise undefined
+  ATempFileNameZLib: string; // If ZLibCompressed, then =AOutput+.z, otherwise undefined
   ATempFileNameZipOrDirectOutput: string; // If IsFolder, then =AOutput+.7z, else =AOutput
 begin
   if not FileExists(AFileName) then
@@ -1726,7 +1726,7 @@ begin
 
           if IsZLibCompressed then
           begin
-            ATempFileNameZLib := ChangeFileExt(AOutput, '_Tmp_' + RandStringFileNameFriendly(10) + '.zlib');
+            ATempFileNameZLib := ChangeFileExt(AOutput, '_Tmp_' + RandStringFileNameFriendly(10) + '.z');
             tempstream := TFileStream.Create(ATempFileNameZLib, fmCreate);
           end
           else
@@ -2124,8 +2124,8 @@ begin
 
           if IsZLibCompressed then
           begin
-            // If IsFolder, then decompress AOutput_tmp.zlib to AOutput_tmp.7z
-            //              else decompress AOutput_tmp.zlib to AOutput
+            // If IsFolder, then decompress AOutput_tmp.z to AOutput_tmp.7z
+            //              else decompress AOutput_tmp.z to AOutput
             ZLib_Decompress(ATempFileNameZLib, ATempFileNameZipOrDirectOutput, OnProgressProc);
           end;
 
