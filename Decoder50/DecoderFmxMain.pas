@@ -86,6 +86,12 @@ var
   AOutput: string;
   fp: TDC4Parameters;
   RepeatedPassword: string;
+resourcestring
+  STextFiles = 'Text files';
+  SAllFiles = 'All files';
+  SEncryptedFiles = 'DC4/5 Encrypted files';
+  SPleaseRepeatPassword = 'Please repeat the password for encryption';
+  SPasswordsDoNotMatch = 'Passwords do not match!';
 begin
   try
     case TButton(Sender).Tag of
@@ -93,7 +99,7 @@ begin
       TAG_DC10_DECRYPT:
       begin
         TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
-        SaveDialog1.Filter := 'Text files (*.txt)|*.txt|All files (*.*)|*.*';
+        SaveDialog1.Filter := STextFiles+' (*.txt)|*.txt|'+SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
         SaveDialog1.DefaultExt := 'txt';
         if SaveDialog1.Execute then
@@ -110,7 +116,7 @@ begin
       begin
         TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := 'All files (*.*)|*.*';
+        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
         SaveDialog1.DefaultExt := ExtractFileExt(FDC4FileInfo.OrigFileName);
         SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2, Length(SaveDialog1.DefaultExt)-1);
@@ -133,14 +139,14 @@ begin
           // #0 means that the password char '*' is used
           RepeatedPassword := '';
           Application.ProcessMessages; // Otherwise, the text "Please repeat the password for encryption" vanishes if the user has entered the password wrong once
-          if not InputQuery(Caption, #0 + 'Please repeat the password for encryption', RepeatedPassword) then
+          if not InputQuery(Caption, #0 + SPleaseRepeatPassword, RepeatedPassword) then
             Abort;
           if RepeatedPassword <> PasswordEdit.Text then
-            MessageDlg('Passwords do not match!', TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOk], 0)
+            MessageDlg(SPasswordsDoNotMatch, TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOk], 0)
           else
             break;
         end;
-        SaveDialog1.Filter := 'Encrypted files (*.dc4;*.dc5)|*.dc4;*.dc5|All files (*.*)|*.*';
+        SaveDialog1.Filter := SEncryptedFiles+' (*.dc4;*.dc5)|*.dc4;*.dc5|'+SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
         SaveDialog1.DefaultExt := 'dc5';
         if SaveDialog1.Execute then
@@ -183,8 +189,10 @@ end;
 
 procedure TDecoderMainForm.DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
   const Point: TPointF);
+resourcestring
+  SOnlyOneFileAllowed = 'Please only choose one file!';
 begin
-  if Length(Data.Files) > 1 then raise Exception.Create('Please only choose one file!');
+  if Length(Data.Files) > 1 then raise Exception.Create(SOnlyOneFileAllowed);
   try
     OpenFile(Data.Files[0]);
   except
@@ -244,26 +252,40 @@ begin
 end;
 
 procedure TDecoderMainForm.FormShow(Sender: TObject);
+resourcestring
+  SPleaseChooseOnlyOneFile = 'Please only choose one file!';
+  S_IntroLine_0_S = 'Built %s';
+  S_IntroLine_1 = 'Developed by Daniel Marschall - www.daniel-marschall.de';
+  S_IntroLine_2 = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
+  S_IntroLine_3 = '';
+  S_IntroLine_4 = '';
+  S_IntroLine_5 = 'Please note that (De)Coder also comes with a command-line tool,';
+  S_IntroLine_6 = 'which can additionally decrypt old (De)Coder 2.x and 3.x files,';
+  S_IntroLine_7 = 'and it can also wipe files and folders in a secure way.';
+  S_IntroLine_8 = '';
+  S_IntroLine_9 = '';
+  S_IntroLine_10 = 'Please use this tool at your own risk! Files can only be decrypted with the';
+  S_IntroLine_11 = 'correct passwords, and they must be 100% free of any damage!';
 begin
   ShortInfoLabel.Text :=
-    'Built ' + DateTimeToStr(GetOwnBuildTimestamp) + #13#10 +
-    'Developed by Daniel Marschall - www.daniel-marschall.de' + #13#10 +
-    'FREEWARE - Licensed under the terms of the Apache 2.0 License' + #13#10 +
-    #13#10 +
-    #13#10 +
-    'Please note that (De)Coder also comes with a command-line tool,' + #13#10 +
-    'which can additionally decrypt old (De)Coder 2.x and 3.x files,' + #13#10 +
-    'and it can also wipe files and folders in a secure way.' + #13#10 +
-    #13#10 +
-    #13#10 +
-    'Please use this tool at your own risk! Files can only be decrypted with the' + #13#10 +
-    'correct passwords, and they must be 100% free of damage!';
+    Format(S_IntroLine_0_S, [DateTimeToStr(GetOwnBuildTimestamp)]) + #13#10 +
+    S_IntroLine_1 + #13#10 +
+    S_IntroLine_2 + #13#10 +
+    S_IntroLine_3 + #13#10 +
+    S_IntroLine_4 + #13#10 +
+    S_IntroLine_5 + #13#10 +
+    S_IntroLine_6 + #13#10 +
+    S_IntroLine_7 + #13#10 +
+    S_IntroLine_8 + #13#10 +
+    S_IntroLine_9 + #13#10 +
+    S_IntroLine_10 + #13#10 +
+    S_IntroLine_11;
   ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
   ProgressStepLabel.Visible := false;
   GuiShowElements([]);
   try
     if ParamCount > 1 then
-      MessageDlg('Please only choose one file!', TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOK], 0)
+      MessageDlg(SPleaseChooseOnlyOneFile, TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOK], 0)
     else if ParamCount = 1 then
       OpenFile(ParamStr(1));
   except
@@ -277,26 +299,45 @@ end;
 procedure TDecoderMainForm.OpenFile(const AFileName: string);
 var
   fp: TDC4Parameters;
+resourcestring
+  SFileOrFolderNotExisting = 'File or folder %s does not exist!';
+  SFileName_S = 'File name: %s';
+  SFolderName_S = 'Folder name: %s';
+  SLocation_S = 'Location: %s';
+  SEncryptedDc10 = 'This file was encrypted using (De)Coder 1.0';
+  SDoYouWantDecrypt = 'Do you want to decrypt it now?';
+  SDecrypt = 'Decrypt';
+  SEncryptedDc50 = 'This file was encrypted using (De)Coder 5.0';
+  SEncryptedDc41Beta = 'This file was encrypted using (De)Coder 4.1 Beta';
+  SEncryptedDc40 = 'This file was encrypted using (De)Coder 4.0';
+  SNoValidDc45File = 'This is not a valid (De)Coder 4.0/5.0 file!';
+  SThisIsAFolder = 'This is a folder which you can pack and encrypt using (De)Coder.';
+  SThisIsAnUnencryptedFile = 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.';
+  SDoYouWantPackAndEncrypt = 'Do you want to pack + encrypt it now?';
+  SDoYouWantEncrypt = 'Do you want to encrypt it now?';
+  SEncrypt = 'Encrypt';
+  SFileType_S = 'File type: %s';
+  SFileSize_S = 'File size: %s';
+  SModTime_S = 'Modification time: %s';
 begin
   if not FileExists(AFileName) and not DirectoryExists(AFileName) then
-    raise Exception.CreateFmt('File or folder %s does not exist!', [AFileName]);
+    raise Exception.CreateFmt(SFileOrFolderNotExisting, [AFileName]);
 
   MoreInfoMemo.Lines.Clear;
   if FileExists(AFileName) then
-    MoreInfoMemo.Lines.Add('File name: ' + ExtractFileName(AFileName))
+    MoreInfoMemo.Lines.Add(Format(SFileName_S, [ExtractFileName(AFileName)]))
   else
-    MoreInfoMemo.Lines.Add('Folder name: ' + ExtractFileName(AFileName));
-  MoreInfoMemo.Lines.Add('Location: ' + ExtractFilePath(AFileName));
+    MoreInfoMemo.Lines.Add(Format(SFolderName_S, [ExtractFileName(AFileName)]));
+  MoreInfoMemo.Lines.Add(Format(SLocation_S, [ExtractFilePath(AFileName)]));
 
   if FileExists(AFileName) then
   begin
-
     {$REGION '(De)Coder 1.0 decrypt'}
     if DeCoder10_DetectFile(AFileName) then
     begin
-      ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 1.0' + #13#10 + 'Do you want to decrypt it now?';
+      ShortInfoLabel.Text := SEncryptedDc10 + #13#10 + SDoYouWantDecrypt;
       EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
-      EncryptDecryptButton.Text := 'Decrypt';
+      EncryptDecryptButton.Text := SDecrypt;
       GuiShowElements([geStartButton]);
       FChosenFile := AFileName;
       GuiShowChosenFile;
@@ -308,15 +349,15 @@ begin
     try
       FDC4FileInfo := DeCoder4X_FileInfo(AFileName);
       if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
-        ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 5.0'
+        ShortInfoLabel.Text := SEncryptedDc50
       else if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc41Beta then
-        ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 4.1 Beta'
+        ShortInfoLabel.Text := SEncryptedDc41Beta
       else
-        ShortInfoLabel.Text := 'This file was encrypted using (De)Coder 4.0';
-      ShortInfoLabel.Text := ShortInfoLabel.Text + #13#10 + 'Do you want to decrypt it now?';
+        ShortInfoLabel.Text := SEncryptedDc40;
+      ShortInfoLabel.Text := ShortInfoLabel.Text + #13#10 + SDoYouWantDecrypt;
       DeCoder4X_PrintFileInfo(FDC4FileInfo, MoreInfoMemo.Lines);
       EncryptDecryptButton.Tag := TAG_DC4X_DECRYPT;
-      EncryptDecryptButton.Text := 'Decrypt';
+      EncryptDecryptButton.Text := SDecrypt;
       GuiShowElements([gePassword, geStartButton, geInfos]);
       FChosenFile := AFileName;
       GuiShowChosenFile;
@@ -326,26 +367,25 @@ begin
       begin
         if AFileName.EndsWith('.dc4', true) or AFileName.EndsWith('.dc5', true) then
         begin
-          raise Exception.Create('This is not a valid (De)Coder 4.0/5.0 file!' + #13#10 + E.Message);
+          raise Exception.Create(SNoValidDc45File + #13#10 + E.Message);
         end;
       end;
     end;
     {$ENDREGION}
-
   end;
 
   {$REGION '(De)Coder 5.0 encrypt'}
   if DirectoryExists(AFileName) then
-    ShortInfoLabel.Text := 'This is a folder which you can pack and encrypt using (De)Coder.' + #13#10 + 'Do you want to pack + encrypt it now?'
+    ShortInfoLabel.Text := SThisIsAFolder + #13#10 + SDoYouWantPackAndEncrypt
   else
-    ShortInfoLabel.Text := 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.' + #13#10 + 'Do you want to encrypt it now?';
+    ShortInfoLabel.Text := SThisIsAnUnencryptedFile + #13#10 + SDoYouWantEncrypt;
   EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
-  EncryptDecryptButton.Text := 'Encrypt';
+  EncryptDecryptButton.Text := SEncrypt;
   if FileExists(AFileName) then
   begin
-    MoreInfoMemo.Lines.Add('File type: ' + GetFileTypename(AFileName));
-    MoreInfoMemo.Lines.Add('File size: ' + FileSizeHumanReadable(TFile.GetSize(AFileName)));
-    MoreInfoMemo.Lines.Add('Modification time: ' + DateTimeToStr(TFile.GetLastWriteTime(AFileName)));
+    MoreInfoMemo.Lines.Add(Format(SFileType_S, [GetFileTypename(AFileName)]));
+    MoreInfoMemo.Lines.Add(Format(SFileSize_S, [FileSizeHumanReadable(TFile.GetSize(AFileName))]));
+    MoreInfoMemo.Lines.Add(Format(SModTime_S, [DateTimeToStr(TFile.GetLastWriteTime(AFileName))]));
   end;
   fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
   MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;

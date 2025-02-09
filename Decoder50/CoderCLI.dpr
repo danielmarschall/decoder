@@ -28,15 +28,19 @@ begin
 end;
 
 procedure CheckFileExists(const AFileName: string);
+resourcestring
+  SFileNotFound = 'File %s not found';
 begin
   if not FileExists(AFileName) then
-    raise Exception.CreateFmt('File %s not found', [AFileName]);
+    raise Exception.CreateFmt(SFileNotFound, [AFileName]);
 end;
 
 procedure CheckDirectoryExists(const AFileName: string);
+resourcestring
+  SDirNotFound = 'Directory %s not found';
 begin
   if not DirectoryExists(AFileName) then
-    raise Exception.CreateFmt('Directory %s not found', [AFileName]);
+    raise Exception.CreateFmt(SDirNotFound, [AFileName]);
 end;
 
 const
@@ -467,7 +471,7 @@ procedure Debug_EntroyTest(const ADirToTest, ACsvOutPutFile: string);
         FindClose(searchResult);
       end;
     end;
-    WriteLn('Fertig');
+    WriteLn('Done');
   end;
 
 var
@@ -507,6 +511,40 @@ var
   sl: TStringList;
   OutputFile: string;
   OwnName: string;
+
+resourcestring
+  SCautionDeleteFolder = 'Caution! You are about to delete this folder and all of its contents:';
+  SCautionDeleteFolderCountdown_D = 'Press Ctrl+C to cancel or wait to continue ... %d seconds';
+  SProductName = 'ViaThinkSoft (De)Coder 5.0';
+  SBuilt_S = 'Built %s';
+  SDevelopedByDanielMarschall = 'Developed by Daniel Marschall';
+  SDMHomepage = 'www.daniel-marschall.de';
+  SLicenseLine = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
+  SEncryptDecryptFilesAndFolders = 'Encrypting and decrypting files or folders';
+  SEncryptDecryptFilesAndFolders_1 = 'Encrypts a file using (De)Coder 5.0';
+  SEncryptDecryptFilesAndFolders_2 = 'Same as %s, but with metadata name+size+date';
+  SEncryptDecryptFilesAndFolders_3 = 'Decrypts a (De)Coder 4.x or 5.x encrypted file';
+  SEncryptDecryptFilesAndFolders_4 = 'Shows details of a (De)Coder 4.x or 5.x encrypted file';
+  SSupportLegacyFormats = 'Support for legacy file formats';
+  SSupportLegacyFormats_1 = 'Encrypts a file using the (De)Coder 1.0 format (INSECURE)';
+  SSupportLegacyFormats_2 = 'Decrypts a file using the (De)Coder 1.0 format (INSECURE)';
+  SSupportLegacyFormats_3 = 'Encrypts a file using the (De)Coder 2.0 format (INSECURE)';
+  SSupportLegacyFormats_4 = 'Decrypts a file using the (De)Coder 2.0 format (INSECURE)';
+  SSupportLegacyFormats_5 = 'Encrypts a file using the (De)Coder 2.1 format (INSECURE)';
+  SSupportLegacyFormats_6 = 'Decrypts a file using the (De)Coder 2.1 format (INSECURE)';
+  SSupportLegacyFormats_7 = 'Encrypts a file using the (De)Coder 2.2 format (INSECURE)';
+  SSupportLegacyFormats_8 = 'Decrypts a file using the (De)Coder 2.2 format (INSECURE)';
+  SSupportLegacyFormats_9 = 'Encrypts a file using the (De)Coder 3.0 format (INSECURE)';
+  SSupportLegacyFormats_10 = 'Decrypts a file using the (De)Coder 3.0 format (INSECURE)';
+  SSupportLegacyFormats_11 = 'Encrypts a file using the (De)Coder 3.2 format (INSECURE)';
+  SSupportLegacyFormats_12 = 'Decrypts a file using the (De)Coder 3.2 format (INSECURE)';
+  SExtras = 'Extras';
+  SExtras_1 = 'Wipes a file from a disk in a secure way';
+  SExtras_2 = 'Wipes a complete folder from a disk in a secure way';
+  SExtras_3 = 'Shows this command listing';
+  SError_S = 'ERROR: %s';
+  SExitCode_D = 'Exit code: %d';
+  SPressAnyKey = 'Press any key to exit ...';
 
 begin
   try
@@ -657,13 +695,13 @@ begin
     else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) and (ParamCount = 2) then
     begin
       CheckDirectoryExists(ParamStr(2));
-      WriteLn('Caution! You are about to delete this folder and all of its contents:');
+      WriteLn(SCautionDeleteFolder);
       WriteLn(RelToAbs(ParamStr(2)));
       WriteLn('');
       // TODO: The countdown is good to avoid that someone deletes important files,
       //       but on the other hand, we should have a flag which disables the countdown.
       //       Otherwise this CLI tool is probably not good for some use-cases.
-      CountDown('Press Ctrl+C to cancel or wait to continue: ', DeleteFolderCountDown);
+      CountDown(SCautionDeleteFolderCountdown_D, DeleteFolderCountDown);
       WriteLn('');
       SecureDeleteFolder(ParamStr(2));
       ExitCode := 0;
@@ -674,47 +712,47 @@ begin
     begin
       OwnName := ChangeFileExt(Uppercase(ExtractFileName(ParamStr(0))),'');
 
-      WriteLn(Format('%-35s Built %s', ['ViaThinkSoft (De)Coder 5.0', DateTimeToStr(GetOwnBuildTimestamp)]));
-      WriteLn(Format('%-35s %s', ['Developed by Daniel Marschall', 'www.daniel-marschall.de']));
-      WriteLn(Format('FREEWARE - Licensed under the terms of the Apache 2.0 License', []));
+      WriteLn(Format('%-35s %s', [SProductName, Format(SBuilt_S, [DateTimeToStr(GetOwnBuildTimestamp)])]));
+      WriteLn(Format('%-35s %s', [SDevelopedByDanielMarschall, SDMHomepage]));
+      WriteLn(Format(SLicenseLine, []));
       WriteLn('');
 
-      WriteLn('=== Encrypting and decrypting files or folders ===');
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using (De)Coder 5.0', [OwnName, Cmd_DC50_EnCrypt_NoInfo]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Same as %s, but with metadata name+size+date', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Cmd_DC50_EnCrypt_NoInfo]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a (De)Coder 4.x or 5.x encrypted file', [OwnName, Cmd_DC50_DeCrypt]));
-      WriteLn(Format('%s %-13s <InFile>                       -- Shows details of a (De)Coder 4.x or 5.x encrypted file', [OwnName, Cmd_DC50_FileInfo]));
+      WriteLn('=== ' + SEncryptDecryptFilesAndFolders + ' ===');
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_NoInfo, SEncryptDecryptFilesAndFolders_1]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Cmd_DC50_EnCrypt_NoInfo, SEncryptDecryptFilesAndFolders_2]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_DeCrypt, SEncryptDecryptFilesAndFolders_3]));
+      WriteLn(Format('%s %-13s <InFile>                       -- %s', [OwnName, Cmd_DC50_FileInfo, SEncryptDecryptFilesAndFolders_4]));
       WriteLn('');
 
-      WriteLn('=== Support for legacy file formats ===');
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Encrypts a file using the (De)Coder 1.0 format (INSECURE)', [OwnName, Cmd_DC10_EnCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Decrypts a file using the (De)Coder 1.0 format (INSECURE)', [OwnName, Cmd_DC10_DeCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Encrypts a file using the (De)Coder 2.0 format (INSECURE)', [OwnName, Cmd_DC20_EnCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- Decrypts a file using the (De)Coder 2.0 format (INSECURE)', [OwnName, Cmd_DC20_DeCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- Encrypts a file using the (De)Coder 2.1 format (INSECURE)', [OwnName, Cmd_DC21_EnCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- Decrypts a file using the (De)Coder 2.1 format (INSECURE)', [OwnName, Cmd_DC21_DeCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- Encrypts a file using the (De)Coder 2.2 format (INSECURE)', [OwnName, Cmd_DC22_EnCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- Decrypts a file using the (De)Coder 2.2 format (INSECURE)', [OwnName, Cmd_DC22_DeCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.0 format (INSECURE)', [OwnName, Cmd_DC30_EnCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.0 format (INSECURE)', [OwnName, Cmd_DC30_DeCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Encrypts a file using the (De)Coder 3.2 format (INSECURE)', [OwnName, Cmd_DC32_EnCrypt]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- Decrypts a file using the (De)Coder 3.2 format (INSECURE)', [OwnName, Cmd_DC32_DeCrypt]));
+      WriteLn('=== ' + SSupportLegacyFormats + ' ===');
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC10_EnCrypt, SSupportLegacyFormats_1]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC10_DeCrypt, SSupportLegacyFormats_2]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC20_EnCrypt, SSupportLegacyFormats_3]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC20_DeCrypt, SSupportLegacyFormats_4]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- %s', [OwnName, Cmd_DC21_EnCrypt, SSupportLegacyFormats_5]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- %s', [OwnName, Cmd_DC21_DeCrypt, SSupportLegacyFormats_6]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- %s', [OwnName, Cmd_DC22_EnCrypt, SSupportLegacyFormats_7]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- %s', [OwnName, Cmd_DC22_DeCrypt, SSupportLegacyFormats_8]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC30_EnCrypt, SSupportLegacyFormats_9]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC30_DeCrypt, SSupportLegacyFormats_10]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC32_EnCrypt, SSupportLegacyFormats_11]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC32_DeCrypt, SSupportLegacyFormats_12]));
       WriteLn('');
 
-      WriteLn('=== Extras ===');
-      WriteLn(Format('%s %-13s <File>     -- Wipes a file from a disk in a secure way', [OwnName, Cmd_SecureDeleteFile]));
-      WriteLn(Format('%s %-13s <Folder>   -- Wipes a complete folder from a disk in a secure way', [OwnName, Cmd_SecureDeleteFolder]));
+      WriteLn('=== ' + SExtras + ' ===');
+      WriteLn(Format('%s %-13s <File>     -- %s', [OwnName, Cmd_SecureDeleteFile, SExtras_1]));
+      WriteLn(Format('%s %-13s <Folder>   -- %s', [OwnName, Cmd_SecureDeleteFolder, SExtras_2]));
       {$IFDEF Debug}
       WriteLn(Format('%s %-13s          -- Run internal testcases from folder ..\TestData', [OwnName, Cmd_Debug_Testcases]));
       WriteLn(Format('%s %-13s <DirName> <CSVResultFile> -- Run entropy test on directory', [OwnName, Cmd_Debug_EntropyTest]));
       {$ENDIF}
-      WriteLn(Format('%s %-13s            -- Shows this command listing', [OwnName, Cmd_Help]));
+      WriteLn(Format('%s %-13s            -- %s', [OwnName, Cmd_Help, SExtras_3]));
 
       if ParamCount = 0 then
       begin
         ExitCode := 0;
         WriteLn('');
-        Write('Press any key to exit...');
+        Write(SPressAnyKey);
         ReadLn;
         WriteLn('');
       end
@@ -728,7 +766,7 @@ begin
     on E: Exception do
     begin
       ExitCode := 1;
-      WriteLn('ERROR: ' + E.Message);
+      WriteLn(Format(SError_S, [E.Message]));
       WriteLn('');
     end;
   end;
@@ -739,9 +777,9 @@ begin
   begin
     WriteLn('');
     WriteLn('');
-    WriteLn('Exit code: ' + IntToStr(ExitCode));
+    WriteLn(Format(SExitCode_D, [ExitCode]));
     WriteLn('');
-    Write('Press any key to continue...');
+    Write(SPressAnyKey);
     ReadLn;
     WriteLn('');
   end;

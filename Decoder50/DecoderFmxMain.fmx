@@ -42,7 +42,7 @@ object DecoderMainForm: TDecoderMainForm
     TextSettings.Font.Size = 24.000000000000000000
     TextSettings.WordWrap = False
     Text = 'ViaThinkSoft (De)Coder 5.0'
-    TabOrder = 36
+    TabOrder = 38
   end
   object ShortInfoLabel: TLabel
     Anchors = [akLeft, akTop, akRight]
@@ -53,10 +53,12 @@ object DecoderMainForm: TDecoderMainForm
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 39
+    TabOrder = 41
   end
   object OpenDialog1: TOpenDialog
-    Filter = 'All files (*.*)|*.*'
+    Filter = 
+      'All files (*.*)|*.*|DC4/5 Encrypted files (*.dc4;*.dc5)|*.dc4;*.' +
+      'dc5'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Left = 24
     Top = 24
@@ -71,7 +73,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.Width = 479.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 30
+    TabOrder = 32
     Viewport.Width = 475.000000000000000000
     Viewport.Height = 118.000000000000000000
   end
@@ -124,7 +126,9 @@ object DecoderMainForm: TDecoderMainForm
       ' date'
   end
   object SaveDialog1: TSaveDialog
-    Filter = 'Encrypted files (*.dc4;*.dc5)|*.dc4;*.dc5|All files (*.*)|*.*'
+    Filter = 
+      'DC4/5 Encrypted files (*.dc4;*.dc5)|*.dc4;*.dc5|All files (*.*)|' +
+      '*.*'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
     Left = 32
     Top = 160

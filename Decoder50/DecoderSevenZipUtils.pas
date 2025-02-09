@@ -76,6 +76,8 @@ begin
 end;
 
 function SevenZipGetDll: string;
+resourcestring
+  SDllFileNotFound = 'File %s not found. Therefore, cannot compress or uncompress folders.';
 begin
   // Extract 7z.dll from the 32 an 64 bit installer binaries
   // Do not take the 7za.dll ones from the extra archive
@@ -85,23 +87,26 @@ begin
   result := '7z.32.dll';
   {$ENDIF}
   if not FileExists(Result) then
-    raise Exception.CreateFmt('File %s not found. Therefore, cannot compress or uncompress folders.', [result]);
+    raise Exception.CreateFmt(SDllFileNotFound, [result]);
 end;
 
 procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
 var
   Arch: I7zOutArchive;
   ProgressCtx: TSevenZipProgressContext;
+resourcestring
+  SPackFolderTask = '7zip Pack folder';
+  SFileExtMissingForFolderPack = 'File extension missing for SevenZipFolder()';
 begin
   ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
-  ProgressCtx.Task := '7zip Pack folder';
+  ProgressCtx.Task := SPackFolderTask;
   ProgressCtx.DecProgress := AOnProgress;
   if AArchFile.EndsWith('.7z', true) then
     Arch := CreateOutArchive(CLSID_CFormat7z, SevenZipGetDll)
   else if AArchFile.EndsWith('.zip', true) then
     Arch := CreateOutArchive(CLSID_CFormatZip, SevenZipGetDll)
   else
-    raise Exception.Create('File extension missing for SevenZipFolder()');
+    raise Exception.Create(SFileExtMissingForFolderPack);
   Arch.AddFiles(AFolderName, '', '*', true);
   SetCompressionLevel(Arch, 5);
   SevenZipSetCompressionMethod(Arch, m7BZip2);
@@ -113,16 +118,19 @@ procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProg
 var
   Arch: I7zInArchive;
   ProgressCtx: TSevenZipProgressContext;
+resourcestring
+  SUnpackFolderTask = '7zip Unpack folder';
+  SFileExtMissingForFolderUnpack = 'File extension missing for SevenZipExtract()';
 begin
   ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
-  ProgressCtx.Task := '7zip Unpack folder';
+  ProgressCtx.Task := SUnpackFolderTask;
   ProgressCtx.DecProgress := AOnProgress;
   if AArchFile.EndsWith('.7z', true) then
     Arch := CreateInArchive(CLSID_CFormat7z, SevenZipGetDll)
   else if AArchFile.EndsWith('.zip', true) then
     Arch := CreateInArchive(CLSID_CFormatZip, SevenZipGetDll)
   else
-    raise Exception.Create('File extension missing for SevenZipExtract()');
+    raise Exception.Create(SFileExtMissingForFolderUnpack);
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.OpenFile(AArchFile);
   Arch.ExtractTo(AFolder);

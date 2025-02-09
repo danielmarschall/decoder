@@ -53,7 +53,7 @@ function GetBuildTimestamp(const ExeFile: string): TDateTime;
 function GetOwnBuildTimestamp: TDateTime;
 
 {$IFDEF Console}
-procedure CountDown(msg: string; timer: integer);
+procedure CountDown(const msg: string; timer: integer);
 {$ENDIF}
 
 implementation
@@ -70,7 +70,7 @@ function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
 {$ENDIF}
 
 {$IFDEF Console}
-procedure CountDown(msg: string; timer: integer);
+procedure CountDown(const msg: string; timer: integer);
 const
   interval = 100;
 begin
@@ -79,7 +79,7 @@ begin
   begin
     Sleep(interval);
     Dec(timer, interval);
-    Write('     ' + msg + ' ... ' + inttostr(round(timer/1000)) + 's    ' + #13);
+    Write('     ' + Format(msg, [round(timer/1000)]) + '    ' + #13);
   end;
   WriteLn('');
 end;
@@ -207,11 +207,13 @@ var
   AFileNameParent: string;
   AFileNameRenamed: string;
   ClusterSize: integer;
+resourcestring
+  SDeleteFile_S = 'Delete file: %s';
 begin
   if not FileExists(AFileName) then Exit(False);
 
   {$IFDEF Console}
-  WriteLn('Delete file: ' + AFileName);
+  WriteLn(Format(SDeleteFile_S, [AFileName]));
   {$ENDIF}
 
   ClusterSize := 32000; // max available in Windows format dialog
@@ -288,12 +290,19 @@ var
   ADirNameRenamed: string;
   ADirNameAbs: string;
   IsDriveOrShareRoot: boolean;
+resourcestring
+  SNoNuke = 'Sorry, but this program will not destroy your computer.';
+  SStartDeleteFolder_S = 'START Delete folder: %s';
+  SErrorDeletingEmptyFolder_S = 'ERROR Deleting empty folder: %s';
+  SDoneDeletingFolder_S = 'DONE Deleting folder: %s';
+  SErrorDeletingFolderContents_S = 'ERROR Deleting folder contents: %s';
 begin
   if SameText(ADirName, 'C:\') or
      SameText(ADirName, 'C:/') or
-     SameText(ADirName, 'C:') then
+     SameText(ADirName, 'C:') or
+     SameText(ADirName, '/') then
   begin
-    raise Exception.Create('This program will not destroy your computer.');
+    raise Exception.Create(SNoNuke);
   end;
 
   if not DirectoryExists(ADirName) then Exit(False);
@@ -316,7 +325,7 @@ begin
     );
 
   {$IFDEF Console}
-  WriteLn('START Delete folder: ' + ADirName);
+  WriteLn(Format(SStartDeleteFolder_S, [ADirName]));
   {$ENDIF}
 
   if FindFirst(IncludeTrailingPathDelimiter(ADirName) + '*', faAnyFile, F) = 0 then
@@ -366,16 +375,15 @@ begin
           // Undo renaming
           if ADirName <> ADirNameRenamed then
             RenameFile(ADirNameRenamed, ADirName);
-
           {$IFDEF Console}
-          WriteLn('ERROR Deleting empty folder: ' + ADirName);
+          WriteLn(Format(SErrorDeletingEmptyFolder_S, [ADirName]));
           {$ENDIF}
           result := false;
         end
         else
         begin
           {$IFDEF Console}
-          WriteLn('DONE Deleting folder: ' + ADirName);
+          WriteLn(Format(SDoneDeletingFolder_S, [ADirName]));
           {$ENDIF}
           result := true;
         end;
@@ -383,7 +391,7 @@ begin
       else
       begin
         {$IFDEF Console}
-        WriteLn('ERROR Deleting folder contents: ' + ADirName);
+        WriteLn(Format(SErrorDeletingFolderContents_S, [ADirName]));
         {$ENDIF}
         result := false;
       end;
@@ -558,6 +566,8 @@ var
   fs: TFileStream;
   unixTime: integer;
   peOffset: Integer;
+resourcestring
+  SGetBuildTimestampFailed = 'GetBuildTimestamp(%s) failed';
 begin
   try
     fs := TFileStream.Create(ExeFile, fmOpenRead or fmShareDenyNone);
@@ -575,7 +585,7 @@ begin
   except
     // Sollte nicht passieren
     if not FileAge(ExeFile, result) then
-      raise Exception.CreateFmt('GetBuildTimestamp(%s) fehlgeschlagen', [ExeFile]);
+      raise Exception.CreateFmt(SGetBuildTimestampFailed, [ExeFile]);
   end;
 end;
 

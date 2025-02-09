@@ -53,24 +53,30 @@ function DeCoder10_DetectFile(const AFileName: string): boolean;
 
 procedure DeCoder20_EncodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
 procedure DeCoder20_DecodeFile(const AFileName, AOutput: String; OnProgressProc: TDcProgressEvent=nil);
+//function DeCoder20_DetectFile(const AFileName: string): boolean;
 
 procedure DeCoder21_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 procedure DeCoder21_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
+//function DeCoder21_DetectFile(const AFileName: string): boolean;
 
 procedure DeCoder22_EncodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
 procedure DeCoder22_DecodeFile(const AFileName, AOutput: String; Key: integer; OnProgressProc: TDcProgressEvent=nil);
+//function DeCoder22_DetectFile(const AFileName: string): boolean;
 
 procedure DeCoder30_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 procedure DeCoder30_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
+//function DeCoder30_DetectFile(const AFileName: string): boolean;
 
 procedure DeCoder32_EncodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
 procedure DeCoder32_DecodeFile(const AFileName, AOutput: String; Key: AnsiString; OnProgressProc: TDcProgressEvent=nil);
+//function DeCoder32_DetectFile(const AFileName: string): boolean;
 
 function DeCoder4X_GetDefaultParameters(V: TDc4FormatVersion): TDC4Parameters;
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
 
 procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDcProgressEvent=nil);
 function DeCoder4X_DecodeFile(const AFileName: string; var AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_DetectFile(const AFileName: string): boolean;
 
 // Note: A password is only required for reading an user-key-encrypted filename (feature was only available in format version 3)
 function DeCoder4X_FileInfo(const AFileName: String; const APassword: string=''; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
@@ -197,6 +203,8 @@ function DC_DEC_HashById(IdentityBase, Identity: Int64; dc51compat: boolean; NoE
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
+resourcestring
+  SHashId_DD_NotFound = 'Hash ID 0x%.8x with base 0x%.8x not found';
 begin
   for p in TDECHash.ClassList do
   begin
@@ -211,13 +219,15 @@ begin
   if NoException then
     result := nil
   else
-    raise Exception.CreateFmt('Hash ID 0x%.8x with base 0x%.8x not found', [Identity, IdentityBase]);
+    raise Exception.CreateFmt(SHashId_DD_NotFound, [Identity, IdentityBase]);
 end;
 
 function DC_DEC_CipherById(IdentityBase, Identity: Int64; dc51compat: boolean; NoException: boolean=false): TDECCipherClass;
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
+resourcestring
+  SCipherId_DD_NotFound = 'Cipher ID 0x%.8x with base 0x%.8x not found';
 begin
   for p in TDECCipher.ClassList do
   begin
@@ -233,7 +243,7 @@ begin
   if NoException then
     result := nil
   else
-    raise Exception.CreateFmt('Cipher ID 0x%.8x with base 0x%.8x not found', [Identity, IdentityBase]);
+    raise Exception.CreateFmt(SCipherId_DD_NotFound, [Identity, IdentityBase]);
 end;
 
 {$IFDEF Debug}
@@ -245,6 +255,7 @@ var
   sl: TStringList;
   addinfo: string;
 begin
+  // No resourcestrings/Translation, because this method is used to generate the specification file which is only English
   sl := TStringList.Create;
   try
     for p in TDECHash.ClassList do
@@ -284,6 +295,7 @@ var
   sl: TStringList;
   addinfo: string;
 begin
+  // No resourcestrings/Translation, because this method is used to generate the specification file which is only English
   sl := TStringList.Create;
   try
     for p in TDECCipher.ClassList do
@@ -334,8 +346,10 @@ const
   chunksize = 4096; // bigger = faster
 resourcestring
   SDC1Encode = '(De)Coder 1.0 encoding';
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SOnlyAsciiFilesAllowed = 'Only ASCII text files can be encrypted with (De)Coder 1.0';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   tempstream := nil;
@@ -355,7 +369,7 @@ begin
         begin
           ch := rbsIn[j];
           if (Ord(ch)<32) or (Ord(ch)>126) then
-            raise Exception.Create('Only ASCII text files can be encrypted with (De)Coder 1.0');
+            raise Exception.Create(SOnlyAsciiFilesAllowed);
           if ForceUpperCase then ch := UpCase(ch);
           if ch in ['A'..'Z'] then
             rbsOut := rbsOut + AnsiChar(#36) + let[Ord(ch)-Ord('A')+1] + AnsiChar(#16);
@@ -401,8 +415,10 @@ const
   chunksize = 4096*3; // bigger = faster. Must be multiple of 3
 resourcestring
   SDC1Decode = '(De)Coder 1.0 decoding';
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SNoDc10File = 'This file was not encrypted with (De)Coder 1.0';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   tempstream := nil;
@@ -418,7 +434,7 @@ begin
         wrongFormat := (rbs <> DC10_HEAD) or (Source.ReadRawByteString(Length(DC10_FOOT)) <> DC10_FOOT);
       end;
       if wrongFormat then
-        raise Exception.Create('This file was not encrypted with (De)Coder 1.0');
+        raise Exception.Create(SNoDc10File);
       Source.Position := Length(DC10_HEAD);
 
       tempstream := TFileStream.Create(AOutput, fmCreate);
@@ -508,8 +524,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SEncodeStream = 'Encode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -522,7 +541,7 @@ begin
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -547,8 +566,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SDecodeStream = 'Decode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -561,7 +583,7 @@ begin
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -586,8 +608,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SEncodeStream = 'Encode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -600,7 +625,7 @@ begin
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -625,8 +650,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SDecodeStream = 'Decode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -639,7 +667,7 @@ begin
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -664,8 +692,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SEncodeStream = 'Encode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -678,7 +709,7 @@ begin
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -703,8 +734,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SDecodeStream = 'Decode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -717,7 +751,7 @@ begin
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -742,8 +776,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SEncodeStream = 'Encode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -756,7 +793,7 @@ begin
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -781,8 +818,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SDecodeStream = 'Decode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -795,7 +835,7 @@ begin
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -820,8 +860,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SEncodeStream = 'Encode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -834,7 +877,7 @@ begin
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -859,8 +902,11 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SDecodeStream = 'Decode stream';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   outFileDidExist := FileExists(AOutput);
   try
@@ -873,7 +919,7 @@ begin
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
         Cipher.Free;
@@ -936,154 +982,252 @@ begin
 end;
 
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
+resourcestring
+  SZipRequiresDc40 = 'ZIP folder requires DC40';
+  SDc40HashNotAccepted = 'Hash not accepted in DC40 version';
+  SDc40CipherNotAccepted = 'Cipher not accepted in DC40 version';
+  SDc40KdfVersionNotAccepted = 'KDF version not accepted in DC40 version';
+  SDc40SeedSizeNotAccepted = 'Seed size not accepted in DC40 version';
+  SDc40CipherModeNotAccepted = 'CiperMode not accepted in DC40 version';
+  SZlibRequiresDc41beta = 'ZLib requires DC41beta+ version';
+  SIndivFillByteOnlyVer4plus = 'Indiv IvFillByte only accepted format version 4+';
+  SIndivIvOnlyVer4plus = 'Indiv IV only accepted format version 4+';
+  SIndivKdfOnlyVer4plus = 'Indiv KDF only accepted format version 4+';
+  SGcmAuthTagOnlyForGcm = 'GCM Auth Tag only allowed for cipher mode GCM';
+  SGcmAuthTagRequired = 'GCM Auth Tag required for cipher mode GCM';
+  SGcmAuthTagTooSmall = 'GCM Auth Tag too small (choose at least 32 bits = 4 bytes)';
+  SGcmAuthTagTooLarge = 'GCM Auth Tag too large (max 128 bits = 16 bytes)';
+  SPbkdfIterationsMayNotBe0 = 'PBKDF Iterations must be >0';
+  SPbkdfIterationsMustBe0 = 'PBKDF Iterations must be =0';
+  SEncFileNameOnlyVerDc41Final = 'Encrypted Filename only accepted in DC41Final version';
+  SOrigFileNameOnlyHiddenInVer4 = 'Orig File Name can only be hidden in format version 4';
+  SOrigFileSizeOnlyAvailableInVer4 = 'Orig FileSize only available in format version 4';
+  SOrigFileDateOnlyAvailableInVer4 = 'Orig FileDate only available in format version 4';
 begin
+  // Uncommented, because IsCompressedFolder is part of TDC4FileInfo, not of TDC4Parameters
   //if (AParameters.Dc4FormatVersion < fvDc40) and (AParameters.IsCompressedFolder) then
-  //  raise Exception.Create('ZIP folder requires DC41beta+ version');
+  //  raise Exception.Create(SZipRequiresDc40);
 
   if (AParameters.Dc4FormatVersion = fvDc40) and (AParameters.HashClass <> THash_SHA512) then
-    raise Exception.Create('Hash not accepted in DC40 version');
+    raise Exception.Create(SDc40HashNotAccepted);
   if (AParameters.Dc4FormatVersion = fvDc40) and (AParameters.CipherClass <> TCipher_Rijndael) and (AParameters.CipherClass <> TCipher_AES) then
-     raise Exception.Create('Cipher not accepted in DC40 version');
+     raise Exception.Create(SDc40CipherNotAccepted);
   if (AParameters.Dc4FormatVersion = fvDc40) and (AParameters.KDF <> kvKdfx) then
-    raise Exception.Create('KDF version not accepted in DC40 version');
+    raise Exception.Create(SDc40KdfVersionNotAccepted);
   if (AParameters.Dc4FormatVersion = fvDc40) and (AParameters.SeedSize <> 16) then
-    raise Exception.Create('Seed size not accepted in DC40 version');
+    raise Exception.Create(SDc40SeedSizeNotAccepted);
   if (AParameters.Dc4FormatVersion = fvDc40) and (AParameters.CipherMode <> cmCTSx) then
-    raise Exception.Create('CiperMode not accepted in DC40 version');
+    raise Exception.Create(SDc40CipherModeNotAccepted);
 
   if (AParameters.Dc4FormatVersion < fvDc41Beta) and (AParameters.ShouldBeZLibCompressed <> No) then
-    raise Exception.Create('ZLib requires DC41beta+ version');
+    raise Exception.Create(SZlibRequiresDc41beta);
 
   if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.IvFillByte <> $FF) then
-    raise Exception.Create('Indiv IvFillByte only accepted format version 4+');
+    raise Exception.Create(SIndivFillByteOnlyVer4plus);
   if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.IVSizeInBytes <> 0) then
-    raise Exception.Create('Indiv IV only accepted format version 4+');
+    raise Exception.Create(SIndivIvOnlyVer4plus);
   if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.KDF <> kvKdfx) then
-    raise Exception.Create('Indiv KDF only accepted format version 4+');
+    raise Exception.Create(SIndivKdfOnlyVer4plus);
 
   if (AParameters.CipherMode <> cmGCM) and (AParameters.GCMAuthTagSizeInBytes <> 0) then
-    raise Exception.Create('GCM Auth Tag only allowed for cipher mode GCM');
+    raise Exception.Create(SGcmAuthTagOnlyForGcm);
   if (AParameters.CipherMode = cmGCM) and (AParameters.GCMAuthTagSizeInBytes = 0) then
-    raise Exception.Create('GCM Auth Tag required for cipher mode GCM');
+    raise Exception.Create(SGcmAuthTagRequired);
   if (AParameters.CipherMode = cmGCM) and (AParameters.GCMAuthTagSizeInBytes < 4) then
-    raise Exception.Create('GCM Auth Tag too small (choose at least 32 bits = 4 bytes)');
+    raise Exception.Create(SGcmAuthTagTooSmall);
   if (AParameters.CipherMode = cmGCM) and (AParameters.GCMAuthTagSizeInBytes > 16) then
-    raise Exception.Create('GCM Auth Tag too large (max 128 bits = 16 bytes)'); // This is the output size of CalcGaloisHash
+    raise Exception.Create(SGcmAuthTagTooLarge); // This is the output size of CalcGaloisHash
 
   if (AParameters.KDF <> kvPbkdf2) and (AParameters.PBKDF_Iterations <> 0) then
-    raise Exception.Create('PBKDF Iterations must be >0');
+    raise Exception.Create(SPbkdfIterationsMayNotBe0);
   if (AParameters.KDF = kvPbkdf2) and (AParameters.PBKDF_Iterations = 0) then
-    raise Exception.Create('PBKDF Iterations must be =0');
+    raise Exception.Create(SPbkdfIterationsMustBe0);
 
   if (AParameters.Dc4FormatVersion <> fvDc41FinalCancelled) and (AParameters.ContainFileOrigName=fpEncryptWithUserKey) then
-    raise Exception.Create('Encrypted Filename only accepted in DC41Final version');
+    raise Exception.Create(SEncFileNameOnlyVerDc41Final);
   if (AParameters.Dc4FormatVersion < fvDc50) and (AParameters.ContainFileOrigName=fpHide) then
-    raise Exception.Create('Orig File Name can only be hidden in format version 4');
+    raise Exception.Create(SOrigFileNameOnlyHiddenInVer4);
   if (AParameters.Dc4FormatVersion < fvDc50) and AParameters.ContainFileOrigSize then
-    raise Exception.Create('Orig FileSize only available in format version 4');
+    raise Exception.Create(SOrigFileSizeOnlyAvailableInVer4);
   if (AParameters.Dc4FormatVersion < fvDc50) and AParameters.ContainFileOrigDate then
-    raise Exception.Create('Orig FileDate only available in format version 4');
+    raise Exception.Create(SOrigFileDateOnlyAvailableInVer4);
 end;
 
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
 
+  resourcestring
+    DC4_SUBFORMAT_VERSION_0 = 'Hagen Reddmann Example File';
+    DC4_SUBFORMAT_VERSION_1 = '(De)Coder 4.0';
+    DC4_SUBFORMAT_VERSION_2 = '(De)Coder 4.1 Beta';
+    DC4_SUBFORMAT_VERSION_3 = '(De)Coder 4.1 Final (Cancelled)';
+    DC4_SUBFORMAT_VERSION_4 = '(De)Coder 5.0';
   const
     DC4_SUBFORMAT_VERSION: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of string = (
-      'Hagen Reddmann Example File',
-      '(De)Coder 4.0',
-      '(De)Coder 4.1 Beta',
-      '(De)Coder 4.1 Final (Cancelled)',
-      '(De)Coder 5.0'
+      DC4_SUBFORMAT_VERSION_0,
+      DC4_SUBFORMAT_VERSION_1,
+      DC4_SUBFORMAT_VERSION_2,
+      DC4_SUBFORMAT_VERSION_3,
+      DC4_SUBFORMAT_VERSION_4
     );
 
+  resourcestring
+    INTEGRITY_CHECK_INFO_0 = 'DEC CalcMac';
+    INTEGRITY_CHECK_INFO_1 = 'Hash of source data';
+    INTEGRITY_CHECK_INFO_2 = 'Nested Hash of source data with password';
+    INTEGRITY_CHECK_INFO_3 = 'Nested Hash of source data with password';
+    INTEGRITY_CHECK_INFO_4 = 'Encrypt-then-HMAC';
+  const
     INTEGRITY_CHECK_INFO: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of string = (
-      'DEC CalcMac',
-      'Hash of source data',
-      'Nested Hash of source data with password',
-      'Nested Hash of source data with password',
-      'Encrypt-then-HMAC'
+      INTEGRITY_CHECK_INFO_0,
+      INTEGRITY_CHECK_INFO_1,
+      INTEGRITY_CHECK_INFO_2,
+      INTEGRITY_CHECK_INFO_3,
+      INTEGRITY_CHECK_INFO_4
     );
 
+  resourcestring
+    KDF_VERSION_NAMES_0 = 'Unknown';
+    KDF_VERSION_NAMES_1 = 'KDF1';
+    KDF_VERSION_NAMES_2 = 'KDF2';
+    KDF_VERSION_NAMES_3 = 'KDF3';
+    KDF_VERSION_NAMES_4 = 'KDFx';
+    KDF_VERSION_NAMES_5 = 'PBKDF2';
+  const
     KDF_VERSION_NAMES: array[Low(TKdfVersion)..High(TKdfVersion)] of string = (
-      'Unknown', 'KDF1', 'KDF2', 'KDF3', 'KDFx', 'PBKDF2'
+      KDF_VERSION_NAMES_0,
+      KDF_VERSION_NAMES_1,
+      KDF_VERSION_NAMES_2,
+      KDF_VERSION_NAMES_3,
+      KDF_VERSION_NAMES_4,
+      KDF_VERSION_NAMES_5
     );
 
+  resourcestring
+    CIPHER_MODE_NAMES_0 = 'CTSx = double CBC, with CFS8 padding of truncated final block';
+    CIPHER_MODE_NAMES_1 = 'CBCx = Cipher Block Chaining, with CFB8 padding of truncated final block';
+    CIPHER_MODE_NAMES_2 = 'CFB8 = 8bit Cipher Feedback mode';
+    CIPHER_MODE_NAMES_3 = 'CFBx = CFB on Blocksize of Cipher';
+    CIPHER_MODE_NAMES_4 = 'OFB8 = 8bit Output Feedback mode';
+    CIPHER_MODE_NAMES_5 = 'OFBx = OFB on Blocksize bytes';
+    CIPHER_MODE_NAMES_6 = 'CFS8 = 8Bit CFS, double CFB';
+    CIPHER_MODE_NAMES_7 = 'CFSx = CFS on Blocksize bytes';
+    CIPHER_MODE_NAMES_8 = 'ECBx = Electronic Code Book';
+    CIPHER_MODE_NAMES_9 = 'GCM = Galois Counter Mode';
+  const
     CIPHER_MODE_NAMES: array[Low(TCipherMode)..High(TCipherMode)] of string = (
-      'CTSx = double CBC, with CFS8 padding of truncated final block',
-      'CBCx = Cipher Block Chaining, with CFB8 padding of truncated final block',
-      'CFB8 = 8bit Cipher Feedback mode',
-      'CFBx = CFB on Blocksize of Cipher',
-      'OFB8 = 8bit Output Feedback mode',
-      'OFBx = OFB on Blocksize bytes',
-      'CFS8 = 8Bit CFS, double CFB',
-      'CFSx = CFS on Blocksize bytes',
-      'ECBx = Electronic Code Book',
-      'GCM = Galois Counter Mode'
+      CIPHER_MODE_NAMES_0,
+      CIPHER_MODE_NAMES_1,
+      CIPHER_MODE_NAMES_2,
+      CIPHER_MODE_NAMES_3,
+      CIPHER_MODE_NAMES_4,
+      CIPHER_MODE_NAMES_5,
+      CIPHER_MODE_NAMES_6,
+      CIPHER_MODE_NAMES_7,
+      CIPHER_MODE_NAMES_8,
+      CIPHER_MODE_NAMES_9
     );
 
+  resourcestring
+    CIPHER_FILLMODE_NAMES_0 = 'Bytes';
+  const
     CIPHER_FILLMODE_NAMES: array[Low(TBlockFillMode)..High(TBlockFillMode)] of string = (
-      'Bytes'
+      CIPHER_FILLMODE_NAMES_0
     );
+
+  resourcestring
+    SYes = 'Yes';
+    SNo = 'No';
+    SAuto = 'Auto';
+    SUnknown = 'unknown';
+    SNotAvailable = 'not available';
 
   function YesNo(b: boolean): string; overload;
   begin
-    if b then exit('Yes') else exit('No');
+    if b then exit(SYes) else exit(SNo);
   end;
 
   function YesNo(b: TYesNoAuto): string; overload;
   begin
     case b of
-      Yes:   exit('Yes');
-      No:    exit('No');
-      Auto:  exit('Auto');
+      Yes:   exit(SYes);
+      No:    exit(SNo);
+      Auto:  exit(SAuto);
     end;
   end;
 
+resourcestring
+  SFileFormat_S = 'File Format: %s';
+  SSubFormat_S = 'Sub-Format: %s';
+  SDC45EncryptedFile = '(De)Coder 4.x/5.x Encrypted File';
+  SIsCompresseFolder_S = 'Is compressed folder: %s';
+  S7zFormat = '7-Zip format';
+  SZipFormat = 'ZIP format';
+  SAdditionalZLibCompressed_S = 'Data additionally ZLib-compressed: %s';
+  SOriginalFilename_S = 'Original filename: %s';
+  SOriginalFilesize_S = 'Original filesize: %s';
+  SOriginalDatetime_S = 'Original datetime: %s';
+  SPasswordEncrypteedFileName_S = 'Password Encrypted File Name: %s';
+  SKDF_S = 'Key Derivation Algorithm: %s';
+  SPBKDFIterations_D = 'PBKDF Iterations: %d';
+  SHashAlgo_S = 'Hashing Algorithm: %s';
+  SHashDigestSize_D = 'Hash Digest Size: %d';
+  SHashBlockSize_D = 'Hash Block Size: %d';
+  SHashSeedSize_D = 'Hash Seed Size: %d';
+  SEncAlgo_S = 'Encryption Algorithm: %s';
+  SCipherKeySize_D = 'Cipher Key Size: %d';
+  SCipherBlockSize_D = 'Cipher Block Size: %d';
+  SCipherBufferSize_D = 'Cipher Buffer Size: %d';
+  SCipherIvSize_D  = 'Cipher IV Size: %d';
+  SCipherIvFillByte_S = 'Cipher IV Fill Byte: %s';
+  SCipherMode_S = 'Cipher Mode: %s';
+  SCipherBlockFillingMode_S = 'Cipher Block Filling Mode: %s';
+  SGcmAuthTagSize_D = 'GCM Auth Tag Size: %d bits';
+  SMAC_S = 'Message Authentication: %s';
 begin
-  sl.Add('File Format: (De)Coder 4.x/5.x Encrypted File');
-  sl.Add('Sub-Format: ' + DC4_SUBFORMAT_VERSION[fi.Parameters.Dc4FormatVersion]);
+  sl.Add(Format(SFileFormat_S, [SDC45EncryptedFile]));
+  sl.Add(Format(SSubFormat_S, [DC4_SUBFORMAT_VERSION[fi.Parameters.Dc4FormatVersion]]));
   if fi.IsCompressedFolder and (fi.Parameters.Dc4FormatVersion >= fvDc50) then
-    sl.Add('Is compressed folder: Yes (7-Zip format)')
+    sl.Add(Format(SIsCompresseFolder_S, [SYes + ' (' + S7zFormat + ')']))
   else if fi.IsCompressedFolder and (fi.Parameters.Dc4FormatVersion >= fvDc40) then
-    sl.Add('Is compressed folder: Yes (ZIP format)')
+    sl.Add(Format(SIsCompresseFolder_S, [SYes + ' (' + SZipFormat + ')']))
   else
-    sl.Add('Is compressed folder: No');
-  sl.Add('Data additionally ZLib-compressed: ' + YesNo(fi.IsZLibCompressed));
+    sl.Add(Format(SIsCompresseFolder_S, [SNo]));
+  sl.Add(Format(SAdditionalZLibCompressed_S, [YesNo(fi.IsZLibCompressed)]));
   if fi.OrigFileName = '' then
-    sl.Add('Original filename: unknown')
+    sl.Add(Format(SOriginalFilename_S, [SUnknown]))
   else
-    sl.Add('Original filename: ' + fi.OrigFileName);
+    sl.Add(Format(SOriginalFilename_S, [fi.OrigFileName]));
   if fi.OrigFileSize = -1 then
-    sl.Add('Original filesize: unknown')
+    sl.Add(Format(SOriginalFilesize_S, [SUnknown]))
   else
-    sl.Add('Original filesize: ' + FileSizeHumanReadable(fi.OrigFileSize));
+    sl.Add(Format(SOriginalFilesize_S, [FileSizeHumanReadable(fi.OrigFileSize)]));
   if fi.OrigFileDate = -1 then
-    sl.Add('Original datetime: unknown')
+    sl.Add(Format(SOriginalDatetime_S, [SUnknown]))
   else
-    sl.Add('Original datetime: ' + DateTimeToStr(UnixToDateTime(fi.OrigFileDate, false)));
+    sl.Add(Format(SOriginalDatetime_S, [DateTimeToStr(UnixToDateTime(fi.OrigFileDate, false))]));
   if fi.Parameters.Dc4FormatVersion = fvDc41FinalCancelled then
-    sl.Add('Password Encrypted File Name: ' + YesNo(fi.Parameters.ContainFileOrigName=fpEncryptWithUserKey))
+    sl.Add(Format(SPasswordEncrypteedFileName_S, [YesNo(fi.Parameters.ContainFileOrigName=fpEncryptWithUserKey)]))
   else
-    sl.Add('Password Encrypted File Name: not available');
-  sl.Add('Key Derivation Algorithm: ' + KDF_VERSION_NAMES[fi.Parameters.KDF]);
+    sl.Add(Format(SPasswordEncrypteedFileName_S, [SNotAvailable]));
+  sl.Add(Format(SKDF_S, [KDF_VERSION_NAMES[fi.Parameters.KDF]]));
   if fi.Parameters.KDF = kvPbkdf2 then
-    sl.Add('PBKDF Iterations: ' + IntToStr(fi.Parameters.PBKDF_Iterations));
-  sl.Add('Hashing Algorithm: ' + StringReplace(fi.Parameters.HashClass.ClassName, 'THash_', '', []));
-  sl.Add('Hash Digest Size: ' + IntToStr(fi.Parameters.HashClass.DigestSize));
-  sl.Add('Hash Block Size: ' + IntToStr(fi.Parameters.HashClass.BlockSize));
-  sl.Add('Hash Seed Size: ' + IntToStr(fi.Parameters.SeedSize));
-  sl.Add('Encryption Algorithm: ' + StringReplace(fi.Parameters.CipherClass.ClassName, 'TCipher_', '', []));
-  sl.Add('Cipher Key Size: ' + IntToStr(fi.Parameters.CipherClass.Context.KeySize));
-  sl.Add('Cipher Block Size: ' + IntToStr(fi.Parameters.CipherClass.Context.BlockSize));
-  sl.Add('Cipher Buffer Size: ' + IntToStr(fi.Parameters.CipherClass.Context.BufferSize));
-  sl.Add('Cipher IV Size: ' + IntToStr(fi.Parameters.IVSizeInBytes));
-  sl.Add('Cipher IV Fill Byte: 0x'+IntToHex(fi.Parameters.IvFillByte,2));
-  sl.Add('Cipher Mode: ' + CIPHER_MODE_NAMES[fi.Parameters.CipherMode]);
+    sl.Add(Format(SPBKDFIterations_D, [fi.Parameters.PBKDF_Iterations]));
+  sl.Add(Format(SHashAlgo_S, [StringReplace(fi.Parameters.HashClass.ClassName, 'THash_', '', [])]));
+  sl.Add(Format(SHashDigestSize_D, [fi.Parameters.HashClass.DigestSize]));
+  sl.Add(Format(SHashBlockSize_D, [fi.Parameters.HashClass.BlockSize]));
+  sl.Add(Format(SHashSeedSize_D, [fi.Parameters.SeedSize]));
+  sl.Add(Format(SEncAlgo_S, [StringReplace(fi.Parameters.CipherClass.ClassName, 'TCipher_', '', [])]));
+  sl.Add(Format(SCipherKeySize_D, [fi.Parameters.CipherClass.Context.KeySize]));
+  sl.Add(Format(SCipherBlockSize_D, [fi.Parameters.CipherClass.Context.BlockSize]));
+  sl.Add(Format(SCipherBufferSize_D, [fi.Parameters.CipherClass.Context.BufferSize]));
+  sl.Add(Format(SCipherIvSize_D, [fi.Parameters.IVSizeInBytes]));
+  sl.Add(Format(SCipherIvFillByte_S, ['0x'+IntToHex(fi.Parameters.IvFillByte,2)]));
+  sl.Add(Format(SCipherMode_S, [CIPHER_MODE_NAMES[fi.Parameters.CipherMode]]));
   // Commented out, because DEC currently doesn't use it
-  //sl.Add('Cipher Block Filling Mode: ' + CIPHER_FILLMODE_NAMES[fi.FillMode]);
+  //sl.Add(Format(SCipherBlockFillingMode_S, [CIPHER_FILLMODE_NAMES[fi.FillMode]]));
   if fi.Parameters.CipherMode = cmGCM then
-    sl.Add('GCM Auth Tag Size: ' + IntToStr(fi.Parameters.GCMAuthTagSizeInBytes*8) + ' bits');
-  sl.Add('Message Authentication: ' + INTEGRITY_CHECK_INFO[fi.Parameters.Dc4FormatVersion]);
+    sl.Add(Format(SGcmAuthTagSize_D, [fi.Parameters.GCMAuthTagSizeInBytes*8]));
+  sl.Add(Format(SMAC_S, [INTEGRITY_CHECK_INFO[fi.Parameters.Dc4FormatVersion]]));
 end;
 
 procedure DeCoder4X_EncodeFile(const AFileName, AOutput: String; const APassword: string; AParameters: TDC4Parameters; OnProgressProc: TDcProgressEvent=nil);
@@ -1141,8 +1285,16 @@ const
   // 7.00-7.49    0.73129
   // 7.50-7.99    0.87920
   ShannonEntropyTreshold = 7.5;
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SFileOrFolderNotFound = 'File or folder %s not found';
+  SFolderEncryptionNotAllowed = 'Encryption of folders is not supported. Please pack the file contents using an external tool.';
+  SFilenameTooLong = 'Filename too long';
+  SEncodeStream = 'Encode stream';
+  SCalcHash = 'Calc hash';
+  SCalcHMac = 'Calc HMAC';
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  if AOutput = '' then raise Exception.Create(SOutputFilenameMustNotBeEmpty);
   DeCoder4X_ValidateParameterBlock(AParameters);
 
   tempstream := nil;
@@ -1152,7 +1304,7 @@ begin
   IsZLibCompressed := false;
   IsFolder := DirectoryExists(AFileName);
   if not IsFolder and not FileExists(AFileName) then
-    raise Exception.CreateFmt('File or folder %s not found', [AFileName]);
+    raise Exception.CreateFmt(SFileOrFolderNotFound, [AFileName]);
   outFileDidExist := FileExists(AOutput);
   ATempFileNameZLib := '';
   try
@@ -1172,7 +1324,7 @@ begin
         end
         else
         begin
-          raise Exception.Create('Encryption of folders is not supported. Please pack the file contents using an external tool.');
+          raise Exception.Create(SFolderEncryptionNotAllowed);
         end;
       end
       else
@@ -1358,7 +1510,7 @@ begin
         else
           OrigName := '';
         if Length(OrigName) > 255 then
-          raise Exception.Create('Filename too long');
+          raise Exception.Create(SFilenameTooLong);
         tempstream.WriteByte(Length(OrigName));
         tempstream.WriteRawByteString(OrigName);
       end;
@@ -1467,7 +1619,7 @@ begin
         TDECFormattedCipher(Cipher).EncodeStream(Source, tempstream, source.size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Encode stream', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
       finally
         Cipher.Done;
@@ -1500,7 +1652,7 @@ begin
         TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Calc hash', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SCalcHash, TDcProgressState(State))
           end);
         tempstream.WriteRawBytes(HashResult);
       end
@@ -1510,7 +1662,7 @@ begin
         TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Calc hash', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SCalcHash, TDcProgressState(State))
           end);
         HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+PasswordRBS, TFormat_Copy);
         tempstream.WriteRawByteString(HashResult2);
@@ -1521,7 +1673,7 @@ begin
         TDECHashExtended(ahash).CalcStream(Source, Source.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Calc hash', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SCalcHash, TDcProgressState(State))
           end);
         HashResult2 := TDECHashExtended(ahash).CalcString(
           BytesToRawByteString(HashResult) + Seed +
@@ -1538,7 +1690,7 @@ begin
         HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, tempstream, tmp64, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
-              OnProgressProc(Size, Pos, 'Calc HMAC', TDcProgressState(State))
+              OnProgressProc(Size, Pos, SCalcHMac, TDcProgressState(State))
           end));
         tempstream.Position := tmp64;
         tempstream.WriteRawByteString(HashResult2);
@@ -1623,9 +1775,26 @@ var
   *)
   ATempFileNameZLib: string; // If ZLibCompressed, then =AOutput+.z, otherwise undefined
   ATempFileNameZipOrDirectOutput: string; // If IsFolder, then =AOutput+.7z, else =AOutput
+resourcestring
+  SFileOrFolderNotFound = 'File or folder %s not found';
+  SFormatNotSupported = 'Format not supported';
+  SUnsupportedFileFormatVersion = 'Unsupported file format version. Please try downloading the latest version of (De)Coder';
+  SInvalidFileName = 'Invalid file name';
+  SInvalidBlockFillingMode = 'Invalid block filling mode';
+  SInvalidKdfVersion = 'Invalid KDF version';
+  SEmptyPasswordNotAllowed = 'An empty password is not allowed';
+  SVerifyHMac = 'Verify HMAC';
+  SHMacMismatchPwdWrong = 'HMAC mismatch. The password is probably wrong or the file is corrupt.';
+  SDecodeStream = 'Decode stream';
+  SDecCalcMacMismatch = 'DEC CalcMAC mismatch';
+  SGCMAuthTagMismatch = 'GCM Auth Tag mismatch';
+  SVerifyHash = 'Verify hash';
+  SHMacMismatch = 'HMAC mismatch. Password wrong or file corrupt.';
+  SHashMismatch = 'Hash mismatch. Password wrong or file corrupt.';
+  SFileTerminusWrong = 'File terminus wrong';
 begin
   if not FileExists(AFileName) then
-    raise Exception.CreateFmt('File or folder %s not found', [AFileName]);
+    raise Exception.CreateFmt(SFileOrFolderNotFound, [AFileName]);
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   tempstream := nil;
   cipher := nil;
@@ -1698,14 +1867,14 @@ begin
           // 03 = (De)Coder 4.1 Final Cancelled (never released)
           iTmp := Source.ReadByte;
           if (iTmp < {Low(TDc4FormatVersion)}Ord(fvDc40)) or (iTmp > {High(TDc4FormatVersion)}Ord(fvDc41FinalCancelled)) then
-            raise Exception.Create('Format not supported');
+            raise Exception.Create(SFormatNotSupported);
           V := TDc4FormatVersion(iTmp);
           V_Detected := true;
         end;
         {$ENDREGION}
 
         if not V_Detected then
-          raise Exception.Create('Unsupported file format version. Please try downloading the latest version of (De)Coder');
+          raise Exception.Create(SUnsupportedFileFormatVersion);
 
         {$REGION 'Create output stream'}
         if not OnlyReadFileInfo then
@@ -1779,7 +1948,7 @@ begin
               OrigName := OrigName + string(ch);
               ch := Source.ReadRawByteString(1);
               if (Ord(ch[Low(ch)])<32){ or (Ord(ch[Low(ch)])>126)} then
-                raise Exception.Create('Invalid file name');
+                raise Exception.Create(SInvalidFileName);
             end;
             if V = fvDc41Beta then
             begin
@@ -1790,9 +1959,9 @@ begin
           begin
             FileNameUserPasswordEncrypted := Source.ReadByte = $01; // Filename encrypted with user-password? (00=No, 01=Yes)
             // Filename encrypted with DEC 5.1c
-            // Encryption-Password = Hash->KDfx(User-Password, Seed)
+            //     Encryption-Password = Hash->KDfx(User-Password, Seed)
             // if not encrypted with user-password, otherwise:
-            // Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
+            //     Encryption-Password = Hash->KDfx(5Eh D1h 6Bh 12h 7Dh B4h C4h 3Ch, Seed)
             OrigNameEncrypted := Source.ReadRawByteString(Source.ReadLongBE); // will be decrypted below (after we initialized hash/cipher)
           end
           else if V >= fvDc50 then
@@ -1880,7 +2049,7 @@ begin
         begin
           iBlockFillMode := Source.ReadByte;
           if integer(iBlockFillMode) > Ord(High(TBlockFillMode)) then
-            raise Exception.Create('Invalid block filling mode');
+            raise Exception.Create(SInvalidBlockFillingMode);
           Cipher.FillMode := TBlockFillMode(iBlockFillMode);
         end
         else
@@ -1910,7 +2079,7 @@ begin
         else
           KdfVersion := kvKdfx;
         if KDFVersion = kvUnknown then {this will also be set if the value is too big}
-          raise Exception.Create('Invalid KDF version');
+          raise Exception.Create(SInvalidKdfVersion);
         {$ENDREGION}
 
         {$REGION '8.6 KDF Iterations (ONLY PRESENT for PBKDF2)'}
@@ -1924,7 +2093,7 @@ begin
         if not OnlyReadFileInfo then
         begin
           if PasswordRBS = '' then
-            raise Exception.Create('An empty password is not allowed');
+            raise Exception.Create(SEmptyPasswordNotAllowed);
 
           if KDFVersion = kvKdfx then
             Key := TDECHashExtended(ahash).KDFx(BytesOf(PasswordRBS), BytesOf(Seed), Cipher.Context.KeySize)
@@ -1951,11 +2120,11 @@ begin
           HashResult2 := BytesToRawByteString(TDECHashAuthentication(ahash).HMACStream(HMacKey, Source, source.size-source.Position-ahash.DigestSize-Length(FileTerminus), procedure(Size, Pos: Int64; State: TDECProgressState)
             begin
               if Assigned(OnProgressProc) then
-                OnProgressProc(Size, Pos, 'Verify HMAC', TDcProgressState(State))
+                OnProgressProc(Size, Pos, SVerifyHMac, TDcProgressState(State))
             end));
           Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
           if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
-            raise Exception.Create('HMAC mismatch. The password is probably wrong or the file is corrupt.');
+            raise Exception.Create(SHMacMismatchPwdWrong);
           Source.Position := bakSourcePosEncryptedData;
         end;
         {$ENDREGION}
@@ -1977,7 +2146,7 @@ begin
               TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, Source.ReadLongBE, procedure(Size, Pos: Int64; State: TDECProgressState)
                 begin
                   if Assigned(OnProgressProc) then
-                    OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+                    OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
                 end);
             end
             else
@@ -1990,7 +2159,7 @@ begin
               TDECFormattedCipher(Cipher).DecodeStream(Source, tempstream, iTmp, procedure(Size, Pos: Int64; State: TDECProgressState)
                 begin
                   if Assigned(OnProgressProc) then
-                    OnProgressProc(Size, Pos, 'Decode stream', TDcProgressState(State))
+                    OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
                 end);
             end;
           finally
@@ -2007,7 +2176,7 @@ begin
           else
             cMac := Source.ReadRawByteString(Cipher.Context.BlockSize);
           if cMac <> Cipher.CalcMAC then
-            raise Exception.Create('DEC CalcMAC mismatch');
+            raise Exception.Create(SDecCalcMacMismatch);
         end;
         {$ENDREGION}
 
@@ -2015,7 +2184,7 @@ begin
         if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           if BytesToRawByteString(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult) <> Source.ReadRawByteString(TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3) then
-            raise Exception.Create('GCM Auth Tag mismatch');
+            raise Exception.Create(SGCMAuthTagMismatch);
         end;
         {$ENDREGION}
 
@@ -2066,7 +2235,7 @@ begin
             TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
               begin
                 if Assigned(OnProgressProc) then
-                  OnProgressProc(Size, Pos, 'Verify hash', TDcProgressState(State))
+                  OnProgressProc(Size, Pos, SVerifyHash, TDcProgressState(State))
               end);
             HashResult2 := BytesToRawByteString(HashResult);
           end
@@ -2076,7 +2245,7 @@ begin
             TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
               begin
                 if Assigned(OnProgressProc) then
-                  OnProgressProc(Size, Pos, 'Verify hash', TDcProgressState(State))
+                  OnProgressProc(Size, Pos, SVerifyHash, TDcProgressState(State))
               end);
             HashResult2 := TDECHashExtended(ahash).CalcString(BytesToRawByteString(HashResult)+Seed+PasswordRBS, TFormat_Copy);
           end
@@ -2086,7 +2255,7 @@ begin
             TDECHashExtended(ahash).CalcStream(tempstream, tempstream.size, HashResult, procedure(Size, Pos: Int64; State: TDECProgressState)
               begin
                 if Assigned(OnProgressProc) then
-                  OnProgressProc(Size, Pos, 'Verify hash', TDcProgressState(State))
+                  OnProgressProc(Size, Pos, SVerifyHash, TDcProgressState(State))
               end);
             HashResult2 := TDECHashExtended(ahash).CalcString(
               BytesToRawByteString(HashResult) + Seed +
@@ -2101,9 +2270,9 @@ begin
           if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
           begin
             if V >= fvDc50 then
-              raise Exception.Create('HMAC mismatch. Password wrong or file corrupt.')
+              raise Exception.Create(SHMacMismatch)
             else
-              raise Exception.Create('Hash mismatch. Password wrong or file corrupt.');
+              raise Exception.Create(SHashMismatch);
           end;
         end;
         {$ENDREGION}
@@ -2113,7 +2282,7 @@ begin
         begin
           if OnlyReadFileInfo then Source.Position := Source.Size - Length(FileTerminus);
           if (Source.ReadRawByteString(Length(FileTerminus)) <> FileTerminus) then
-            raise Exception.Create('File terminus wrong');
+            raise Exception.Create(SFileTerminusWrong);
         end;
         {$ENDREGION}
 
@@ -2228,9 +2397,21 @@ begin
   result := _DeCoder4X_DecodeFile(AFileName, dummy, APassword, OnProgressProc);
 end;
 
-function DeCoder4X_DecodeFile(const AFileName: string; var AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
+function DeCoder4X_DetectFile(const AFileName: string): boolean;
 begin
-  if AOutput = '' then raise Exception.Create('Output filename must not be empty');
+  try
+    DeCoder4X_FileInfo(AFileName);
+    result := true;
+  except
+    result := false;
+  end;
+end;
+
+function DeCoder4X_DecodeFile(const AFileName: string; var AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
+resourcestring
+  SOutputFilenameEmpty = 'Output filename must not be empty';
+begin
+  if AOutput = '' then raise Exception.Create(SOutputFilenameEmpty);
   result := _DeCoder4X_DecodeFile(AFileName, AOutput, APassword, OnProgressProc);
 end;
 
