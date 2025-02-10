@@ -8,7 +8,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.ExtCtrls,
   FMX.StdCtrls, FMX.Controls.Presentation, FMX.Memo.Types, FMX.ScrollBox,
-  FMX.Memo, FMX.Edit, System.IOUtils, DecoderEncDec;
+  FMX.Memo, FMX.Edit, System.IOUtils, DecoderEncDec, FMX.ListBox;
 
 type
   TDcGuiElement = (gePassword, geStartButton, geInfos, geMetadataCheckbox);
@@ -29,12 +29,14 @@ type
     SaveDialog1: TSaveDialog;
     MetadataCheckbox: TCheckBox;
     ProgressStepLabel: TLabel;
+    ComboBox1: TComboBox;
     procedure DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
       const Point: TPointF);
     procedure DropTarget1Click(Sender: TObject);
     procedure EncryptDecryptButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure ComboBox1Change(Sender: TObject);
   private
     FChosenFile: string;
     FDC4FileInfo: TDC4FileInfo;
@@ -44,6 +46,7 @@ type
     procedure OpenFile(const AFileName: string);
     procedure GuiShowElements(AElements: TDcGuiElements);
     procedure GuiShowChosenFile;
+    procedure InitView;
   end;
 
 var
@@ -54,9 +57,21 @@ implementation
 {$R *.fmx}
 
 uses
-  DecoderFuncs, DECTypes;
+  DecoderFuncs, DECTypes, System.Rtti, System.IniFiles, System.TypInfo, System.SysConst,
+  Winapi.MMSystem;
 
 const
+  // ComboBox1.ItemIndex
+  CB1_IDX_DC45 = 0;
+  CB1_IDX_DC32 = 1;
+  CB1_IDX_DC30 = 2;
+  CB1_IDX_DC22 = 3;
+  CB1_IDX_DC21 = 4;
+  CB1_IDX_DC20 = 5;
+  CB1_IDX_SHRED = 6;
+
+const
+  // EncryptDecryptButton.Tag
   TAG_DC10_DECRYPT = 1;
   TAG_DC4X_DECRYPT = 2;
   TAG_DC50_ENCRYPT = 3;
@@ -86,90 +101,206 @@ var
   AOutput: string;
   fp: TDC4Parameters;
   RepeatedPassword: string;
+  iKey: integer;
 resourcestring
   STextFiles = 'Text files';
   SAllFiles = 'All files';
   SEncryptedFiles = 'DC4/5 Encrypted files';
   SPleaseRepeatPassword = 'Please repeat the password for encryption';
   SPasswordsDoNotMatch = 'Passwords do not match!';
+  SFileOrFolderNotFound = 'File or folder not found!';
+  SDestroyComplete = 'Successfully shredded!';
+  SInfoLegacyDecrypt = 'Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
 begin
+  if FChosenFile = '' then exit;  
   try
-    case TButton(Sender).Tag of
-      {$REGION '(De)Coder 1.0 decrypt'}
-      TAG_DC10_DECRYPT:
-      begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
-        SaveDialog1.Filter := STextFiles+' (*.txt)|*.txt|'+SAllFiles+' (*.*)|*.*';
-        SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
-        SaveDialog1.DefaultExt := 'txt';
-        if SaveDialog1.Execute then
+    if ComboBox1.ItemIndex = CB1_IDX_DC45 then
+    begin
+      case TButton(Sender).Tag of
+        {$REGION '(De)Coder 1.0 decrypt'}
+        TAG_DC10_DECRYPT:
         begin
-          AOutput := SaveDialog1.FileName;
-          DeCoder10_DecodeFile(FChosenFile, AOutput, OnProgressProc);
-          ExplorerNavigateToFile(AOutput);
-          PasswordEdit.Text := '';
-        end;
-      end;
-      {$ENDREGION}
-      {$REGION '(De)Coder 4.x/5.0 decrypt'}
-      TAG_DC4X_DECRYPT:
-      begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
-        if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
-        SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
-        SaveDialog1.DefaultExt := ExtractFileExt(FDC4FileInfo.OrigFileName);
-        SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2, Length(SaveDialog1.DefaultExt)-1);
-        if SaveDialog1.Execute then
-        begin
-          AOutput := SaveDialog1.FileName;
-          DeCoder4X_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
-          ExplorerNavigateToFile(AOutput);
-          PasswordEdit.Text := '';
-        end;
-      end;
-      {$ENDREGION}
-      {$REGION '(De)Coder 5.0 encrypt'}
-      TAG_DC50_ENCRYPT:
-      begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
-        if PasswordEdit.Text = '' then exit;
-        while true do
-        begin
-          // #0 means that the password char '*' is used
-          RepeatedPassword := '';
-          Application.ProcessMessages; // Otherwise, the text "Please repeat the password for encryption" vanishes if the user has entered the password wrong once
-          if not InputQuery(Caption, #0 + SPleaseRepeatPassword, RepeatedPassword) then
-            Abort;
-          if RepeatedPassword <> PasswordEdit.Text then
-            MessageDlg(SPasswordsDoNotMatch, TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOk], 0)
-          else
-            break;
-        end;
-        SaveDialog1.Filter := SEncryptedFiles+' (*.dc4;*.dc5)|*.dc4;*.dc5|'+SAllFiles+' (*.*)|*.*';
-        SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
-        SaveDialog1.DefaultExt := 'dc5';
-        if SaveDialog1.Execute then
-        begin
-          AOutput := SaveDialog1.FileName;
-          fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
-          if MetadataCheckbox.IsChecked then
+          TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+          SaveDialog1.Filter := STextFiles+' (*.txt)|*.txt|'+SAllFiles+' (*.*)|*.*';
+          SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
+          SaveDialog1.DefaultExt := 'txt';
+          if SaveDialog1.Execute then
           begin
-            fp.ContainFileOrigName := fpExpose;
-            fp.ContainFileOrigSize := true;
-            fp.ContainFileOrigDate := true;
-          end
-          else
-          begin
-            fp.ContainFileOrigName := fpHide;
-            fp.ContainFileOrigSize := false;
-            fp.ContainFileOrigDate := false;
+            AOutput := SaveDialog1.FileName;
+            DeCoder10_DecodeFile(FChosenFile, AOutput, OnProgressProc);
+            ExplorerNavigateToFile(AOutput);
+            PasswordEdit.Text := '';
           end;
-          DeCoder4X_EncodeFile(FChosenFile, AOutput, PasswordEdit.Text, fp, OnProgressProc);
-          ExplorerNavigateToFile(AOutput);
-          PasswordEdit.Text := '';
         end;
+        {$ENDREGION}
+        {$REGION '(De)Coder 4.x/5.0 decrypt'}
+        TAG_DC4X_DECRYPT:
+        begin
+          TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+          if PasswordEdit.Text = '' then exit;
+          SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+          SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
+          SaveDialog1.DefaultExt := ExtractFileExt(FDC4FileInfo.OrigFileName);
+          SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2, Length(SaveDialog1.DefaultExt)-1);
+          if SaveDialog1.Execute then
+          begin
+            AOutput := SaveDialog1.FileName;
+            DeCoder4X_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
+            ExplorerNavigateToFile(AOutput);
+            PasswordEdit.Text := '';
+          end;
+        end;
+        {$ENDREGION}
+        {$REGION '(De)Coder 5.0 encrypt'}
+        TAG_DC50_ENCRYPT:
+        begin
+          TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+          if PasswordEdit.Text = '' then exit;
+          while true do
+          begin
+            // #0 means that the password char '*' is used
+            RepeatedPassword := '';
+            Application.ProcessMessages; // Otherwise, the text "Please repeat the password for encryption" vanishes if the user has entered the password wrong once
+            if not InputQuery(Caption, #0 + SPleaseRepeatPassword, RepeatedPassword) then
+              Abort;
+            if RepeatedPassword <> PasswordEdit.Text then
+              MessageDlg(SPasswordsDoNotMatch, TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOk], 0)
+            else
+              break;
+          end;
+          SaveDialog1.Filter := SEncryptedFiles+' (*.dc4;*.dc5)|*.dc4;*.dc5|'+SAllFiles+' (*.*)|*.*';
+          SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
+          SaveDialog1.DefaultExt := 'dc5';
+          if SaveDialog1.Execute then
+          begin
+            AOutput := SaveDialog1.FileName;
+            fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
+            if MetadataCheckbox.IsChecked then
+            begin
+              fp.ContainFileOrigName := fpExpose;
+              fp.ContainFileOrigSize := true;
+              fp.ContainFileOrigDate := true;
+            end
+            else
+            begin
+              fp.ContainFileOrigName := fpHide;
+              fp.ContainFileOrigSize := false;
+              fp.ContainFileOrigDate := false;
+            end;
+            DeCoder4X_EncodeFile(FChosenFile, AOutput, PasswordEdit.Text, fp, OnProgressProc);
+            ExplorerNavigateToFile(AOutput);
+            PasswordEdit.Text := '';
+          end;
+        end;
+        {$ENDREGION}
       end;
+    end
+    else if ComboBox1.ItemIndex = CB1_IDX_DC32 then
+    begin
+      {$REGION '(De)Coder 3.2 decrypt'}
+      TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+      if PasswordEdit.Text = '' then exit;
+      SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+      SaveDialog1.FileName := '';
+      SaveDialog1.DefaultExt := '';
+      if SaveDialog1.Execute then
+      begin
+        AOutput := SaveDialog1.FileName;
+        DeCoder32_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
+        ShowMessage(SInfoLegacyDecrypt);
+        ExplorerNavigateToFile(AOutput);
+        PasswordEdit.Text := '';
+      end;
+      {$ENDREGION}
+    end
+    else if ComboBox1.ItemIndex = CB1_IDX_DC30 then
+    begin
+      {$REGION '(De)Coder 3.0 decrypt'}
+      TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+      if PasswordEdit.Text = '' then exit;
+      SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+      SaveDialog1.FileName := '';
+      SaveDialog1.DefaultExt := '';
+      if SaveDialog1.Execute then
+      begin
+        AOutput := SaveDialog1.FileName;
+        DeCoder30_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
+        ShowMessage(SInfoLegacyDecrypt);
+        ExplorerNavigateToFile(AOutput);
+        PasswordEdit.Text := '';
+      end;
+      {$ENDREGION}
+    end
+    else if ComboBox1.ItemIndex = CB1_IDX_DC22 then
+    begin
+      {$REGION '(De)Coder 2.2 decrypt'}
+      TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+      if PasswordEdit.Text = '' then exit;
+      SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+      SaveDialog1.FileName := '';
+      SaveDialog1.DefaultExt := '';
+      if SaveDialog1.Execute then
+      begin
+        AOutput := SaveDialog1.FileName;
+        if TryStrToInt(PasswordEdit.Text, iKey) then iKey := -1;
+        DeCoder22_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
+        ShowMessage(SInfoLegacyDecrypt);
+        ExplorerNavigateToFile(AOutput);
+        PasswordEdit.Text := '';
+      end;
+      {$ENDREGION}
+    end
+    else if ComboBox1.ItemIndex = CB1_IDX_DC21 then
+    begin
+      {$REGION '(De)Coder 2.1 decrypt'}
+      TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+      if PasswordEdit.Text = '' then exit;
+      SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+      SaveDialog1.FileName := '';
+      SaveDialog1.DefaultExt := '';
+      if SaveDialog1.Execute then
+      begin
+        AOutput := SaveDialog1.FileName;
+        if TryStrToInt(PasswordEdit.Text, iKey) then iKey := -1;
+        DeCoder21_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
+        ShowMessage(SInfoLegacyDecrypt);
+        ExplorerNavigateToFile(AOutput);
+        PasswordEdit.Text := '';
+      end;
+      {$ENDREGION}
+    end
+    else if ComboBox1.ItemIndex = CB1_IDX_DC20 then
+    begin
+      {$REGION '(De)Coder 2.0 decrypt'}
+      TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
+      if PasswordEdit.Text = '' then exit;
+      SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+      SaveDialog1.FileName := '';
+      SaveDialog1.DefaultExt := '';
+      if SaveDialog1.Execute then
+      begin
+        AOutput := SaveDialog1.FileName;
+        DeCoder20_DecodeFile(FChosenFile, AOutput, OnProgressProc);
+        ShowMessage(SInfoLegacyDecrypt);
+        ExplorerNavigateToFile(AOutput);
+        PasswordEdit.Text := '';
+      end;
+      {$ENDREGION}
+    end
+    else if ComboBox1.ItemIndex = CB1_IDX_SHRED then
+    begin
+      {$REGION 'File shredder'}
+      if FileExists(FChosenFile) then
+        SecureDeleteFile(FChosenFile)
+      else if DirectoryExists(FChosenFile) then
+        SecureDeleteFolder(FChosenFile)
+      else
+        raise Exception.Create(SFileOrFolderNotFound);
+      PlaySound('EmptyRecycleBin', 0, SND_ALIAS or SND_ASYNC);
+      FChosenFile := '';
+      MoreInfoMemo.Text := SDestroyComplete;
+      GuiShowChosenFile;
+      OpenedFileLabel.Text := SDestroyComplete;
       {$ENDREGION}
     end;
   finally
@@ -179,12 +310,18 @@ begin
   end;
 end;
 
+procedure TDecoderMainForm.ComboBox1Change(Sender: TObject);
+begin
+  if FChosenFile <> '' then
+    OpenFile(FChosenFile)
+  else
+    InitView;
+end;
+
 procedure TDecoderMainForm.DropTarget1Click(Sender: TObject);
 begin
   if OpenDialog1.Execute then
-  begin
     OpenFile(OpenDialog1.FileName);
-  end;
 end;
 
 procedure TDecoderMainForm.DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
@@ -251,9 +388,8 @@ begin
   Application.Title := Caption; // because of Message dialog captions
 end;
 
-procedure TDecoderMainForm.FormShow(Sender: TObject);
+procedure TDecoderMainForm.InitView;
 resourcestring
-  SPleaseChooseOnlyOneFile = 'Please only choose one file!';
   S_IntroLine_0_S = 'Built %s';
   S_IntroLine_1 = 'Developed by Daniel Marschall - www.daniel-marschall.de';
   S_IntroLine_2 = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
@@ -283,6 +419,13 @@ begin
   ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
   ProgressStepLabel.Visible := false;
   GuiShowElements([]);
+end;
+
+procedure TDecoderMainForm.FormShow(Sender: TObject);
+resourcestring
+  SPleaseChooseOnlyOneFile = 'Please only choose one file!';
+begin
+  ComboBox1.ItemIndex := CB1_IDX_DC45;
   try
     if ParamCount > 1 then
       MessageDlg(SPleaseChooseOnlyOneFile, TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOK], 0)
@@ -319,6 +462,10 @@ resourcestring
   SFileType_S = 'File type: %s';
   SFileSize_S = 'File size: %s';
   SModTime_S = 'Modification time: %s';
+  SInfoLegacyDC_S = 'Here you can decrypt a file that was encrypted with (De)Coder %s';
+  SInfoLegacyDecrypt = 'Note that there is no detection if the password is correct; so check the output file if the decrypted contents are valid.';
+  SShredderInfo = 'THIS FILE OR FOLDER WILL BE DESTROYED WITHOUT POSSIBILITY OF RECOVERY!';
+  SShredderButton = 'DESTROY';
 begin
   if not FileExists(AFileName) and not DirectoryExists(AFileName) then
     raise Exception.CreateFmt(SFileOrFolderNotExisting, [AFileName]);
@@ -330,69 +477,120 @@ begin
     MoreInfoMemo.Lines.Add(Format(SFolderName_S, [ExtractFileName(AFileName)]));
   MoreInfoMemo.Lines.Add(Format(SLocation_S, [ExtractFilePath(AFileName)]));
 
-  if FileExists(AFileName) then
+  if ComboBox1.ItemIndex = CB1_IDX_DC45 then
   begin
-    {$REGION '(De)Coder 1.0 decrypt'}
-    if DeCoder10_DetectFile(AFileName) then
+    if FileExists(AFileName) then
     begin
-      ShortInfoLabel.Text := SEncryptedDc10 + #13#10 + SDoYouWantDecrypt;
-      EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
-      EncryptDecryptButton.Text := SDecrypt;
-      GuiShowElements([geStartButton]);
-      FChosenFile := AFileName;
-      GuiShowChosenFile;
-      Exit;
-    end;
-    {$ENDREGION}
-
-    {$REGION '(De)Coder 4.x/5.0 decrypt'}
-    try
-      FDC4FileInfo := DeCoder4X_FileInfo(AFileName);
-      if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
-        ShortInfoLabel.Text := SEncryptedDc50
-      else if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc41Beta then
-        ShortInfoLabel.Text := SEncryptedDc41Beta
-      else
-        ShortInfoLabel.Text := SEncryptedDc40;
-      ShortInfoLabel.Text := ShortInfoLabel.Text + #13#10 + SDoYouWantDecrypt;
-      DeCoder4X_PrintFileInfo(FDC4FileInfo, MoreInfoMemo.Lines);
-      EncryptDecryptButton.Tag := TAG_DC4X_DECRYPT;
-      EncryptDecryptButton.Text := SDecrypt;
-      GuiShowElements([gePassword, geStartButton, geInfos]);
-      FChosenFile := AFileName;
-      GuiShowChosenFile;
-      Exit;
-    except
-      on E: Exception do
+      {$REGION '(De)Coder 1.0 decrypt'}
+      if DeCoder10_DetectFile(AFileName) then
       begin
-        if AFileName.EndsWith('.dc4', true) or AFileName.EndsWith('.dc5', true) then
+        ShortInfoLabel.Text := SEncryptedDc10 + #13#10 + SDoYouWantDecrypt;
+        EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
+        EncryptDecryptButton.Text := SDecrypt;
+        GuiShowElements([geStartButton]);
+        FChosenFile := AFileName;
+        GuiShowChosenFile;
+        Exit;
+      end;
+      {$ENDREGION}
+
+      {$REGION '(De)Coder 4.x/5.0 decrypt'}
+      try
+        FDC4FileInfo := DeCoder4X_FileInfo(AFileName);
+        if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
+          ShortInfoLabel.Text := SEncryptedDc50
+        else if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc41Beta then
+          ShortInfoLabel.Text := SEncryptedDc41Beta
+        else
+          ShortInfoLabel.Text := SEncryptedDc40;
+        ShortInfoLabel.Text := ShortInfoLabel.Text + #13#10 + SDoYouWantDecrypt;
+        DeCoder4X_PrintFileInfo(FDC4FileInfo, MoreInfoMemo.Lines);
+        EncryptDecryptButton.Tag := TAG_DC4X_DECRYPT;
+        EncryptDecryptButton.Text := SDecrypt;
+        GuiShowElements([gePassword, geStartButton, geInfos]);
+        FChosenFile := AFileName;
+        GuiShowChosenFile;
+        Exit;
+      except
+        on E: Exception do
         begin
-          raise Exception.Create(SNoValidDc45File + #13#10 + E.Message);
+          if AFileName.EndsWith('.dc4', true) or AFileName.EndsWith('.dc5', true) then
+          begin
+            raise Exception.Create(SNoValidDc45File + #13#10 + E.Message);
+          end;
         end;
       end;
+      {$ENDREGION}
     end;
-    {$ENDREGION}
-  end;
 
-  {$REGION '(De)Coder 5.0 encrypt'}
-  if DirectoryExists(AFileName) then
-    ShortInfoLabel.Text := SThisIsAFolder + #13#10 + SDoYouWantPackAndEncrypt
-  else
-    ShortInfoLabel.Text := SThisIsAnUnencryptedFile + #13#10 + SDoYouWantEncrypt;
-  EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
-  EncryptDecryptButton.Text := SEncrypt;
-  if FileExists(AFileName) then
+    {$REGION '(De)Coder 5.0 encrypt'}
+    if DirectoryExists(AFileName) then
+      ShortInfoLabel.Text := SThisIsAFolder + #13#10 + SDoYouWantPackAndEncrypt
+    else
+      ShortInfoLabel.Text := SThisIsAnUnencryptedFile + #13#10 + SDoYouWantEncrypt;
+    EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
+    EncryptDecryptButton.Text := SEncrypt;
+    if FileExists(AFileName) then
+    begin
+      MoreInfoMemo.Lines.Add(Format(SFileType_S, [GetFileTypename(AFileName)]));
+      MoreInfoMemo.Lines.Add(Format(SFileSize_S, [FileSizeHumanReadable(TFile.GetSize(AFileName))]));
+      MoreInfoMemo.Lines.Add(Format(SModTime_S, [DateTimeToStr(TFile.GetLastWriteTime(AFileName))]));
+    end;
+    fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
+    MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
+    GuiShowElements([gePassword, geStartButton, geInfos, geMetadataCheckbox]);
+    FChosenFile := AFileName;
+    GuiShowChosenFile;
+    {$ENDREGION}
+  end
+  else if ComboBox1.ItemIndex = CB1_IDX_DC32 then
   begin
-    MoreInfoMemo.Lines.Add(Format(SFileType_S, [GetFileTypename(AFileName)]));
-    MoreInfoMemo.Lines.Add(Format(SFileSize_S, [FileSizeHumanReadable(TFile.GetSize(AFileName))]));
-    MoreInfoMemo.Lines.Add(Format(SModTime_S, [DateTimeToStr(TFile.GetLastWriteTime(AFileName))]));
+    EncryptDecryptButton.Text := SDecrypt;
+    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['3.2']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    GuiShowElements([gePassword, geStartButton, geInfos]);
+    FChosenFile := AFileName;
+    GuiShowChosenFile;
+  end
+  else if ComboBox1.ItemIndex = CB1_IDX_DC30 then
+  begin
+    EncryptDecryptButton.Text := SDecrypt;
+    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['3.0']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    GuiShowElements([gePassword, geStartButton, geInfos]);
+    FChosenFile := AFileName;
+    GuiShowChosenFile;
+  end
+  else if ComboBox1.ItemIndex = CB1_IDX_DC22 then
+  begin
+    EncryptDecryptButton.Text := SDecrypt;
+    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['2.2']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    GuiShowElements([gePassword, geStartButton, geInfos]);
+    FChosenFile := AFileName;
+    GuiShowChosenFile;
+  end
+  else if ComboBox1.ItemIndex = CB1_IDX_DC21 then
+  begin
+    EncryptDecryptButton.Text := SDecrypt;
+    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['2.1']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    GuiShowElements([gePassword, geStartButton, geInfos]);
+    FChosenFile := AFileName;
+    GuiShowChosenFile;
+  end
+  else if ComboBox1.ItemIndex = CB1_IDX_DC20 then
+  begin
+    EncryptDecryptButton.Text := SDecrypt;
+    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['2.0']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    GuiShowElements([geStartButton, geInfos]);
+    FChosenFile := AFileName;
+    GuiShowChosenFile;
+  end
+  else if ComboBox1.ItemIndex = CB1_IDX_SHRED then
+  begin
+    EncryptDecryptButton.Text := SShredderButton;
+    ShortInfoLabel.Text := #13#10#13#10 + SShredderInfo;
+    GuiShowElements([geStartButton, geInfos]);
+    FChosenFile := AFileName;
+    GuiShowChosenFile;
   end;
-  fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
-  MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
-  GuiShowElements([gePassword, geStartButton, geInfos, geMetadataCheckbox]);
-  FChosenFile := AFileName;
-  GuiShowChosenFile;
-  {$ENDREGION}
 end;
 
 end.
