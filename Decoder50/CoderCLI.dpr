@@ -545,6 +545,8 @@ resourcestring
   SError_S = 'ERROR: %s';
   SExitCode_D = 'Exit code: %d';
   SPressAnyKey = 'Press any key to exit ...';
+  SInfoLegacyDecrypt = 'Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
+  SInfoLegacyEncrypt = 'WARNING: Encrypting files with this legacy algorithm is EXTREMELY insecure!';
 
 begin
   try
@@ -553,12 +555,14 @@ begin
     begin
       CheckFileExists(ParamStr(2));
       DeCoder10_EncodeFile(ParamStr(2), ParamStr(3), false, OnProgressProc);
+      WriteLn(SInfoLegacyEncrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC10_DeCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder10_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
+      WriteLn(SInfoLegacyDecrypt);
       ExitCode := 0;
     end
     {$ENDREGION}
@@ -567,12 +571,14 @@ begin
     begin
       CheckFileExists(ParamStr(2));
       DeCoder20_EncodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
+      WriteLn(SInfoLegacyEncrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC20_DeCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder20_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
+      WriteLn(SInfoLegacyDecrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC21_EnCrypt) and (ParamCount = 4) then
@@ -580,6 +586,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder21_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      WriteLn(SInfoLegacyEncrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC21_DeCrypt) and (ParamCount = 4) then
@@ -587,6 +594,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder21_DecodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      WriteLn(SInfoLegacyDecrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC22_EnCrypt) and (ParamCount = 4) then
@@ -594,6 +602,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder22_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      WriteLn(SInfoLegacyEncrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC22_DeCrypt) and (ParamCount = 4) then
@@ -601,6 +610,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder22_DecodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
+      WriteLn(SInfoLegacyDecrypt);
       ExitCode := 0;
     end
     {$ENDREGION}
@@ -609,24 +619,28 @@ begin
     begin
       CheckFileExists(ParamStr(2));
       DeCoder30_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
+      WriteLn(SInfoLegacyEncrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC30_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder30_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
+      WriteLn(SInfoLegacyDecrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC32_EnCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder32_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
+      WriteLn(SInfoLegacyEncrypt);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC32_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder32_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
+      WriteLn(SInfoLegacyDecrypt);
       ExitCode := 0;
     end
     {$ENDREGION}

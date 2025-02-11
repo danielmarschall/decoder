@@ -26,11 +26,11 @@ to keep the product simple and clean.
 
 ## Screenshots
 
-![Original file](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot1.png)
+![Original file](Private/Screenshot1.png)
 
-![Encoded file](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot2.png)
+![Encoded file](Private/Screenshot2.png)
 
-![Command line tool](https://raw.githubusercontent.com/danielmarschall/decoder/master/Decoder50/Private/Screenshot3.png)
+![Command line tool](Private/Screenshot3.png)
 
 
 ## Disclaimer
