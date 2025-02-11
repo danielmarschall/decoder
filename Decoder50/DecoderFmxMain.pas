@@ -402,14 +402,14 @@ resourcestring
   S_IntroLine_1 = 'Developed by Daniel Marschall - www.daniel-marschall.de';
   S_IntroLine_2 = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
   S_IntroLine_3 = '';
-  S_IntroLine_4 = '';
-  S_IntroLine_5 = 'Please note that (De)Coder also comes with a command-line tool,';
-  S_IntroLine_6 = 'which can additionally decrypt old (De)Coder 2.x and 3.x files,';
-  S_IntroLine_7 = 'and it can also wipe files and folders in a secure way.';
-  S_IntroLine_8 = '';
-  S_IntroLine_9 = '';
-  S_IntroLine_10 = 'Please use this tool at your own risk! Files can only be decrypted with the';
-  S_IntroLine_11 = 'correct passwords, and they must be 100% free of any damage!';
+  S_IntroLine_4 = 'Source code and latest version available at';
+  S_IntroLine_5 = 'www.github.com/danielmarschall/decoder';
+  S_IntroLine_6 = '';
+  S_IntroLine_7 = '';
+  S_IntroLine_8 = 'Please use this tool at your own risk! Files can only be decrypted with the';
+  S_IntroLine_9 = 'correct passwords, and they must be 100% free of any damage!';
+  S_IntroLine_10 = '';
+  S_IntroLine_11 = '';
 begin
   ShortInfoLabel.Text :=
     Format(S_IntroLine_0_S, [DateTimeToStr(GetOwnBuildTimestamp)]) + #13#10 +
