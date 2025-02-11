@@ -125,11 +125,11 @@ resourcestring
 begin
   if FChosenFile = '' then exit;
   try
+    TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
     case TButton(Sender).Tag of
       {$REGION '(De)Coder 1.0 decrypt'}
       TAG_DC10_DECRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         SaveDialog1.Filter := STextFiles+' (*.txt)|*.txt|'+SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
         SaveDialog1.DefaultExt := 'txt';
@@ -145,7 +145,6 @@ begin
       {$REGION '(De)Coder 4.x/5.0 decrypt'}
       TAG_DC4X_DECRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
         SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
@@ -163,7 +162,6 @@ begin
       {$REGION '(De)Coder 5.0 encrypt'}
       TAG_DC50_ENCRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
         while true do
         begin
@@ -205,7 +203,6 @@ begin
       {$REGION '(De)Coder 3.2 decrypt'}
       TAG_DC32_DECRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
         SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := '';
@@ -223,7 +220,6 @@ begin
       {$REGION '(De)Coder 3.0 decrypt'}
       TAG_DC30_DECRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
         SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := '';
@@ -241,7 +237,6 @@ begin
       {$REGION '(De)Coder 2.2 decrypt'}
       TAG_DC22_DECRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
         SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := '';
@@ -260,7 +255,6 @@ begin
       {$REGION '(De)Coder 2.1 decrypt'}
       TAG_DC21_DECRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
         SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := '';
@@ -279,7 +273,6 @@ begin
       {$REGION '(De)Coder 2.0 decrypt'}
       TAG_DC20_DECRYPT:
       begin
-        TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
         if PasswordEdit.Text = '' then exit;
         SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
         SaveDialog1.FileName := '';
