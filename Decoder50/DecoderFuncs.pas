@@ -10,6 +10,8 @@ type
   TDcProgressState = (Started, Processing, Finished);
   TDcProgressEvent = reference to procedure(Size, Pos: Int64; const Task: string; State: TDcProgressState);
 
+  TextProgressCallback = reference to procedure(const Text: string);
+
 type
   TStreamHelper = class helper for TStream
   public
@@ -41,8 +43,8 @@ procedure ZLib_Compress(const InputFileName, OutputFileName: string; OnProgressP
 procedure Zlib_Decompress(const InputFileName, OutputFileName: string; OnProgressProc: TDcProgressEvent=nil);
 function RandStringFileNameFriendly(len: integer): string;
 function RelToAbs(RelPath: string; BasePath: string=''): string;
-function SecureDeleteFile(const AFileName: string): boolean;
-function SecureDeleteFolder(const ADirName: string): boolean;
+function SecureDeleteFile(const AFileName: string; pcb: TextProgressCallback=nil): boolean;
+function SecureDeleteFolder(const ADirName: string; pcb: TextProgressCallback=nil): boolean;
 function IsCompressedFileType(const AFileName: string): boolean;
 function ShannonEntropy(const filename: string; OnProgressProc: TDcProgressEvent=nil): Extended;
 function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
@@ -199,7 +201,7 @@ begin
   result := Dst;
 end;
 
-function SecureDeleteFile(const AFileName: string): boolean;
+function SecureDeleteFile(const AFileName: string; pcb: TextProgressCallback=nil): boolean;
 var
   drive: string;
   fs: TFileStream;
@@ -212,9 +214,7 @@ resourcestring
 begin
   if not FileExists(AFileName) then Exit(False);
 
-  {$IFDEF Console}
-  WriteLn(Format(SDeleteFile_S, [AFileName]));
-  {$ENDIF}
+  if Assigned(pcb) then pcb(Format(SDeleteFile_S, [AFileName]));
 
   ClusterSize := 32000; // max available in Windows format dialog
   try
@@ -282,7 +282,7 @@ begin
   end;
 end;
 
-function SecureDeleteFolder(const ADirName: string): boolean;
+function SecureDeleteFolder(const ADirName: string; pcb: TextProgressCallback=nil): boolean;
 var
   F: TSearchRec;
   ADirNameTest: string;
@@ -324,9 +324,7 @@ begin
       EndsStr('\', IncludeTrailingPathDelimiter(ADirNameAbs))
     );
 
-  {$IFDEF Console}
-  WriteLn(Format(SStartDeleteFolder_S, [ADirName]));
-  {$ENDIF}
+  if Assigned(pcb) then pcb(Format(SStartDeleteFolder_S, [ADirName]));
 
   if FindFirst(IncludeTrailingPathDelimiter(ADirName) + '*', faAnyFile, F) = 0 then
   begin
@@ -335,10 +333,10 @@ begin
         if (F.Attr and faDirectory <> 0) then
         begin
           if (F.Name <> '.') and (F.Name <> '..') then
-            result := result and SecureDeleteFolder(IncludeTrailingPathDelimiter(ADirName) + F.Name);
+            result := result and SecureDeleteFolder(IncludeTrailingPathDelimiter(ADirName) + F.Name, pcb);
         end
         else
-          result := result and SecureDeleteFile(IncludeTrailingPathDelimiter(ADirName) + F.Name);
+          result := result and SecureDeleteFile(IncludeTrailingPathDelimiter(ADirName) + F.Name, pcb);
       until FindNext(F) <> 0;
     finally
       FindClose(F);
@@ -375,24 +373,18 @@ begin
           // Undo renaming
           if ADirName <> ADirNameRenamed then
             RenameFile(ADirNameRenamed, ADirName);
-          {$IFDEF Console}
-          WriteLn(Format(SErrorDeletingEmptyFolder_S, [ADirName]));
-          {$ENDIF}
+          if Assigned(pcb) then pcb(Format(SErrorDeletingEmptyFolder_S, [ADirName]));
           result := false;
         end
         else
         begin
-          {$IFDEF Console}
-          WriteLn(Format(SDoneDeletingFolder_S, [ADirName]));
-          {$ENDIF}
+          if Assigned(pcb) then pcb(Format(SDoneDeletingFolder_S, [ADirName]));
           result := true;
         end;
       end
       else
       begin
-        {$IFDEF Console}
-        WriteLn(Format(SErrorDeletingFolderContents_S, [ADirName]));
-        {$ENDIF}
+        if Assigned(pcb) then pcb(Format(SErrorDeletingFolderContents_S, [ADirName]));
         result := false;
       end;
     end;

@@ -102,6 +102,11 @@ begin
     Abort;
 end;
 
+procedure TextCallback(const Text: string);
+begin
+  DecoderMainForm.MoreInfoMemo.Lines.Add(Text);
+end;
+
 procedure TDecoderMainForm.EncryptDecryptButtonClick(Sender: TObject);
 var
   AOutput: string;
@@ -292,17 +297,17 @@ begin
       {$REGION 'File shredder'}
       TAG_SHRED:
       begin
+        MoreInfoMemo.Text := ''; // will be filled with progress text from SecureDelete*()
         if FileExists(FChosenFile) then
-          SecureDeleteFile(FChosenFile)
+          SecureDeleteFile(FChosenFile, TextCallback)
         else if DirectoryExists(FChosenFile) then
-          SecureDeleteFolder(FChosenFile)
+          SecureDeleteFolder(FChosenFile, TextCallback)
         else
           raise Exception.Create(SFileOrFolderNotFound);
-        PlaySound('EmptyRecycleBin', 0, SND_ALIAS or SND_ASYNC);
         FChosenFile := '';
-        MoreInfoMemo.Text := SDestroyComplete;
         GuiShowChosenFile;
         OpenedFileLabel.Text := SDestroyComplete;
+        PlaySound('EmptyRecycleBin', 0, SND_ALIAS or SND_ASYNC);
       end;
       {$ENDREGION}
     end;

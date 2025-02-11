@@ -501,6 +501,11 @@ end;
 {$ENDIF}
 {$ENDREGION}
 
+procedure TextCallback(const Text: string);
+begin
+  WriteLn(Text);
+end;
+
 const
   DeleteFolderCountDown = 15;
 
@@ -703,7 +708,7 @@ begin
     else if SameText(ParamStr(1), Cmd_SecureDeleteFile) and (ParamCount = 2) then
     begin
       CheckFileExists(ParamStr(2));
-      SecureDeleteFile(ParamStr(2));
+      SecureDeleteFile(ParamStr(2), TextCallback);
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) and (ParamCount = 2) then
@@ -717,7 +722,7 @@ begin
       //       Otherwise this CLI tool is probably not good for some use-cases.
       CountDown(SCautionDeleteFolderCountdown_D, DeleteFolderCountDown);
       WriteLn('');
-      SecureDeleteFolder(ParamStr(2));
+      SecureDeleteFolder(ParamStr(2), TextCallback);
       ExitCode := 0;
     end
     {$ENDREGION}
