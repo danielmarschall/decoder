@@ -300,7 +300,7 @@ begin
         FChosenFile := '';
         GuiShowChosenFile;
         OpenedFileLabel.Text := SDestroyComplete;
-        PlaySound('EmptyRecycleBin', 0, SND_ALIAS or SND_ASYNC);
+        PlayEmptyRecycleBinSound;
       end;
       {$ENDREGION}
     end;

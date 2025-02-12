@@ -53,6 +53,7 @@ procedure ExplorerNavigateToFile(const AFileName: string);
 function GetFileTypename(const FileName: string): string;
 function GetBuildTimestamp(const ExeFile: string): TDateTime;
 function GetOwnBuildTimestamp: TDateTime;
+procedure PlayEmptyRecycleBinSound;
 
 {$IFDEF Console}
 procedure CountDown(const msg: string; timer: integer);
@@ -61,7 +62,7 @@ procedure CountDown(const msg: string; timer: integer);
 implementation
 
 uses
-  DECUtil, DECRandom, ZLib, DateUtils, StrUtils, Registry, ShellAPI;
+  DECUtil, DECRandom, ZLib, DateUtils, StrUtils, Registry, ShellAPI, MMSystem;
 
 {$IFDEF Unicode}
 function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
@@ -586,6 +587,26 @@ begin
   result := GetBuildTimestamp(ParamStr(0));
 end;
 
+procedure PlayEmptyRecycleBinSound;
+var
+  reg: TRegistry;
+  soundFile: string;
+begin
+  reg := TRegistry.Create;
+  try
+    reg.RootKey := HKEY_CURRENT_USER;
+    if reg.OpenKeyReadOnly('AppEvents\Schemes\Apps\Explorer\EmptyRecycleBin\.Current') then
+    begin
+      soundFile := reg.ReadString('');
+      if soundFile <> '' then
+        PlaySound(PChar(soundFile), 0, SND_FILENAME or SND_ASYNC or SND_NODEFAULT);
+      reg.CloseKey;
+    end;
+  finally
+    FreeAndNil(reg);
+  end;
+end;
+
 { TStreamHelper }
 
 procedure TStreamHelper.Read(var Value; Size: Integer);
@@ -751,7 +772,7 @@ begin
 
     Result := HashInstance.DigestAsBytes;
   finally
-    HashInstance.Free;
+    FreeAndNil(HashInstance);
   end;
 end;
 

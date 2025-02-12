@@ -544,12 +544,12 @@ begin
               OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -586,12 +586,12 @@ begin
               OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -628,12 +628,12 @@ begin
               OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -670,12 +670,12 @@ begin
               OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -712,12 +712,12 @@ begin
               OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -754,12 +754,12 @@ begin
               OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -796,12 +796,12 @@ begin
               OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -838,12 +838,12 @@ begin
               OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -880,12 +880,12 @@ begin
               OnProgressProc(Size, Pos, SEncodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try
@@ -922,12 +922,12 @@ begin
               OnProgressProc(Size, Pos, SDecodeStream, TDcProgressState(State))
           end);
         Cipher.Done;
-        Cipher.Free;
+        FreeAndNil(Cipher);
       finally
-        ssOut.Free;
+        FreeAndNil(ssOut);
       end;
     finally
-      ssIn.Free;
+      FreeAndNil(ssIn);
     end;
   except
     try

@@ -87,10 +87,10 @@ procedure Debug_Testcases;
         if ms1.Size = ms2.Size then
           Result := CompareMem(ms1.Memory, ms2.memory, ms1.Size);
       finally
-        ms2.Free;
+        FreeAndNil(ms2);
       end;
     finally
-      ms1.Free;
+      FreeAndNil(ms1);
     end
   end;
 
@@ -494,7 +494,7 @@ begin
     end;
 
   finally
-    FileExtAnalysis.Free;
+    FreeAndNil(FileExtAnalysis);
   end;
 end;
 
