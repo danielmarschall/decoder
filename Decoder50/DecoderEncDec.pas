@@ -1409,12 +1409,12 @@ begin
       HMacKey := Key;
       {$ENDREGION}
 
-      {$REGION '0.5 Magic Sequence (only version 4+)'}
+      {$REGION '1. Magic Sequence (only version 4+)'}
       if (V>=fvDc50) then
         tempstream.WriteRawByteString('[' + RawByteString(DeCoder4X_GetOID(V)) + ']' + #13#10);
       {$ENDREGION}
 
-      {$REGION '1. Flags (version 1+)'}
+      {$REGION '2. Flags (version 1+)'}
       if V >= fvDc40 then
       begin
         // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
@@ -1432,12 +1432,12 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '2. Version (only version 1..3)'}
+      {$REGION 'Version (only version 1..3)'}
       if (V>=fvDc40) and (V<fvDc50) then
         tempstream.WriteByte(Ord(V));
       {$ENDREGION}
 
-      {$REGION '3. Filename (version 1+)'}
+      {$REGION '3./4. Filename (version 1+)'}
       if V = fvDc40 then
       begin
         // Ver1: Clear text filename, terminated with "?"
@@ -1525,7 +1525,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '3.1 File Size (version 4+)'}
+      {$REGION '5. File Size (version 4+)'}
       if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigSize and IsFolder then
@@ -1537,7 +1537,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '3.2 File Date/Time (version 4+)'}
+      {$REGION '6. File Date/Time (version 4+)'}
       if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigDate and IsFolder then
@@ -1549,28 +1549,28 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '4. IdBase (only version 2 and 3)'}
+      {$REGION 'IdBase (only version 2 and 3)'}
       idBase := DC4_ID_BASES[V];
       if (V >= fvDc41Beta) and (V < fvDc50) then
         tempstream.WriteLongBE(idBase);
       {$ENDREGION}
 
-      {$REGION '5. Cipher identity (version 0 and 2+)'}
+      {$REGION '7. Cipher identity (version 0 and 2+)'}
       Assert(not CipherClass.InheritsFrom(TCipher_VtsDeCoderOldCipher)); // You must not use DC2 or DC3 ciphers in DC4/DC5 files
       if V <> fvDc40 then
         tempstream.WriteLongBE(DC_DEC_Identity(idBase, CipherClass.ClassName, V<fvDc50));
       {$ENDREGION}
 
-      {$REGION '6. Cipher mode (version 0 and 2+)'}
+      {$REGION '8. Cipher mode (version 0 and 2+)'}
       if V <> fvDc40 then tempstream.WriteByte(Ord(Cipher.Mode));
       {$ENDREGION}
 
-      {$REGION '7. Hash identity (version 0 and 2+)'}
+      {$REGION '9. Hash identity (version 0 and 2+)'}
       if V <> fvDc40 then
         tempstream.WriteLongBE(DC_DEC_Identity(idBase, HashClass.ClassName, V<fvDc50));
       {$ENDREGION}
 
-      {$REGION '7.5 IV (only version 4+)'}
+      {$REGION '10./11. IV (only version 4+)'}
       if V >= fvDc50 then
       begin
         tempstream.WriteByte(Length(IV));
@@ -1578,26 +1578,26 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '7.6 IV Fill Byte (only version 4+)'}
+      {$REGION '12. IV Fill Byte (only version 4+)'}
       if V >= fvDc50 then
       begin
         tempstream.WriteByte(IvFillByte);
       end;
       {$ENDREGION}
 
-      {$REGION '7.7 Cipher padding mode (only version 4+; currently unused by DEC)'}
+      {$REGION '13. Cipher padding mode (only version 4+; currently unused by DEC)'}
       if V >= fvDc50 then
       begin
         tempstream.WriteByte(Ord(Cipher.PaddingMode));
       end;
       {$ENDREGION}
 
-      {$REGION '8. Seed (only version 0 or version 2+)'}
+      {$REGION '14./15. Seed (only version 0 or version 2+)'}
       if V <> fvDc40 then tempstream.WriteByte(Length(Seed));
       tempstream.WriteRawByteString(Seed);
       {$ENDREGION}
 
-      {$REGION '8.5 KDF version (only version 4+)'}
+      {$REGION '16. KDF version (only version 4+)'}
       if V >= fvDc50 then
       begin
         // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
@@ -1605,12 +1605,12 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '8.6 PBKDF Iterations (only for KdfVersion=kvPbkdf2)'}
+      {$REGION '17. PBKDF2 Iterations (only for KdfVersion=kvPbkdf2)'}
       if KdfVersion = kvPbkdf2 then
         tempstream.WriteInt32(PbkdfIterations);
       {$ENDREGION}
 
-      {$REGION '8.7 GCM Tag length (only if GCM mode)'}
+      {$REGION '18. GCM Tag length (only if GCM mode)'}
       if (V>=fvDc50) and (Cipher.Mode=cmGCM) then
       begin
         if GCMAuthTagSizeInBytes > 16 then GCMAuthTagSizeInBytes := 16; // 128 bits this is the size of CalcGaloisHash()
@@ -1619,7 +1619,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
+      {$REGION '19. Encrypted data (version 0 with length prefix, version 1+ without)'}
       Cipher.Init(Key, IV, IvFillByte, Cipher.PaddingMode);
       try
         Source.Position := 0;
@@ -1635,7 +1635,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '9.1 DEC CalcMAC (not if ECB mode)'}
+      {$REGION '20. DEC CalcMAC (not if ECB mode)'}
       if ((V=fvHagenReddmannExample) or (V>=fvDc50)) and (Cipher.Mode<>cmECBx) then
       begin
         HashResult2 := Cipher.CalcMAC;
@@ -1647,14 +1647,14 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '9.2 GCM Tag (only if GCM mode)'}
+      {$REGION '21. GCM Tag (only if GCM mode)'}
       if (V>=fvDc50) and (Cipher.Mode=cmGCM) then
       begin
         tempstream.WriteRawBytes(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult);
       end;
       {$ENDREGION}
 
-      {$REGION '10. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
+      {$REGION '22. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
       if V = fvDc40 then
       begin
         Source.Position := 0;
@@ -1706,7 +1706,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '11. File Terminus (only version 2 and 3)'}
+      {$REGION 'File Terminus (only version 2 and 3)'}
       if V = fvDc41Beta then
       begin
         tempstream.WriteRawByteString(RawByteString(TNetEncoding.Base64.Encode('DCTERMINUS')));
@@ -1834,7 +1834,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '0.5 Magic sequence (version 4+)'}
+        {$REGION '1. Magic sequence (version 4+)'}
         if not V_Detected then
         begin
           for V := fvDc50 to High(TDc4FormatVersion) do
@@ -1851,7 +1851,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '1. Flags (version 1+)'}
+        {$REGION '2. Flags (version 1+)'}
         if not V_Detected or (V_Detected and (V>=fvDc40)) then
         begin
           // Bit 0:    [Ver1+] Is packed folder (1) or a regular file (0)?
@@ -1868,7 +1868,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '2. Version byte (only version 1..3)'}
+        {$REGION 'Version byte (only version 1..3)'}
         if not V_Detected then
         begin
           // 01 = (De)Coder 4.0
@@ -1940,7 +1940,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '3. Filename (version 1+)'}
+        {$REGION '3./4. Filename (version 1+)'}
         FileNameUserPasswordEncrypted := false;
         if V <> fvHagenReddmannExample then
         begin
@@ -1988,28 +1988,28 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '3.1 File Size (version 4+)'}
+        {$REGION '5. File Size (version 4+)'}
         if V >= fvDc50 then
         begin
           OrigFileSize := Source.ReadInt64;
         end;
         {$ENDREGION}
 
-        {$REGION '3.2 File Date/Time (version 4+)'}
+        {$REGION '6. File Date/Time (version 4+)'}
         if V >= fvDc50 then
         begin
           OrigFileDate := Source.ReadInt64;
         end;
         {$ENDREGION}
 
-        {$REGION '4. IdBase (only version 2 and 3)'}
+        {$REGION 'IdBase (only version 2 and 3)'}
         if (V >= fvDc41Beta) and (V < fvDc50) then
           idBase := Source.ReadLongBE
         else
           idBase := DC4_ID_BASES[V];
         {$ENDREGION}
 
-        {$REGION '5. Cipher identity (only version 0 or 2+)'}
+        {$REGION '7. Cipher identity (only version 0 or 2+)'}
         if V <> fvHagenReddmannExample then // If V=fvHagenReddmannExample, then we already checked it and the stream position should be 4.
         begin
           // Now query with the new actual fitting id base version (dependant on V)
@@ -2024,14 +2024,14 @@ begin
         Cipher := CipherClass.Create;
         {$ENDREGION}
 
-        {$REGION '6. Cipher mode (only version 0 or 2+)'}
+        {$REGION '8. Cipher mode (only version 0 or 2+)'}
         if V = fvDc40 then
           Cipher.Mode := TCipherMode.cmCTSx
         else
           Cipher.Mode := TCipherMode(Source.ReadByte);
         {$ENDREGION}
 
-        {$REGION '7. Hash identity (only version 0 or version 2+)'}
+        {$REGION '9. Hash identity (only version 0 or version 2+)'}
         if V = fvDc40 then
           HashClass := THash_SHA512
         else
@@ -2039,21 +2039,21 @@ begin
         AHash := HashClass.Create;
         {$ENDREGION}
 
-        {$REGION '7.5 IV (only version 4+)'}
+        {$REGION '10./11. IV (only version 4+)'}
         if V >= fvDc50 then
           IV := Source.ReadRawBytes(Source.ReadByte)
         else
           SetLength(IV, 0);
         {$ENDREGION}
 
-        {$REGION '7.6 IV Fill Byte (only version 4+)'}
+        {$REGION '12. IV Fill Byte (only version 4+)'}
         if V >= fvDc50 then
           IvFillByte := Source.ReadByte
         else
           IvFillByte := $FF;
         {$ENDREGION}
 
-        {$REGION '7.7 Cipher padding mode (only version 4+; currently unused by DEC)'}
+        {$REGION '13. Cipher padding mode (only version 4+; currently unused by DEC)'}
         if V >= fvDc50 then
         begin
           iPaddingMode := Source.ReadByte;
@@ -2067,14 +2067,14 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '8. Seed (only version 0 or version 2+)'}
+        {$REGION '14./15. Seed (only version 0 or version 2+)'}
         if V = fvDc40 then
           Seed := Source.ReadRawByteString(16)
         else
           Seed := Source.ReadRawByteString(Source.ReadByte);
         {$ENDREGION}
 
-        {$REGION '8.5 KDF version (only version 4+)'}
+        {$REGION '16. KDF version (only version 4+)'}
         // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
         // For PBKDF2, a DWORD with the iterations follows
         if V >= fvDc50 then
@@ -2091,7 +2091,7 @@ begin
           raise Exception.Create(SInvalidKdfVersion);
         {$ENDREGION}
 
-        {$REGION '8.6 KDF Iterations (ONLY PRESENT for PBKDF2)'}
+        {$REGION '17. PBKDF2 Iterations (ONLY PRESENT for PBKDF2)'}
         if KDFVersion = kvPbkdf2 then
           PbkdfIterations := Source.ReadInt32
         else
@@ -2138,14 +2138,14 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '8.7 GCM Tag Length (only version 4+)'}
+        {$REGION '18. GCM Tag Length (only version 4+)'}
         if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           TDECFormattedCipher(Cipher).AuthenticationResultBitLength := Source.ReadByte * 8;
         end;
         {$ENDREGION}
 
-        {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
+        {$REGION '19. Encrypted data (version 0 with length prefix, version 1+ without)'}
         if not OnlyReadFileInfo then
         begin
           Cipher.Init(Key, IV, IvFillByte, Cipher.PaddingMode);
@@ -2177,7 +2177,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '9.1 DEC CalcMAC (version 0 with length prefix, version 4+ without)'}
+        {$REGION '20. DEC CalcMAC (version 0 with length prefix, version 4+ without)'}
         if not OnlyReadFileInfo and ((V=fvHagenReddmannExample) or (V>=fvDc50)) and (Cipher.Mode <> cmECBx) then
         begin
           if V=fvHagenReddmannExample then
@@ -2189,7 +2189,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '9.2 GCM Tag (only version 4+)'}
+        {$REGION '21. GCM Tag (only version 4+)'}
         if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           if BytesToRawByteString(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult) <> Source.ReadRawByteString(TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3) then
@@ -2234,7 +2234,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '10. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
+        {$REGION '22. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
         // (For version 4, the HMAC was checked above, before encrypting, so we exclude the check here)
         if not OnlyReadFileInfo and (V >= fvDc40) and (V < fvDc50) then
         begin
@@ -2286,7 +2286,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '11. Terminus (only version 2 and 3)'}
+        {$REGION 'Terminus (only version 2 and 3)'}
         if FileTerminus <> '' then
         begin
           if OnlyReadFileInfo then Source.Position := Source.Size - Length(FileTerminus);

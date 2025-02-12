@@ -3,9 +3,8 @@ object DecoderMainForm: TDecoderMainForm
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = Single
-  Caption = 'ViaThinkSoft (De)Coder 5.0'
   ClientHeight = 362
-  ClientWidth = 720
+  ClientWidth = 650
   Position = ScreenCenter
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -30,7 +29,7 @@ object DecoderMainForm: TDecoderMainForm
     Orientation = Horizontal
     Position.X = 440.000000000000000000
     Position.Y = 152.000000000000000000
-    Size.Width = 265.000000000000000000
+    Size.Width = 195.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
   end
@@ -39,24 +38,23 @@ object DecoderMainForm: TDecoderMainForm
     StyledSettings = [Family, Style, FontColor]
     Position.X = 176.000000000000000000
     Position.Y = 8.000000000000000000
-    Size.Width = 529.000000000000000000
+    Size.Width = 459.000000000000000000
     Size.Height = 41.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Font.Size = 24.000000000000000000
     TextSettings.WordWrap = False
-    Text = 'ViaThinkSoft (De)Coder 5.1'
-    TabOrder = 53
+    TabOrder = 56
   end
   object ShortInfoLabel: TLabel
     Anchors = [akLeft, akTop, akRight]
     Position.X = 176.000000000000000000
     Position.Y = 57.000000000000000000
-    Size.Width = 529.000000000000000000
+    Size.Width = 459.000000000000000000
     Size.Height = 292.000000000000000000
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 56
+    TabOrder = 59
   end
   object OpenDialog1: TOpenDialog
     Filter = 
@@ -73,11 +71,11 @@ object DecoderMainForm: TDecoderMainForm
     Anchors = [akLeft, akTop, akRight, akBottom]
     Position.X = 176.000000000000000000
     Position.Y = 200.000000000000000000
-    Size.Width = 529.000000000000000000
+    Size.Width = 459.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 46
-    Viewport.Width = 525.000000000000000000
+    TabOrder = 49
+    Viewport.Width = 455.000000000000000000
     Viewport.Height = 118.000000000000000000
   end
   object PasswordEdit: TEdit

@@ -405,7 +405,10 @@ resourcestring
   S_IntroLine_9 = 'correct passwords, and they must be 100% free of any damage!';
   S_IntroLine_10 = '';
   S_IntroLine_11 = '';
+  SProductTitle = 'ViaThinkSoft (De)Coder 5.1';
 begin
+  Caption := SProductTitle;
+  OpenedFileLabel.Text := SProductTitle;
   ShortInfoLabel.Text :=
     Format(S_IntroLine_0_S, [DateTimeToStr(GetOwnBuildTimestamp)]) + #13#10 +
     S_IntroLine_1 + #13#10 +
