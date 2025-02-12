@@ -44,8 +44,8 @@ object DecoderMainForm: TDecoderMainForm
     Size.PlatformDefault = False
     TextSettings.Font.Size = 24.000000000000000000
     TextSettings.WordWrap = False
-    Text = 'ViaThinkSoft (De)Coder 5.0'
-    TabOrder = 46
+    Text = 'ViaThinkSoft (De)Coder 5.1'
+    TabOrder = 53
   end
   object ShortInfoLabel: TLabel
     Anchors = [akLeft, akTop, akRight]
@@ -56,7 +56,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.PlatformDefault = False
     TextSettings.VertAlign = Leading
     TextSettings.Trimming = None
-    TabOrder = 49
+    TabOrder = 56
   end
   object OpenDialog1: TOpenDialog
     Filter = 
@@ -76,7 +76,7 @@ object DecoderMainForm: TDecoderMainForm
     Size.Width = 529.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 40
+    TabOrder = 46
     Viewport.Width = 525.000000000000000000
     Viewport.Height = 118.000000000000000000
   end

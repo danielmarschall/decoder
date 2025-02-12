@@ -26,7 +26,7 @@ uses
   {$ELSE}
   System.SysUtils, System.Classes,
   {$ENDIF}
-  DECCipherBase, DECCipherModes,
+  DECCipherBase, DECCipherModes, DECCipherPaddings,
   DECUtil, DECTypes, DECFormatBase, DECCipherInterface;
 
 type
@@ -41,7 +41,14 @@ type
   ///   moved in order to keep the base cipher class small and clean.
   /// </summary>
   TDECFormattedCipher = class(TDECCipherModes, IDECCipher)
-  private
+  strict private
+    /// <summary>
+    ///   The static class assigned to this field via Init method or PaddingMode
+    ///   property is being used to add or remove paddings in order to simplyfy
+    ///   ading further padding shemes.
+    /// </summary>
+    FPaddingClass : TDECPaddingClass;
+
     /// <summary>
     ///   Encrypts or decrypts the data contained in a given stream
     /// </summary>
@@ -61,10 +68,16 @@ type
     /// <param name="OnProgress">
     ///   optional callback for reporting progress of the operation
     /// </param>
+    /// <param name="IsEncode">
+    ///   True for encoding, False for decoding
+    /// </param>
+    /// <exception cref="EDECCipherException">
+    ///   Raised if the padding mode used is not implemented yet
+    /// </exception>
     procedure DoEncodeDecodeStream(const Source, Dest: TStream; DataSize: Int64;
                                    const CipherProc: TDECCipherCodeEvent;
-                                   const OnProgress: TDECProgressEvent);
-
+                                   const OnProgress: TDECProgressEvent;
+                                   IsEncode: Boolean);
     /// <summary>
     ///   Encrypts or decrypts a file and stores the result in another file
     /// </summary>
@@ -84,9 +97,18 @@ type
     ///   Optional event which can be passed to get information about the
     ///   progress of the encryption operation
     /// </param>
+    /// <param name="IsEncode">
+    ///   True for encoding, False for decoding
+    /// </remark>
     procedure DoEncodeDecodeFile(const SourceFileName, DestFileName: string;
                                  const Proc: TDECCipherCodeEvent;
-                                 const OnProgress: TDECProgressEvent);
+                                 const OnProgress: TDECProgressEvent;
+                                 IsEncode: Boolean);
+  strict protected
+    /// <summary>
+    ///   Assignes the right padding class to the class type field.
+    /// </summary>
+    procedure InitPaddingClass; override;
   public
     /// <summary>
     ///   Encrypts the contents of a given byte array
@@ -692,16 +714,33 @@ type
 implementation
 
 uses
+  {$IFDEF FPC}
+  TypInfo,
+  {$ELSE}
+  System.TypInfo,
+  {$ENDIF}
   DECBaseClass;
 
+resourcestring
+  sPaddingModeNotImplemented = 'Padding mode %0:s not implemented';
+
 function TDECFormattedCipher.EncodeBytes(const Source: TBytes): TBytes;
+
+  function CipherEncodeBytes(const Source: TBytes): TBytes;
+  begin
+    SetLength(Result, Length(Source));
+    if Length(Result) > 0 then
+      Encode(Source[0], Result[0], Length(Source))
+    else
+      if (FMode = cmGCM) then
+        EncodeGCM(@Source, @Result, 0);
+  end;
+
 begin
-  SetLength(Result, Length(Source));
-  if Length(Result) > 0 then
-    Encode(Source[0], Result[0], Length(Source))
+  if not (FPaddingClass = nil) then
+    Result := CipherEncodeBytes(FPaddingClass.AddPadding(Source, Context.BlockSize))
   else
-    if (FMode = cmGCM) then
-      EncodeGCM(@Source, @Result, 0);
+    Result := CipherEncodeBytes(Source);
 end;
 
 function TDECFormattedCipher.DecodeBytes(const Source: TBytes): TBytes;
@@ -718,26 +757,36 @@ begin
   else
     if (FMode = cmGCM) then
       DecodeGCM(@Source, @Result, 0);
+
+  if not (FPaddingClass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 
 procedure TDECFormattedCipher.DoEncodeDecodeStream(const Source, Dest: TStream;
                                                    DataSize: Int64;
                                                    const CipherProc: TDECCipherCodeEvent;
-                                                   const OnProgress: TDECProgressEvent);
+                                                   const OnProgress: TDECProgressEvent;
+                                                   IsEncode: Boolean);
 var
-  Buffer: TBytes;
-  outBuffer: TBytes;
-  BufferSize, Bytes: Integer;
-  Max, StartPos, Pos: Int64;
+  Buffer             : TBytes;
+  outBuffer          : TBytes;
+  BufferSize, Bytes  : Integer;
+  Max, StartPos, Pos : Int64;
+  doPadding,
+  doAdjustBuffer,
+  doStartOnlyPadding : Boolean;
 begin
   Pos := Source.Position;
   if DataSize < 0 then
     DataSize := Source.Size - Pos;
 
-  Max      := Pos + DataSize;
-  StartPos := Pos;
+  Max       := Pos + DataSize;
+  StartPos  := Pos;
+  doPadding := false;
+  doStartOnlyPadding := (DataSize = 0) and IsEncode and
+    (FPaddingMode <> pmNone);
 
-  if DataSize > 0 then
+  if (DataSize > 0) or doStartOnlyPadding then
   begin
     try
       if Assigned(OnProgress) then
@@ -759,26 +808,64 @@ begin
       if (FMode = cmGCM) then
         SetLength(outBuffer, Length(Buffer));
 
-      while DataSize > 0 do
+      while (DataSize > 0) or doStartOnlyPadding do
       begin
+        doStartOnlyPadding := false;
         Bytes := BufferSize;
-        if Bytes > DataSize then
+        if Bytes >= DataSize then
+        begin
+          doAdjustBuffer := Bytes > DataSize;
           Bytes := DataSize;
-        Source.ReadBuffer(Buffer[0], Bytes);
+          // Handle padding mode
+          doPadding := (FPaddingMode <> pmNone) and assigned(FPaddingCLass);
+          if doPadding and doAdjustBuffer then
+            if IsEncode then
+            begin
+              ProtectBytes(Buffer);
+              SetLength(Buffer, Bytes);
+            end
+            else
+            begin
+              ProtectBytes(outBuffer);
+              SetLength(outBuffer, Bytes);
+            end;
+        end;
+
+        if Bytes > 0 then
+          Source.ReadBuffer(Buffer[0], Bytes);
+
+        if IsEncode and doPadding then
+        begin
+          Buffer := FPaddingClass.AddPadding(Buffer, Context.BlockSize);
+          Bytes  := length(Buffer);
+          SetLength(outBuffer, length(Buffer));
+        end;
 
         // The real encryption or decryption routine
         CipherProc(Buffer[0], outBuffer[0], Bytes);
-        Dest.WriteBuffer(outBuffer[0], Bytes);
-        Dec(DataSize, Bytes);
-        Inc(Pos, Bytes);
-
+        if not IsEncode and doPadding then
+        begin
+          outBuffer := FPaddingCLass.RemovePadding(outBuffer, Context.BlockSize);
+          Bytes := length(outBuffer);
+        end;
+        if Bytes > 0 then
+          Dest.WriteBuffer(outBuffer[0], Bytes)
+        else
+          SetLength(outBuffer, 0);
+        if doPadding then
+        begin
+          DataSize := 0;
+          Pos := Max;
+        end else begin
+          Dec(DataSize, Bytes);
+          Inc(Pos, Bytes);
+        end;
         if Assigned(OnProgress) then
           OnProgress(Max, Pos - StartPos, Processing);
       end;
     finally
       ProtectBytes(Buffer);
-      if (FMode = cmGCM) then
-        ProtectBytes(outBuffer);
+      ProtectBytes(outBuffer);
       if Assigned(OnProgress) then
         OnProgress(Max, Max, Finished);
     end;
@@ -794,20 +881,19 @@ end;
 procedure TDECFormattedCipher.EncodeStream(const Source, Dest: TStream; DataSize: Int64;
                                            const OnProgress: TDECProgressEvent);
 begin
-  DoEncodeDecodeStream(Source, Dest, DataSize,
-                       Encode, OnProgress);
+  DoEncodeDecodeStream(Source, Dest, DataSize, Encode, OnProgress, true);
 end;
 
 procedure TDECFormattedCipher.DecodeStream(const Source, Dest: TStream; DataSize: Int64;
                                            const OnProgress: TDECProgressEvent);
 begin
-  DoEncodeDecodeStream(Source, Dest, DataSize,
-                       Decode, OnProgress);
+  DoEncodeDecodeStream(Source, Dest, DataSize, Decode, OnProgress, false);
 end;
 
 procedure TDECFormattedCipher.DoEncodeDecodeFile(const SourceFileName, DestFileName: string;
                                                  const Proc: TDECCipherCodeEvent;
-                                                 const OnProgress: TDECProgressEvent);
+                                                 const OnProgress: TDECProgressEvent;
+                                                 IsEncode: Boolean);
 var
   S, D: TStream;
 begin
@@ -817,7 +903,7 @@ begin
   try
     D := TFileStream.Create(DestFileName, fmCreate);
     try
-      DoEncodeDecodeStream(S, D, S.Size, Proc, OnProgress);
+      DoEncodeDecodeStream(S, D, S.Size, Proc, OnProgress, IsEncode);
     finally
       D.Free;
     end;
@@ -829,21 +915,21 @@ end;
 procedure TDECFormattedCipher.EncodeFile(const SourceFileName, DestFileName: string;
                                          const OnProgress: TDECProgressEvent);
 begin
-  DoEncodeDecodeFile(SourceFileName, DestFileName, Encode, OnProgress);
+  DoEncodeDecodeFile(SourceFileName, DestFileName, Encode, OnProgress, true);
 end;
 
 procedure TDECFormattedCipher.DecodeFile(const SourceFileName, DestFileName: string;
                                          const OnProgress: TDECProgressEvent);
 begin
-  DoEncodeDecodeFile(SourceFileName, DestFileName, Decode, OnProgress);
+  DoEncodeDecodeFile(SourceFileName, DestFileName, Decode, OnProgress, false);
 end;
 
 function TDECFormattedCipher.EncodeStringToBytes(const Source: string;
                                                  Format: TDECFormatClass = nil): TBytes;
-var
-  Len: Integer;
-begin
-  if Length(Source) > 0 then
+  function CipherEncodeStringToBytes(const Source: string;
+    Format: TDECFormatClass): TBytes;
+  var
+    Len: Integer;
   begin
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     Len := Length(Source) * SizeOf(Source[low(Source)]);
@@ -854,18 +940,31 @@ begin
     SetLength(Result, Len);
     Encode(Source[1], Result[0], Len);
     {$ENDIF}
+  end;
 
-    Result := ValidFormat(Format).Encode(Result);
-  end
+begin
+  if not (FPaddingCLass = nil) then
+    Result := CipherEncodeStringToBytes(FPaddingClass.AddPadding(Source, Context.BlockSize),
+                                        Format)
   else
-    SetLength(Result, 0);
+    if Length(Source) > 0 then
+      Result := CipherEncodeStringToBytes(Source, Format)
+    else
+    begin
+      SetLength(Result, 0);
+      exit;
+    end;
+
+  Result := ValidFormat(Format).Encode(Result);
 end;
 
-function TDECFormattedCipher.EncodeStringToBytes(const Source: RawByteString; Format: TDECFormatClass): TBytes;
-var
-  Len: Integer;
-begin
-  if Length(Source) > 0 then
+function TDECFormattedCipher.EncodeStringToBytes(const Source : RawByteString;
+                                                 Format       : TDECFormatClass): TBytes;
+
+  function CipherEncodeStringToBytes(const Source: RawByteString;
+    Format: TDECFormatClass): TBytes;
+  var
+    Len: Integer;
   begin
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     Len := Length(Source) * SizeOf(Source[low(Source)]);
@@ -876,11 +975,22 @@ begin
     SetLength(Result, Len);
     Encode(Source[1], Result[0], Len);
     {$ENDIF}
+  end;
 
-    Result := ValidFormat(Format).Encode(Result);
-  end
-  else
-    SetLength(Result, 0);
+begin
+  if not (FPaddingCLass = nil) then
+    Result := CipherEncodeStringToBytes(FPaddingClass.AddPadding(Source, Context.BlockSize),
+                                        Format)
+    else
+      if Length(Source) > 0 then
+        Result := CipherEncodeStringToBytes(Source, Format)
+      else
+      begin
+        SetLength(Result, 0);
+        exit;
+      end;
+
+  Result := ValidFormat(Format).Encode(Result);
 end;
 
 function TDECFormattedCipher.DecodeStringToBytes(const Source: string; Format: TDECFormatClass): TBytes;
@@ -898,6 +1008,9 @@ begin
   end
   else
     SetLength(Result, 0);
+
+  if not (FPaddingCLass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 
 function TDECFormattedCipher.DecodeStringToBytes(const Source: RawByteString; Format: TDECFormatClass): TBytes;
@@ -915,23 +1028,38 @@ begin
   end
   else
     SetLength(Result, 0);
+
+  if not (FPaddingCLass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 
 {$IFDEF ANSISTRINGSUPPORTED}
 function TDECFormattedCipher.EncodeStringToBytes(const Source: AnsiString; Format: TDECFormatClass): TBytes;
-var
-  Len: Integer;
-begin
-  if Length(Source) > 0 then
+
+  function CipherEncodeStringToBytes(const Source: AnsiString;
+    Format: TDECFormatClass): TBytes;
+  var
+    Len: Integer;
   begin
     Len := Length(Source) * SizeOf(Source[1]);
     SetLength(Result, Len);
     Encode(Source[1], Result[0], Len);
+  end;
 
-    Result := ValidFormat(Format).Encode(Result);
-  end
+begin
+  if not (FPaddingCLass = nil) then
+    Result := CipherEncodeStringToBytes(FPaddingClass.AddPadding(Source, Context.BlockSize),
+                                        Format);
   else
-    SetLength(Result, 0);
+    if Length(Source) > 0 then
+      Result := CipherEncodeStringToBytes(Source, Format)
+    else
+    begin
+      SetLength(Result, 0);
+      exit;
+    end;
+
+  Result := ValidFormat(Format).Encode(Result);
 end;
 {$ENDIF}
 
@@ -951,24 +1079,39 @@ begin
   end
   else
     SetLength(Result, 0);
+
+  if not (FPaddingCLass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 {$ENDIF}
 
 {$IFNDEF NEXTGEN}
 function TDECFormattedCipher.EncodeStringToBytes(const Source: WideString; Format: TDECFormatClass): TBytes;
-var
-  Len: Integer;
-begin
-  if Length(Source) > 0 then
+
+  function CipherEncodeStringToBytes(const Source: WideString;
+    Format: TDECFormatClass): TBytes;
+  var
+    Len: Integer;
   begin
     Len := Length(Source) * SizeOf(Source[1]);
     SetLength(Result, Len);
     Encode(Source[1], Result[0], Len);
+  end;
 
-    Result := ValidFormat(Format).Encode(Result);
-  end
+begin
+  if not (FPaddingCLass = nil) then
+    Result := CipherEncodeStringToBytes(FPaddingClass.AddPadding(Source, Context.BlockSize),
+                                        Format)
   else
-    SetLength(Result, 0);
+    if Length(Source) > 0 then
+      Result := CipherEncodeStringToBytes(Source, Format)
+    else
+    begin
+      SetLength(Result, 0);
+      exit;
+    end;
+
+  Result := ValidFormat(Format).Encode(Result);
 end;
 
 function TDECFormattedCipher.EncodeStringToString(const Source: WideString;
@@ -976,84 +1119,133 @@ function TDECFormattedCipher.EncodeStringToString(const Source: WideString;
 begin
   result := WideString(EncodeStringToString(string(Source), Format));
 end;
+
+procedure TDECFormattedCipher.InitPaddingClass;
+begin
+  case FPaddingMode of
+    pmNone       : FPaddingClass := nil;
+    pmPKCS7      : FPaddingCLass := TPKCS7Padding;
+    pmPKCS5      : FPaddingCLass := TPKCS5Padding;
+    pmANSI_X9_23 : FPaddingCLass := TANSI_X9_23_Padding;
+    pmISO10126   : FPaddingCLass := TISO10126Padding;
+    pmISO7816    : FPaddingCLass := TISO7816Padding;
+    else
+      raise EDECCipherException.CreateResFmt(@sPaddingModeNotImplemented,
+                                             [GetEnumName(TypeInfo(TPaddingMode),
+                                                Integer(FPaddingMode))]);
+  end;
+end;
+
 {$ENDIF}
 
 {$IFDEF ANSISTRINGSUPPORTED}
 function TDECFormattedCipher.EncodeStringToString(const Source: AnsiString;
   Format: TDECFormatClass): AnsiString;
+
+    function CipherEncodeStringToBytes(const Source: AnsiString;
+      Format: TDECFormatClass): TBytes;
+    var
+      Len: Integer;
+    begin
+      Len := Length(Source) * SizeOf(Source[1]);
+      SetLength(Result, Len);
+      Encode(Source[1], Result[0], Len);
+    end;
+
 var
-  Len             : Integer;
   EncryptedBuffer : TBytes;
   Temp            : TBytes;
 begin
-  if Length(Source) > 0 then
-  begin
-    Len := Length(Source) * SizeOf(Source[1]);
-    SetLength(EncryptedBuffer, Len);
-    Encode(Source[1], EncryptedBuffer[0], Len);
-
-    Temp := ValidFormat(Format).Encode(EncryptedBuffer);
-    SetLength(Result, length(Temp));
-    Move(Temp[0], Result[1], length(Temp));
-  end
+  if not (FPaddingClass = nil) then
+    EncryptedBuffer := CipherEncodeStringToBytes(
+                         TPaddingClass.AddPadding(Source, Context.BlockSize), Format)
   else
-    SetLength(Result, 0);
+    if Length(Source) > 0 then
+      EncryptedBuffer := CipherEncodeStringToBytes(Source)
+    else
+      exit('');
+
+  Temp := ValidFormat(Format).Encode(EncryptedBuffer);
+  SetLength(Result, length(Temp));
+  Move(Temp[0], Result[1], length(Temp));
 end;
 {$ENDIF}
 
 function TDECFormattedCipher.EncodeStringToString(const Source: string;
   Format: TDECFormatClass): string;
-var
-  SourceSize      : Integer;
-  EncryptedBuffer : TBytes;
-begin
-  if Length(Source) > 0 then
+
+  function CipherEncodeStringToBytes(const Source: string;
+    Format: TDECFormatClass): TBytes;
+  var
+    SourceSize: Integer;
   begin
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     SourceSize := Length(Source) * SizeOf(Source[low(Source)]);
-    SetLength(EncryptedBuffer, SourceSize);
-    Encode(Source[low(Source)], EncryptedBuffer[0], SourceSize);
+    SetLength(Result, SourceSize);
+    Encode(Source[low(Source)], Result[0], SourceSize);
     {$ELSE}
     SourceSize := Length(Source) * SizeOf(Source[1]);
-    SetLength(EncryptedBuffer, SourceSize);
-    Encode(Source[1], EncryptedBuffer[0], SourceSize);
+    SetLength(Result, SourceSize);
+    Encode(Source[1], Result[0], SourceSize);
     {$ENDIF}
+  end;
 
-    Result := StringOf(ValidFormat(Format).Encode(EncryptedBuffer));
-  end
+var
+  EncryptedBuffer : TBytes;
+begin
+  if not (FPaddingClass = nil) then
+    EncryptedBuffer := CipherEncodeStringToBytes(
+                         FPaddingClass.AddPadding(Source, Context.BlockSize),
+                                                  Format)
   else
-    Result := '';
+    if Length(Source) > 0 then
+      EncryptedBuffer := CipherEncodeStringToBytes(Source, Format)
+    else
+      exit('');
+
+  Result := StringOf(ValidFormat(Format).Encode(EncryptedBuffer));
 end;
 
 function TDECFormattedCipher.EncodeStringToString(const Source: RawByteString;
   Format: TDECFormatClass): RawByteString;
-var
-  SourceSize      : Integer;
-  EncryptedBuffer : TBytes;
-  Temp            : TBytes;
-begin
-  if Length(Source) > 0 then
+
+  function CipherEncodeStringToBytes(const Source: RawByteString;
+    Format: TDECFormatClass): TBytes;
+  var
+    SourceSize: Integer;
   begin
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     SourceSize := Length(Source) * SizeOf(Source[low(Source)]);
-    SetLength(EncryptedBuffer, SourceSize);
-    Encode(Source[low(Source)], EncryptedBuffer[0], SourceSize);
+    SetLength(Result, SourceSize);
+    Encode(Source[low(Source)], Result[0], SourceSize);
     {$ELSE}
     SourceSize := Length(Source) * SizeOf(Source[1]);
-    SetLength(EncryptedBuffer, SourceSize);
-    Encode(Source[1], EncryptedBuffer[0], SourceSize);
+    SetLength(Result, SourceSize);
+    Encode(Source[1], Result[0], SourceSize);
     {$ENDIF}
+  end;
 
-    Temp   := ValidFormat(Format).Encode(EncryptedBuffer);
-    SetLength(Result, length(Temp));
-    {$IFDEF HAVE_STR_LIKE_ARRAY}
-    Move(Temp[0], Result[low(Result)], length(Temp))
-    {$ELSE}
-    Move(Temp[0], Result[1], length(Temp))
-    {$ENDIF}
-  end
+var
+  EncryptedBuffer : TBytes;
+  Temp            : TBytes;
+begin
+  if not (FPaddingClass = nil) then
+    EncryptedBuffer := CipherEncodeStringToBytes(
+                         FPaddingClass.AddPadding(Source, Context.BlockSize),
+                                                  Format)
   else
-    Result := '';
+    if Length(Source) > 0 then
+      EncryptedBuffer := CipherEncodeStringToBytes(Source, Format)
+    else
+      exit('');
+
+  Temp := ValidFormat(Format).Encode(EncryptedBuffer);
+  SetLength(Result, length(Temp));
+  {$IFDEF HAVE_STR_LIKE_ARRAY}
+  Move(Temp[0], Result[low(Result)], length(Temp))
+  {$ELSE}
+  Move(Temp[0], Result[1], length(Temp))
+  {$ENDIF}
 end;
 
 {$IFNDEF NEXTGEN}
@@ -1072,6 +1264,9 @@ begin
   end
   else
     SetLength(Result, 0);
+
+  if not (FPaddingClass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 {$ENDIF}
 
@@ -1101,6 +1296,9 @@ begin
   end
   else
     SetLength(Result, 0);
+
+  if not (FPaddingClass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 {$ENDIF}
 
@@ -1137,6 +1335,9 @@ begin
   end
   else
     SetLength(Result, 0);
+
+  if not (FPaddingClass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 
 function TDECFormattedCipher.DecodeStringToString(const Source: string;
@@ -1157,6 +1358,9 @@ begin
   end
   else
     SetLength(Result, 0);
+
+  if not (FPaddingClass = nil) then
+    Result := FPaddingClass.RemovePadding(Result, Context.BlockSize);
 end;
 
 end.

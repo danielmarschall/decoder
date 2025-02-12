@@ -1,2 +1,6 @@
 
 https://github.com/MHumm/DelphiEncryptionCompendium/
+
+Currently commit
+https://github.com/MHumm/DelphiEncryptionCompendium/commit/3943bd26963ff183bc16ec76574dc83ac316c50f
+19 January 2025

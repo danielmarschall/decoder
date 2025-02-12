@@ -484,12 +484,15 @@ type
     ///   Size of the initialization vector in bytes
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key; Size: Integer; const IVector; IVectorSize: Integer; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key; Size: Integer; const IVector; IVectorSize: Integer; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     /// <summary>
     ///   Initializes the cipher with the necessary encryption/decryption key
     /// </summary>
@@ -505,12 +508,15 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: TBytes; const IVector: TBytes; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: TBytes; const IVector: TBytes; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     /// <summary>
     ///   Initializes the cipher with the necessary encryption/decryption key
     /// </summary>
@@ -526,12 +532,15 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: RawByteString; const IVector: RawByteString = ''; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: RawByteString; const IVector: RawByteString = ''; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     {$IFDEF ANSISTRINGSUPPORTED}
     /// <summary>
     ///   Initializes the cipher with the necessary encryption/decryption key.
@@ -549,12 +558,15 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: AnsiString; const IVector: AnsiString = ''; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: AnsiString; const IVector: AnsiString = ''; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     {$ENDIF}
     {$IFNDEF NEXTGEN}
     /// <summary>
@@ -573,12 +585,15 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: WideString; const IVector: WideString = ''; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: WideString; const IVector: WideString = ''; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     {$ENDIF}
 
     /// <summary>
@@ -678,7 +693,7 @@ type
     procedure SetAuthenticationResultBitLength(const Value: Integer);
 
     /// <summary>
-    ///   Returns a list of authentication tag lenghts explicitely specified by
+    ///   Returns a list of authentication tag lengths explicitely specified by
     ///   the official specification of the standard.
     /// </summary>
     /// <returns>

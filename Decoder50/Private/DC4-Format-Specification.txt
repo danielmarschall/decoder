@@ -2,13 +2,13 @@
 DC4 FILE FORMAT SPECIFICATION
 =============================
 
-Type:		Encrypted file
-Contents:	Binary information
-Used by:	ViaThinkSoft (De)Coder 4.0
-		ViaThinkSoft (De)Coder 4.1 Beta
-		ViaThinkSoft (De)Coder 5.0
-Author:		Daniel Marschall
-Last update:	December, 28th 2024
+Type:       Encrypted file
+Contents:   Binary information
+Used by:    ViaThinkSoft (De)Coder 4.0
+            ViaThinkSoft (De)Coder 4.1 Beta
+            ViaThinkSoft (De)Coder 5.0 + 5.1
+Author:     Daniel Marschall, ViaThinkSoft
+Revision:   12 February 2025
 
 
 CONTENTS
@@ -22,7 +22,7 @@ CONTENTS
 
 [4.0]	DC4 Standard 3 used by (De)Coder 4.1 Final/Cancelled
 
-[5.0]	DC4 Standard 3 used by (De)Coder 5.0
+[5.0]	DC4 Standard 3 used by (De)Coder 5.0 + 5.1
 
 [APP A]	Links to websites
 
@@ -361,10 +361,10 @@ Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
 
 
-[5.0] DC4 STANDARD 4 USED BY (DE)CODER 5.0
-==========================================
+[5.0] DC4 STANDARD 4 USED BY (DE)CODER 5.0 + 5.1
+================================================
 
-This file format is used by (De)Coder 5.0. The file-name extension can be dc4 or dc5.
+This file format is used by (De)Coder 5.0 and (De)Coder 5.1. The file-name extension can be dc4 or dc5.
 
 The file format version is 4 (mentioned in the last arc of the OID in the magic sequence).
 
@@ -481,8 +481,13 @@ Offset	Type	Size		Content/Description
 	Byte	1		IV Size (default: 16 = 0x10)
 	Binary	var		IV (Random Data)
 	Byte	1		IV filler byte (default: 0xFF)
-	Byte	1		Blocking filling mode (default: 0x00), currently not used by DEC
-					0x00	Byte filling mode
+	Byte	1		Padding mode
+					0x00	None (default)
+					0x01	PKCS#5 (new in DC 5.1)
+					0x02	PKCS#7 (new in DC 5.1)
+					0x03	ANSI X9.23 (new in DC 5.1)
+					0x04	ISO 10126 (new in DC 5.1)
+					0x05	ISO 7816 (new in DC 5.1)
 	Byte	1		Size of seed (default 32 = 0x20)
 	Binary	0-255		Seed (Random data)
 	Byte	1		KDF version

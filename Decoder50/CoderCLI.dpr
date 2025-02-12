@@ -151,13 +151,13 @@ begin
   WriteLn(sl.Text);
   WriteLn('');
 
-  WriteLn('DC 5.0 Cipher Algos');
+  WriteLn('DC 5.x Cipher Algos');
   sl.Clear;
   Debug_ListCipherAlgos(sl, fvDc50);
   WriteLn(sl.Text);
   WriteLn('');
 
-  WriteLn('DC 5.0 Hash Algos');
+  WriteLn('DC 5.x Hash Algos');
   sl.Clear;
   Debug_ListHashAlgos(sl, fvDc50);
   WriteLn(sl.Text);
@@ -520,13 +520,13 @@ var
 resourcestring
   SCautionDeleteFolder = 'Caution! You are about to delete this folder and all of its contents:';
   SCautionDeleteFolderCountdown_D = 'Press Ctrl+C to cancel or wait to continue ... %d seconds';
-  SProductName = 'ViaThinkSoft (De)Coder 5.0';
+  SProductName = 'ViaThinkSoft (De)Coder 5.1';
   SBuilt_S = 'Built %s';
   SDevelopedByDanielMarschall = 'Developed by Daniel Marschall';
   SDMHomepage = 'www.daniel-marschall.de';
   SLicenseLine = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
   SEncryptDecryptFilesAndFolders = 'Encrypting and decrypting files or folders';
-  SEncryptDecryptFilesAndFolders_1 = 'Encrypts a file using (De)Coder 5.0';
+  SEncryptDecryptFilesAndFolders_1 = 'Encrypts a file using (De)Coder 5.x';
   SEncryptDecryptFilesAndFolders_2 = 'Same as %s, but with metadata name+size+date';
   SEncryptDecryptFilesAndFolders_3 = 'Decrypts a (De)Coder 4.x or 5.x encrypted file';
   SEncryptDecryptFilesAndFolders_4 = 'Shows details of a (De)Coder 4.x or 5.x encrypted file';

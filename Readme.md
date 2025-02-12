@@ -1,11 +1,11 @@
 
-# ViaThinkSoft (De)Coder 5.0
+# ViaThinkSoft (De)Coder 5.1
 
 (De)Coder is an encryption software developed by Daniel Marschall.
 It uses the high-security AES encryption.
 
 
-## New and improved features in version 5.0
+## New and improved features in version 5.1
 
 - Modern design
 - Newer algorithms
@@ -26,11 +26,11 @@ to keep the product simple and clean.
 
 ## Screenshots
 
-![Original file](Private/Screenshot1.png)
+![Original file](Decoder50/Private/Screenshot1.png)
 
-![Encoded file](Private/Screenshot2.png)
+![Encoded file](Decoder50/Private/Screenshot2.png)
 
-![Command line tool](Private/Screenshot3.png)
+![Command line tool](Decoder50/Private/Screenshot3.png)
 
 
 ## Disclaimer

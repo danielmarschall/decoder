@@ -29,7 +29,7 @@ type
     HashClass: TDECHashClass;
     CipherClass: TDECCipherClass;
     CipherMode: TCipherMode;
-    BlockFillMode: TBlockFillMode;
+    PaddingMode: TPaddingMode;
     GCMAuthTagSizeInBytes: byte;
     ContainFileOrigName: TDc4FileNamePolicy;
     ContainFileOrigSize: boolean;
@@ -98,7 +98,7 @@ const
     $59178954, // (De)Coder 4.0
     $84671842, // (De)Coder 4.1 beta*
     $19387612, // (De)Coder 4.1 final (cancelled)*
-    $1259d82a  // (De)Coder 5.0
+    $1259d82a  // (De)Coder 5.x
     // * = can be changed in the file format
   );
 
@@ -537,7 +537,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder20.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(''), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(''), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -579,7 +579,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder20.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(''), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(''), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -621,7 +621,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder21.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -663,7 +663,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder21.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -705,7 +705,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder22.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -747,7 +747,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder22.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(IntToStr(Key)), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -789,7 +789,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder30.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(Key), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -831,7 +831,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder30.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(Key), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -873,7 +873,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder32.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(Key), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).EncodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -915,7 +915,7 @@ begin
       try
         Cipher := TCipher_VtsDeCoder32.Create;
         Cipher.Mode := cmECBx;
-        Cipher.Init(AnsiString(Key), AnsiString(''), $FF);
+        Cipher.Init(AnsiString(Key), AnsiString(''), $FF, pmNone);
         TDECFormattedCipher(Cipher).DecodeStream(ssIn, ssOut, ssIn.Size, procedure(Size, Pos: Int64; State: TDECProgressState)
           begin
             if Assigned(OnProgressProc) then
@@ -966,7 +966,7 @@ begin
     result.HashClass := THash_SHA3_512;
   result.CipherClass := TCipher_AES;
   result.CipherMode := TCipherMode.cmCTSx;
-  result.BlockFillMode := TBlockFillMode.fmByte;
+  result.PaddingMode := TPaddingMode.pmNone;
   if V = fvDc41FinalCancelled then
     Result.ContainFileOrigName := fpEncryptWithUserKey // only available in version 3
   else if V < fvDc50 then
@@ -1060,7 +1060,7 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
     DC4_SUBFORMAT_VERSION_1 = '(De)Coder 4.0';
     DC4_SUBFORMAT_VERSION_2 = '(De)Coder 4.1 Beta';
     DC4_SUBFORMAT_VERSION_3 = '(De)Coder 4.1 Final (Cancelled)';
-    DC4_SUBFORMAT_VERSION_4 = '(De)Coder 5.0';
+    DC4_SUBFORMAT_VERSION_4 = '(De)Coder 5.x';
   const
     DC4_SUBFORMAT_VERSION: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of string = (
       DC4_SUBFORMAT_VERSION_0,
@@ -1128,10 +1128,20 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
     );
 
   resourcestring
-    CIPHER_FILLMODE_NAMES_0 = 'Bytes';
+    CIPHER_PADDINGMODE_NAMES_0 = 'None';
+    CIPHER_PADDINGMODE_NAMES_1 = 'PKCS#5';
+    CIPHER_PADDINGMODE_NAMES_2 = 'PKCS#7';
+    CIPHER_PADDINGMODE_NAMES_3 = 'ANSI X9.23';
+    CIPHER_PADDINGMODE_NAMES_4 = 'ISO 10126';
+    CIPHER_PADDINGMODE_NAMES_5 = 'ISO 7816';
   const
-    CIPHER_FILLMODE_NAMES: array[Low(TBlockFillMode)..High(TBlockFillMode)] of string = (
-      CIPHER_FILLMODE_NAMES_0
+    CIPHER_PADDINGMODE_NAMES: array[Low(TPaddingMode)..High(TPaddingMode)] of string = (
+      CIPHER_PADDINGMODE_NAMES_0,
+      CIPHER_PADDINGMODE_NAMES_1,
+      CIPHER_PADDINGMODE_NAMES_2,
+      CIPHER_PADDINGMODE_NAMES_3,
+      CIPHER_PADDINGMODE_NAMES_4,
+      CIPHER_PADDINGMODE_NAMES_5
     );
 
   resourcestring
@@ -1180,7 +1190,7 @@ resourcestring
   SCipherIvSize_D  = 'Cipher IV Size: %d';
   SCipherIvFillByte_S = 'Cipher IV Fill Byte: %s';
   SCipherMode_S = 'Cipher Mode: %s';
-  SCipherBlockFillingMode_S = 'Cipher Block Filling Mode: %s';
+  SCipherPaddingMode_S = 'Cipher Padding Mode: %s';
   SGcmAuthTagSize_D = 'GCM Auth Tag Size: %d bits';
   SMAC_S = 'Message Authentication: %s';
 begin
@@ -1223,8 +1233,7 @@ begin
   sl.Add(Format(SCipherIvSize_D, [fi.Parameters.IVSizeInBytes]));
   sl.Add(Format(SCipherIvFillByte_S, ['0x'+IntToHex(fi.Parameters.IvFillByte,2)]));
   sl.Add(Format(SCipherMode_S, [CIPHER_MODE_NAMES[fi.Parameters.CipherMode]]));
-  // Commented out, because DEC currently doesn't use it
-  //sl.Add(Format(SCipherBlockFillingMode_S, [CIPHER_FILLMODE_NAMES[fi.FillMode]]));
+  sl.Add(Format(SCipherPaddingMode_S, [CIPHER_PADDINGMODE_NAMES[fi.Parameters.PaddingMode]]));
   if fi.Parameters.CipherMode = cmGCM then
     sl.Add(Format(SGcmAuthTagSize_D, [fi.Parameters.GCMAuthTagSizeInBytes*8]));
   sl.Add(Format(SMAC_S, [INTEGRITY_CHECK_INFO[fi.Parameters.Dc4FormatVersion]]));
@@ -1357,7 +1366,7 @@ begin
       CipherClass := AParameters.CipherClass;
       Cipher := CipherClass.Create;
       Cipher.Mode := AParameters.CipherMode;
-      Cipher.FillMode := AParameters.BlockFillMode;
+      Cipher.PaddingMode := AParameters.PaddingMode;
       GCMAuthTagSizeInBytes := AParameters.GCMAuthTagSizeInBytes;
 
       FileNameUserPasswordEncrypted := AParameters.ContainFileOrigName = fpEncryptWithUserKey;
@@ -1488,7 +1497,7 @@ begin
             Assert(False);
         end;
         {$ENDREGION}
-        Cipher.Init(FileNameKey, IV, IvFillByte);
+        Cipher.Init(FileNameKey, IV, IvFillByte, Cipher.PaddingMode);
         try
           if Length(OrigName) mod 2 <> 0 then OrigName := OrigName + #0; // should not happen, otherwise it is no valid UTF-16!
           OrigNameEncrypted := BytesToRawByteString(TDECFormattedCipher(Cipher).EncodeBytes(BytesOf(OrigName)));
@@ -1576,10 +1585,10 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '7.7 Cipher block filling mode (only version 4+; currently unused by DEC)'}
+      {$REGION '7.7 Cipher padding mode (only version 4+; currently unused by DEC)'}
       if V >= fvDc50 then
       begin
-        tempstream.WriteByte(Ord(Cipher.FillMode));
+        tempstream.WriteByte(Ord(Cipher.PaddingMode));
       end;
       {$ENDREGION}
 
@@ -1611,7 +1620,7 @@ begin
       {$ENDREGION}
 
       {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
-      Cipher.Init(Key, IV, IvFillByte);
+      Cipher.Init(Key, IV, IvFillByte, Cipher.PaddingMode);
       try
         Source.Position := 0;
         if V = fvHagenReddmannExample then
@@ -1759,7 +1768,7 @@ var
   IsFolder: boolean;
   PbkdfIterations: Long;
   OrigNameEncrypted: RawByteString;
-  iBlockFillMode: Byte;
+  iPaddingMode: Byte;
   cMac: RawByteString;
   iTmp: integer;
   OnlyReadFileInfo: boolean;
@@ -1780,7 +1789,7 @@ resourcestring
   SFormatNotSupported = 'Format not supported';
   SUnsupportedFileFormatVersion = 'Unsupported file format version. Please try downloading the latest version of (De)Coder';
   SInvalidFileName = 'Invalid file name';
-  SInvalidBlockFillingMode = 'Invalid block filling mode';
+  SInvalidPaddingMode = 'Invalid padding mode';
   SInvalidKdfVersion = 'Invalid KDF version';
   SEmptyPasswordNotAllowed = 'An empty password is not allowed';
   SVerifyHMac = 'Verify HMAC';
@@ -2044,17 +2053,17 @@ begin
           IvFillByte := $FF;
         {$ENDREGION}
 
-        {$REGION '7.7 Cipher block filling mode (only version 4+; currently unused by DEC)'}
+        {$REGION '7.7 Cipher padding mode (only version 4+; currently unused by DEC)'}
         if V >= fvDc50 then
         begin
-          iBlockFillMode := Source.ReadByte;
-          if integer(iBlockFillMode) > Ord(High(TBlockFillMode)) then
-            raise Exception.Create(SInvalidBlockFillingMode);
-          Cipher.FillMode := TBlockFillMode(iBlockFillMode);
+          iPaddingMode := Source.ReadByte;
+          if integer(iPaddingMode) > Ord(High(TPaddingMode)) then
+            raise Exception.Create(SInvalidPaddingMode);
+          Cipher.PaddingMode := TPaddingMode(iPaddingMode);
         end
         else
         begin
-          Cipher.FillMode := TBlockFillMode.fmByte;
+          Cipher.PaddingMode := TPaddingMode.pmNone;
         end;
         {$ENDREGION}
 
@@ -2139,7 +2148,7 @@ begin
         {$REGION '9. Encrypted data (version 0 with length prefix, version 1+ without)'}
         if not OnlyReadFileInfo then
         begin
-          Cipher.Init(Key, IV, IvFillByte);
+          Cipher.Init(Key, IV, IvFillByte, Cipher.PaddingMode);
           try
             if V = fvHagenReddmannExample then
             begin
@@ -2213,7 +2222,7 @@ begin
           end
           else
           begin
-            Cipher.Init(Key, IV, IvFillByte);
+            Cipher.Init(Key, IV, IvFillByte, Cipher.PaddingMode);
             try
               OrigNameEncrypted := BytesToRawByteString(TDECFormattedCipher(Cipher).DecodeBytes(BytesOf(OrigNameEncrypted)));
               if Length(OrigNameEncrypted) mod 2 <> 0 then OrigNameEncrypted := OrigNameEncrypted + #0; // should not happen, otherwise it is no valid UTF-16!
@@ -2351,7 +2360,7 @@ begin
         result.Parameters.HashClass := HashClass;
         result.Parameters.CipherClass := CipherClass;
         result.Parameters.CipherMode := Cipher.Mode;
-        result.Parameters.BlockFillMode := Cipher.FillMode;
+        result.Parameters.PaddingMode := Cipher.PaddingMode;
         if (V = fvDc41FinalCancelled) and FileNameUserPasswordEncrypted then
           result.Parameters.ContainFileOrigName := fpEncryptWithUserKey
         else if (V >= fvDc50) and (OrigName = '') then

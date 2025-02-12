@@ -386,7 +386,7 @@ type
     procedure Done; override;
 
     /// <summary>
-    ///   Returns a list of CalculatedAuthenticationResult lenghts explicitely
+    ///   Returns a list of CalculatedAuthenticationResult lengths explicitely
     ///   specified by the official specification of the standard.
     /// </summary>
     /// <returns>
@@ -1244,7 +1244,7 @@ begin
 end;
 
 {$IFDEF DEC3_CMCTS}
-procedure DecodeCTS3(Source, Dest: PUInt8Array; Size: Integer);
+procedure TDECCipherModes.DecodeCTS3(Source, Dest: PUInt8Array; Size: Integer);
 var
   I: Integer;
   F, B, T: PUInt8Array;

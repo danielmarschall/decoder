@@ -58,9 +58,13 @@ type
 
   /// <summary>
   ///   Padding used to fill the last incomplete block of a block encryption
-  ///   algorithm. To be expanded in a future version
+  ///   algorithm.
   /// </summary>
-  TBlockFillMode = (fmByte);
+  /// <remark>
+  ///   Try to avoid pmPKCS5, as this is a subset of pmPKCS7 anyway and replaced
+  ///   by that one
+  /// </remark>
+  TPaddingMode = (pmNone, pmPKCS5, pmPKCS7, pmANSI_X9_23 , pmISO10126, pmISO7816);
 
   /// <summary>
   ///   Record containing meta data about a certain cipher
@@ -112,9 +116,6 @@ type
   ///   csNew : cipher isn't initialized, .Init() must be called before en/decode
   /// </para>
   /// <para>
-  ///   csNew : cipher isn't initialized, .Init() must be called before en/decode
-  /// </para>
-  /// <para>
   ///   csInitialized : cipher is initialized by .Init(), i.e. Keysetup was processed
   /// </para>
   /// <para>
@@ -128,10 +129,11 @@ type
   ///                   be processed, the cipher is blocked
   /// </para>
   /// <para>
-  ///   csDone : Processing is finished and Cipher.Done was called. Now new En/Decoding
+  ///   csDone : Processing is finished and Cipher.Done was called. Now, new En/Decoding
   ///            can be started without calling .Init() before. csDone is basically
   ///            identical to csInitialized, except Cipher.Buffer holds the encrypted
-  ///            last state of Cipher.Feedback, thus Cipher.Buffer can be used as C-MAC.
+  ///            last state of Cipher.Feedback which can be used as
+  ///            Cipher-based message authentication code (CMAC).
   /// </para>
   /// </summary>
   TCipherState = (csNew, csInitialized, csEncode, csDecode, csPadded, csDone);
@@ -226,15 +228,17 @@ type
     ///   This is the size of FData in byte
     /// </summary>
     FDataSize : Integer;
+  private
+    procedure SetPaddingMode(const Value: TPaddingMode);
   strict protected
     /// <summary>
-    ///   Padding mode used to concatenate/connect blocks in a block cipher
+    ///   Block chaining mode used to concatenate/connect blocks in a block cipher
     /// </summary>
     FMode     : TCipherMode;
     /// <summary>
-    ///   Mode used for filling up an incomplete last block in a block cipher
+    ///   Padding mode can be used for filling up an incomplete last block in a block cipher
     /// </summary>
-    FFillMode : TBlockFillMode;
+    FPaddingMode : TPaddingMode;
     /// <summary>
     ///   Current processing state
     /// </summary>
@@ -252,6 +256,8 @@ type
     ///   Some algorithms, mostly the cipher mode ones, need a temporary buffer
     ///   to work with. Some other methods like Done or Valid cipher need to pass
     ///   a buffer as parameter as that is ecpected by the called method.
+    ///   If Done was called, FBuffer contains a C-MAC which is the encryption
+    ///   of the last block concatention feedback.
     /// </summary>
     FBuffer: PUInt8Array;
 
@@ -296,7 +302,7 @@ type
     ///   FAdditionalBuffer points to as well, and for some algorithms this part
     ///   of the memory may not be altered during initialization so it is
     ///   backupped to this memory location and restored after the IV got encrypted.
-    ///   In DoDone it needs to be restored as well to prevent any unwanted
+    ///   In Done it needs to be restored as well to prevent any unwanted
     ///   leftovers which might pose a security issue.
     /// </summary>
     FAdditionalBufferBackup: Pointer;
@@ -325,6 +331,12 @@ type
     ///   Size of the key passed in bytes.
     /// </param>
     procedure DoInit(const Key; Size: Integer); virtual; abstract;
+
+    /// <summary>
+    ///   Assignes the right padding class to the class type field. Used only
+    ///   from DECCipherFormats downwards.
+    /// </summary>
+    procedure InitPaddingClass; virtual; abstract;
     /// <summary>
     ///   Allows to run code after the initialization vector has been initialized
     ///   inside the Init call, which is after DoInit has been called.
@@ -372,7 +384,7 @@ type
     procedure SecureErase; virtual;
 
     /// <summary>
-    ///   Returns the currently set cipher block mode, means how blocks are
+    ///   Returns the currently set block chaining mode, means how blocks are
     ///   linked to each other in order to avoid certain attacks.
     /// </summary>
     function GetMode: TCipherMode;
@@ -444,7 +456,8 @@ type
     constructor Create; override;
     /// <summary>
     ///   Frees internal structures and where necessary does so in a save way so
-    ///   that data in those structures cannot be "stolen".
+    ///   that data in those structures cannot be "stolen". It removes the key
+    ///   from RAM.
     /// </summary>
     destructor Destroy; override;
 
@@ -479,12 +492,15 @@ type
     ///   Size of the initialization vector in bytes
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key; Size: Integer; const IVector; IVectorSize: Integer; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key; Size: Integer; const IVector; IVectorSize: Integer; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     /// <summary>
     ///   Initializes the cipher with the necessary encryption/decryption key
     /// </summary>
@@ -500,12 +516,15 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: TBytes; const IVector: TBytes; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: TBytes; const IVector: TBytes; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     /// <summary>
     ///   Initializes the cipher with the necessary encryption/decryption key
     /// </summary>
@@ -521,12 +540,15 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: RawByteString; const IVector: RawByteString = ''; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: RawByteString; const IVector: RawByteString = '';
+      IFiller: Byte = $FF; PaddingMode: TPaddingMode = pmNone); overload;
     {$IFDEF ANSISTRINGSUPPORTED}
     /// <summary>
     ///   Initializes the cipher with the necessary encryption/decryption key.
@@ -544,12 +566,15 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: AnsiString; const IVector: AnsiString = ''; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: AnsiString; const IVector: AnsiString = '';
+                   IFiller: Byte = $FF;  PaddingMode: TPaddingMode = pmNone); overload;
     {$ENDIF}
     {$IFNDEF NEXTGEN}
     /// <summary>
@@ -568,18 +593,22 @@ type
     ///   Mode property
     /// </param>
     /// <param name="IFiller">
-    ///   optional parameter defining the value with which the last block will
-    ///   be filled up if the size of the data to be processed cannot be divided
-    ///   by block size without reminder. Means: if the last block is not
-    ///   completely filled with data.
+    ///   Optional parameter defining the value with which the initialization
+    ///   vector is prefilled. So it will contain something defined in any unused
+    ///   bytes if a value shorter than the required IV size is given for the IV.
     /// </param>
-    procedure Init(const Key: WideString; const IVector: WideString = ''; IFiller: Byte = $FF); overload;
+    /// <param name="PaddingMode">
+    ///   optional parameter defining the padding mode instead of using IFiller byte.
+    /// </param>
+    procedure Init(const Key: WideString; const IVector: WideString = ''; IFiller: Byte = $FF;
+      PaddingMode: TPaddingMode = pmNone); overload;
     {$ENDIF}
 
     /// <summary>
     ///   Properly finishes the cryptographic operation. It needs to be called
-    ///   at the end of encrypting or decrypting data, otherwise the last block
-    ///   or last byte of the data will not be properly processed.
+    ///   at the end of encrypting or decrypting data. It does NOT remove the
+    ///   keys from RAM (this will be done in the destruction only).
+    ///   You can continue encrypting/decrypting without calling Init() again.
     /// </summary>
     procedure Done; virtual;
 
@@ -694,20 +723,36 @@ type
     ///   Exception raised if the length of the data passed as <c>Source</c>
     ///   is not a multiple of the algorithm's block size.
     /// </exception>
-    function DecodeBytes(const Source: TBytes; Format: TDECFormatClass = nil): TBytes;
+    function DecodeBytes(const Source: TBytes; Format: TDECFormatClass): TBytes;
 
-    // CalcMACBytes deferred since the current implementation would neither be
-    // performant (that would require another TFormatBase.Encode variant from
-    // pointer to TBytes and that would require a new method name as overloads
-    // may not differ in return values only and it would require a lot of unit
-    // tests to get implemented. Deferred in particular also due to not yet
-    // really understanding the purpose of CalcMAC
-//    function CalcMACByte(Format: TDECFormatClass = nil): TBytes; overload;
+    /// <summary>
+    ///   Calculates a Cipher-based message authentication code (CMAC).
+    ///   This is the encryption of the last block concatenation feedback value.
+    ///   In decryption scenarios it can be used to check if the data arrived
+    ///   unaltered if the sender provides the MAC value along with the encrypted
+    ///   text. Both need to match after decrypting. Using this method is less
+    ///   secure than using the HMAC algorithm!
+    ///   This method cannot be used in the ECB cipher mode.
+    ///   Side effect: "Done" will be called if it hasn't been called before.
+    /// </summary>
+    /// <param name="Format">
+    ///   Optional parameter. Here a formatting method can be passed. The
+    ///   data to be decrypted will be formatted with this function, if one
+    ///   has been passed. Examples are hex or base 64 formatting.
+    ///   This is used for removing a formatting applied by the EncodeRawByteString
+    ///   method.
+    /// </param>
+    /// <returns>
+    ///   Calculates a Cipher-based message authentication code (CMAC).
+    /// </returns>
+    /// <exception cref="EDECCipherException">
+    ///   Exception raised the cipher mode is ECB.
+    /// </exception>
+    { TODO: Add unit test }
+    function CalcMAC(Format: TDECFormatClass = nil): RawByteString;
 
-    // Deprecated directive commented out, as replacement CalcMACByte has not
-    // been implemented yet, see remark above. Use case for CalcMAC is not clear
-    // yet either.
-    function CalcMAC(Format: TDECFormatClass = nil): RawByteString; overload; //deprecated 'please use the TBytes based overload';
+    /// Same as CalcMAC, but return TBytes
+    function CalcMACBytes(Format: TDECFormatClass = nil): TBytes;
 
     // properties
 
@@ -748,9 +793,9 @@ type
     /// <summary>
     ///   Mode used for filling up an incomplete last block in a block cipher
     /// </summary>
-    property FillMode: TBlockFillMode
-      read   FFillMode
-      write  FFillMode;
+    property PaddingMode: TPaddingMode
+      read   FPaddingMode
+      write  SetPaddingMode;
   end;
 
 /// <summary>
@@ -811,6 +856,7 @@ resourcestring
   sIVMaterialTooLarge   = 'Initvector is too large for use (Security Issue)';
   sInvalidMACMode       = 'Invalid Cipher mode to compute MAC';
   sCipherNoDefault      = 'No default cipher has been registered';
+  sInvalidUseOfPadding  = 'No padding for stream cipher allowed';
 
 var
   /// <summary>
@@ -876,8 +922,8 @@ begin
   else
     FAdditionalBufferBackup := nil;
 
-  FFillMode := fmByte;
-  FState    := csNew;
+  self.PaddingMode := pmNone;
+  FState           := csNew;
 
   SecureErase;
 end;
@@ -908,6 +954,12 @@ begin
   end;
 end;
 
+procedure TDECCipher.SetPaddingMode(const Value: TPaddingMode);
+begin
+  FPaddingMode := Value;
+  InitPaddingClass;
+end;
+
 procedure TDECCipher.CheckState(States: TCipherStates);
 begin
   if not (FState in States) then
@@ -936,12 +988,20 @@ begin
   raise EDECAbstractError.Create(GetShortClassName);
 end;
 
-procedure TDECCipher.Init(const Key; Size: Integer; const IVector; IVectorSize: Integer; IFiller: Byte);
+procedure TDECCipher.Init(const Key; Size: Integer; const IVector;
+                          IVectorSize: Integer; IFiller: Byte;
+                          PaddingMode: TPaddingMode);
 var
   OriginalInitVector : TBytes;
 begin
   FState          := csNew;
   FInitVectorSize := IVectorSize;
+
+  // stream ciphers have no padding modes
+  if (PaddingMode <> pmNone) and (ctStream in Context.CipherType) then
+    raise EDECCipherException.CreateRes(@sInvalidUseOfPadding);
+  self.PaddingMode := PaddingMode;
+
   SecureErase;
 
   if (Size > Context.KeySize) and (not (ctNull in Context.CipherType)) then
@@ -961,7 +1021,7 @@ begin
   if (IVectorSize > 0) then
     Move(IVector, OriginalInitVector[0], IVectorSize);
 
-  // GCM needs same treatment as empty IV even if IV specified
+  // GCM needs same treatment of empty IV even if IV specified
   if (IVectorSize = 0) or (FMode = cmGCM) then
   begin
     DoEncode(FInitializationVector, FInitializationVector, FBufferSize);
@@ -979,96 +1039,107 @@ begin
   FState := csInitialized;
 end;
 
-procedure TDECCipher.Init(const Key: TBytes; const IVector: TBytes; IFiller: Byte = $FF);
+procedure TDECCipher.Init(const Key     : TBytes;
+                          const IVector : TBytes;
+                          IFiller       : Byte;
+                          PaddingMode   : TPaddingMode);
 begin
   // GCM allows empty key as the authentication still works
   if (Length(Key) = 0) and (not (ctNull in Context.CipherType)) and
-     (not (FMode = cmGCM)) and
-     (Context.KeySize > 0) then // added Daniel Marschall 06.05.2024, PR https://github.com/MHumm/DelphiEncryptionCompendium/pull/68
+     (not (FMode = cmGCM)) and (Context.KeySize > 0) then
     raise EDECCipherException.CreateRes(@sNoKeyMaterialGiven);
 
   if IVector <> nil then
-    Init(Key[0], Length(Key), IVector[0], Length(IVector), IFiller)
+    Init(Key[0], Length(Key), IVector[0], Length(IVector), IFiller, PaddingMode)
   else
-    Init(Key[0], Length(Key), NullStr, 0, IFiller);
+    Init(Key[0], Length(Key), NullStr, 0, IFiller, PaddingMode);
 end;
 
 procedure TDECCipher.Init(const Key     : RawByteString;
-                          const IVector : RawByteString = '';
-                          IFiller       : Byte = $FF);
+                          const IVector : RawByteString;
+                          IFiller       : Byte;
+                          PaddingMode   : TPaddingMode);
 begin
   // GCM allows empty key as the authentication still works
   if (Length(Key) = 0) and (not (ctNull in Context.CipherType)) and
-     (not (FMode = cmGCM)) and
-     (Context.KeySize > 0) then // added Daniel Marschall 06.05.2024, PR https://github.com/MHumm/DelphiEncryptionCompendium/pull/68
+     (not (FMode = cmGCM)) and (Context.KeySize > 0) then
     raise EDECCipherException.CreateRes(@sNoKeyMaterialGiven);
 
   if Length(IVector) > 0 then
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]),
-         IVector[Low(IVector)], Length(IVector) * SizeOf(IVector[Low(IVector)]), IFiller)
+         IVector[Low(IVector)], Length(IVector) * SizeOf(IVector[Low(IVector)]),
+         IFiller, PaddingMode)
     {$ELSE}
     Init(Key[1], Length(Key) * SizeOf(Key[1]),
-         IVector[1], Length(IVector) * SizeOf(IVector[1]), IFiller)
+         IVector[1], Length(IVector) * SizeOf(IVector[1]), IFiller, PaddingMode)
     {$ENDIF}
   else
     {$IFDEF HAVE_STR_LIKE_ARRAY}
-    Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]), NullStr, 0, IFiller);
+    Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]), NullStr, 0, IFiller,
+      PaddingMode);
     {$ELSE}
-    Init(Key[1], Length(Key) * SizeOf(Key[1]), NullStr, 0, IFiller);
+    Init(Key[1], Length(Key) * SizeOf(Key[1]), NullStr, 0, IFiller, PaddingMode);
     {$ENDIF}
 end;
 
 
 {$IFDEF ANSISTRINGSUPPORTED}
-procedure TDECCipher.Init(const Key, IVector: AnsiString; IFiller: Byte);
+procedure TDECCipher.Init(const Key, IVector: AnsiString;
+                          IFiller: Byte;
+                          PaddingMode: TPaddingMode);
 begin
+  // GCM allows empty key as the authentication still works
   if (Length(Key) = 0) and (not (ctNull in Context.CipherType)) and
-     (not (FMode = cmGCM)) and
-     (Context.KeySize > 0) then // added Daniel Marschall 06.05.2024, PR https://github.com/MHumm/DelphiEncryptionCompendium/pull/68
+     (not (FMode = cmGCM)) and (Context.KeySize > 0) then
     raise EDECCipherException.Create(sNoKeyMaterialGiven);
 
   if Length(IVector) > 0 then
     {$IF CompilerVersion >= 24.0}
     Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]),
-         IVector[Low(IVector)], Length(IVector) * SizeOf(Low(IVector)), IFiller)
+         IVector[Low(IVector)], Length(IVector) * SizeOf(Low(IVector)),
+         IFiller, PaddingMode)
     {$ELSE}
     Init(Key[1], Length(Key) * SizeOf(Key[Low(Key)]),
-         IVector[IVector[1]], Length(IVector) * SizeOf(IVector[1]), IFiller)
+         IVector[IVector[1]], Length(IVector) * SizeOf(IVector[1]), IFiller,
+         PaddingMode)
     {$IFEND}
   else
     {$IF CompilerVersion >= 24.0}
-    Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]), NullStr, 0, IFiller);
+    Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]), NullStr, 0, IFiller,
+         PaddingMode);
     {$ELSE}
-    Init(Key[1], Length(Key) * SizeOf(Key[1]), NullStr, 0, IFiller);
+    Init(Key[1], Length(Key) * SizeOf(Key[1]), NullStr, 0, IFiller, PaddingMode);
     {$IFEND}
 end;
 {$ENDIF}
 
 
 {$IFNDEF NEXTGEN}
-procedure TDECCipher.Init(const Key, IVector: WideString; IFiller: Byte);
+procedure TDECCipher.Init(const Key, IVector : WideString;
+                          IFiller            : Byte;
+                          PaddingMode        : TPaddingMode);
 begin
   // GCM allows empty key as the authentication still works
   if (Length(Key) = 0) and (not (ctNull in Context.CipherType)) and
-     (not (FMode = cmGCM)) and
-     (Context.KeySize > 0) // added Daniel Marschall 06.05.2024, PR https://github.com/MHumm/DelphiEncryptionCompendium/pull/68
-  then
+     (not (FMode = cmGCM)) and (Context.KeySize > 0) then
     raise EDECCipherException.CreateRes(@sNoKeyMaterialGiven);
 
   if Length(IVector) > 0 then
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]),
-         IVector[Low(IVector)], Length(IVector) * SizeOf(IVector[Low(IVector)]), IFiller)
+         IVector[Low(IVector)], Length(IVector) * SizeOf(IVector[Low(IVector)]),
+         IFiller, PaddingMode)
     {$ELSE}
     Init(Key[1], Length(Key) * SizeOf(Key[1]),
-         IVector[1], Length(IVector) * SizeOf(IVector[1]), IFiller)
+         IVector[1], Length(IVector) * SizeOf(IVector[1]), IFiller, PaddingMode)
     {$ENDIF}
   else
     {$IFDEF HAVE_STR_LIKE_ARRAY}
-    Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]), NullStr, 0, IFiller);
+    Init(Key[Low(Key)], Length(Key) * SizeOf(Key[Low(Key)]), NullStr, 0, IFiller,
+         PaddingMode);
     {$ELSE}
-    Init(Key[1], Length(Key) * SizeOf(Key[1]), NullStr, 0, IFiller);
+    Init(Key[1], Length(Key) * SizeOf(Key[1]), NullStr, 0, IFiller, PaddingMode);
     {$ENDIF}
 end;
 {$ENDIF}
@@ -1144,7 +1215,7 @@ begin
     // This has been fixed in 10.3.0 Rio
     b := ValidFormat(Format).Decode(BytesOf(Source));
 
-    SetLength(Result, Length(b)); // PR https://github.com/MHumm/DelphiEncryptionCompendium/pull/69
+    SetLength(Result, Length(b));
 
     {$IFDEF HAVE_STR_LIKE_ARRAY}
     DoDecode(@b[0], @Result[Low(Result)], Length(Result) * SizeOf(Result[Low(Result)]));
@@ -1164,27 +1235,19 @@ begin
   end;
 end;
 
-
 function TDECCipher.CalcMAC(Format: TDECFormatClass): RawByteString;
 begin
-  Done;
+  Done; { TODO: This might be considered as unwanted side effect. Maybe we should instead raise an Exception if State is not csDone instead? This would also "teach" the user to don't forget to call "Done". }
   if FMode in [cmECBx] then
     raise EDECException.CreateRes(@sInvalidMACMode)
   else
     Result := ValidFormat(Format).Encode(FBuffer^, FBufferSize);
-  { TODO : How to rewrite? EncodeBytes cannot be called directly like that }
 end;
 
-//function TDECCipher.CalcMACByte(Format: TDECFormatClass): TBytes;
-//begin
-//  Done;
-//  if FMode in [cmECBx] then
-//    raise EDECCipherException.Create(sInvalidMACMode)
-//  else
-//  begin
-//    Result := System.SysUtils.BytesOf(ValidFormat(Format).Encode(FBuffer^, FBufferSize));
-//  end;
-//end;
+function TDECCipher.CalcMACBytes(Format: TDECFormatClass): TBytes;
+begin
+  Result := System.SysUtils.BytesOf(CalcMAC);
+end;
 
 {$IFDEF RESTORE_RANGECHECKS}{$R+}{$ENDIF}
 {$IFDEF RESTORE_OVERFLOWCHECKS}{$Q+}{$ENDIF}

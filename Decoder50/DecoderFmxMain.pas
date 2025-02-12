@@ -113,6 +113,7 @@ var
   fp: TDC4Parameters;
   RepeatedPassword: string;
   iKey: integer;
+  ButtonTag: integer;
 resourcestring
   STextFiles = 'Text files';
   SAllFiles = 'All files';
@@ -125,8 +126,9 @@ resourcestring
 begin
   if FChosenFile = '' then exit;
   try
+    ButtonTag := TButton(Sender).Tag;
     TButton(Sender).Tag := -TButton(Sender).Tag; // disable "double clicking"
-    case TButton(Sender).Tag of
+    case ButtonTag of
       {$REGION '(De)Coder 1.0 decrypt'}
       TAG_DC10_DECRYPT:
       begin
@@ -142,7 +144,7 @@ begin
         end;
       end;
       {$ENDREGION}
-      {$REGION '(De)Coder 4.x/5.0 decrypt'}
+      {$REGION '(De)Coder 4.x/5.x decrypt'}
       TAG_DC4X_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
@@ -159,7 +161,7 @@ begin
         end;
       end;
       {$ENDREGION}
-      {$REGION '(De)Coder 5.0 encrypt'}
+      {$REGION '(De)Coder 5.x encrypt'}
       TAG_DC50_ENCRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
@@ -451,10 +453,10 @@ resourcestring
   SEncryptedDc10 = 'This file was encrypted using (De)Coder 1.0';
   SDoYouWantDecrypt = 'Do you want to decrypt it now?';
   SDecrypt = 'Decrypt';
-  SEncryptedDc50 = 'This file was encrypted using (De)Coder 5.0';
+  SEncryptedDc50 = 'This file was encrypted using (De)Coder 5.x';
   SEncryptedDc41Beta = 'This file was encrypted using (De)Coder 4.1 Beta';
   SEncryptedDc40 = 'This file was encrypted using (De)Coder 4.0';
-  SNoValidDc45File = 'This is not a valid (De)Coder 4.0/5.0 file!';
+  SNoValidDc45File = 'This is not a valid (De)Coder 4.x/5.x file!';
   SThisIsAFolder = 'This is a folder which you can pack and encrypt using (De)Coder.';
   SThisIsAnUnencryptedFile = 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.';
   SDoYouWantPackAndEncrypt = 'Do you want to pack + encrypt it now?';
@@ -497,7 +499,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '(De)Coder 4.x/5.0 decrypt'}
+      {$REGION '(De)Coder 4.x/5.x decrypt'}
       try
         FDC4FileInfo := DeCoder4X_FileInfo(AFileName);
         if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
@@ -526,7 +528,7 @@ begin
       {$ENDREGION}
     end;
 
-    {$REGION '(De)Coder 5.0 encrypt'}
+    {$REGION '(De)Coder 5.x encrypt'}
     if DirectoryExists(AFileName) then
       ShortInfoLabel.Text := SThisIsAFolder + #13#10 + SDoYouWantPackAndEncrypt
     else
