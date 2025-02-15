@@ -172,7 +172,7 @@ begin
   SetLength(KeyStr, Size);
   Move(Key, KeyStr[Low(KeyStr)], Size);
   if not TryStrToInt(string(KeyStr), iKey) or (iKey<GuiLimMin) or (iKey>GuiLimMax) then
-    raise EDECException.CreateFmt(SInvalidDc21Key, [GuiLimMin, GuiLimMax]);
+    raise EDECException.CreateResFmt(@SInvalidDc21Key, [GuiLimMin, GuiLimMax]);
   SetLength(b, 256);
   try
     for i := $00 to $FF do b[i] := (i + iKey) mod 256;
@@ -200,7 +200,7 @@ begin
   SetLength(KeyStr, Size);
   Move(Key, KeyStr[Low(KeyStr)], Size);
   if not TryStrToInt(string(KeyStr), iKey) or (iKey<GuiLimMin) or (iKey>GuiLimMax) then
-    raise EDECException.CreateFmt(SInvalidDc22Key, [GuiLimMin, GuiLimMax]);
+    raise EDECException.CreateResFmt(@SInvalidDc22Key, [GuiLimMin, GuiLimMax]);
   SetLength(b, 256);
   try
     for i := $00 to $FF do b[i] := (i + iKey) mod 256;

@@ -32,7 +32,7 @@ resourcestring
   SFileNotFound = 'File %s not found';
 begin
   if not FileExists(AFileName) then
-    raise Exception.CreateFmt(SFileNotFound, [AFileName]);
+    raise Exception.CreateResFmt(@SFileNotFound, [AFileName]);
 end;
 
 procedure CheckDirectoryExists(const AFileName: string);
@@ -40,7 +40,7 @@ resourcestring
   SDirNotFound = 'Directory %s not found';
 begin
   if not DirectoryExists(AFileName) then
-    raise Exception.CreateFmt(SDirNotFound, [AFileName]);
+    raise Exception.CreateResFmt(@SDirNotFound, [AFileName]);
 end;
 
 const
@@ -560,14 +560,14 @@ begin
     begin
       CheckFileExists(ParamStr(2));
       DeCoder10_EncodeFile(ParamStr(2), ParamStr(3), false, OnProgressProc);
-      WriteLn(SInfoLegacyEncrypt);
+      WriteLn(LoadResString(@SInfoLegacyEncrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC10_DeCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder10_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
-      WriteLn(SInfoLegacyDecrypt);
+      WriteLn(LoadResString(@SInfoLegacyDecrypt));
       ExitCode := 0;
     end
     {$ENDREGION}
@@ -576,14 +576,14 @@ begin
     begin
       CheckFileExists(ParamStr(2));
       DeCoder20_EncodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
-      WriteLn(SInfoLegacyEncrypt);
+      WriteLn(LoadResString(@SInfoLegacyEncrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC20_DeCrypt) and (ParamCount = 3) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder20_DecodeFile(ParamStr(2), ParamStr(3), OnProgressProc);
-      WriteLn(SInfoLegacyDecrypt);
+      WriteLn(LoadResString(@SInfoLegacyDecrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC21_EnCrypt) and (ParamCount = 4) then
@@ -591,7 +591,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder21_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
-      WriteLn(SInfoLegacyEncrypt);
+      WriteLn(LoadResString(@SInfoLegacyEncrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC21_DeCrypt) and (ParamCount = 4) then
@@ -599,7 +599,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder21_DecodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
-      WriteLn(SInfoLegacyDecrypt);
+      WriteLn(LoadResString(@SInfoLegacyDecrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC22_EnCrypt) and (ParamCount = 4) then
@@ -607,7 +607,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder22_EncodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
-      WriteLn(SInfoLegacyEncrypt);
+      WriteLn(LoadResString(@SInfoLegacyEncrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC22_DeCrypt) and (ParamCount = 4) then
@@ -615,7 +615,7 @@ begin
       CheckFileExists(ParamStr(2));
       if not TryStrToInt(ParamStr(4), iKey) then iKey := -1;
       DeCoder22_DecodeFile(ParamStr(2), ParamStr(3), iKey, OnProgressProc);
-      WriteLn(SInfoLegacyDecrypt);
+      WriteLn(LoadResString(@SInfoLegacyDecrypt));
       ExitCode := 0;
     end
     {$ENDREGION}
@@ -624,28 +624,28 @@ begin
     begin
       CheckFileExists(ParamStr(2));
       DeCoder30_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
-      WriteLn(SInfoLegacyEncrypt);
+      WriteLn(LoadResString(@SInfoLegacyEncrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC30_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder30_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
-      WriteLn(SInfoLegacyDecrypt);
+      WriteLn(LoadResString(@SInfoLegacyDecrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC32_EnCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder32_EncodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
-      WriteLn(SInfoLegacyEncrypt);
+      WriteLn(LoadResString(@SInfoLegacyEncrypt));
       ExitCode := 0;
     end
     else if SameText(ParamStr(1), Cmd_DC32_DeCrypt) and (ParamCount = 4) then
     begin
       CheckFileExists(ParamStr(2));
       DeCoder32_DecodeFile(ParamStr(2), ParamStr(3), AnsiString(ParamStr(4)), OnProgressProc);
-      WriteLn(SInfoLegacyDecrypt);
+      WriteLn(LoadResString(@SInfoLegacyDecrypt));
       ExitCode := 0;
     end
     {$ENDREGION}
@@ -714,10 +714,10 @@ begin
     else if SameText(ParamStr(1), Cmd_SecureDeleteFolder) and (ParamCount = 2) then
     begin
       CheckDirectoryExists(ParamStr(2));
-      WriteLn(SCautionDeleteFolder);
+      WriteLn(LoadResString(@SCautionDeleteFolder));
       WriteLn(RelToAbs(ParamStr(2)));
       WriteLn('');
-      CountDown(SCautionDeleteFolderCountdown_D, DeleteFolderCountDown);
+      CountDown(LoadResString(@SCautionDeleteFolderCountdown_D), DeleteFolderCountDown);
       WriteLn('');
       SecureDeleteFolder(ParamStr(2), TextCallback);
       ExitCode := 0;
@@ -728,47 +728,47 @@ begin
     begin
       OwnName := ChangeFileExt(Uppercase(ExtractFileName(ParamStr(0))),'');
 
-      WriteLn(Format('%-35s %s', [SProductName, Format(SBuilt_S, [DateTimeToStr(GetOwnBuildTimestamp)])]));
-      WriteLn(Format('%-35s %s', [SDevelopedByDanielMarschall, SDMHomepage]));
-      WriteLn(Format(SLicenseLine, []));
+      WriteLn(Format('%-35s %s', [LoadResString(@SProductName), Format(LoadResString(@SBuilt_S), [DateTimeToStr(GetOwnBuildTimestamp)])]));
+      WriteLn(Format('%-35s %s', [LoadResString(@SDevelopedByDanielMarschall), LoadResString(@SDMHomepage)]));
+      WriteLn(Format(LoadResString(@SLicenseLine), []));
       WriteLn('');
 
-      WriteLn('=== ' + SEncryptDecryptFilesAndFolders + ' ===');
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_NoInfo, SEncryptDecryptFilesAndFolders_1]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Cmd_DC50_EnCrypt_NoInfo, SEncryptDecryptFilesAndFolders_2]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_DeCrypt, SEncryptDecryptFilesAndFolders_3]));
-      WriteLn(Format('%s %-13s <InFile>                       -- %s', [OwnName, Cmd_DC50_FileInfo, SEncryptDecryptFilesAndFolders_4]));
+      WriteLn('=== ' + LoadResString(@SEncryptDecryptFilesAndFolders) + ' ===');
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_NoInfo, LoadResString(@SEncryptDecryptFilesAndFolders_1)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Cmd_DC50_EnCrypt_NoInfo, LoadResString(@SEncryptDecryptFilesAndFolders_2)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_DeCrypt, LoadResString(@SEncryptDecryptFilesAndFolders_3)]));
+      WriteLn(Format('%s %-13s <InFile>                       -- %s', [OwnName, Cmd_DC50_FileInfo, LoadResString(@SEncryptDecryptFilesAndFolders_4)]));
       WriteLn('');
 
-      WriteLn('=== ' + SSupportLegacyFormats + ' ===');
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC10_EnCrypt, SSupportLegacyFormats_1]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC10_DeCrypt, SSupportLegacyFormats_2]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC20_EnCrypt, SSupportLegacyFormats_3]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC20_DeCrypt, SSupportLegacyFormats_4]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- %s', [OwnName, Cmd_DC21_EnCrypt, SSupportLegacyFormats_5]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- %s', [OwnName, Cmd_DC21_DeCrypt, SSupportLegacyFormats_6]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- %s', [OwnName, Cmd_DC22_EnCrypt, SSupportLegacyFormats_7]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- %s', [OwnName, Cmd_DC22_DeCrypt, SSupportLegacyFormats_8]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC30_EnCrypt, SSupportLegacyFormats_9]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC30_DeCrypt, SSupportLegacyFormats_10]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC32_EnCrypt, SSupportLegacyFormats_11]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC32_DeCrypt, SSupportLegacyFormats_12]));
+      WriteLn('=== ' + LoadResString(@SSupportLegacyFormats) + ' ===');
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC10_EnCrypt, LoadResString(@SSupportLegacyFormats_1)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC10_DeCrypt, LoadResString(@SSupportLegacyFormats_2)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC20_EnCrypt, LoadResString(@SSupportLegacyFormats_3)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile>             -- %s', [OwnName, Cmd_DC20_DeCrypt, LoadResString(@SSupportLegacyFormats_4)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- %s', [OwnName, Cmd_DC21_EnCrypt, LoadResString(@SSupportLegacyFormats_5)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..255> -- %s', [OwnName, Cmd_DC21_DeCrypt, LoadResString(@SSupportLegacyFormats_6)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- %s', [OwnName, Cmd_DC22_EnCrypt, LoadResString(@SSupportLegacyFormats_7)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Key1..256> -- %s', [OwnName, Cmd_DC22_DeCrypt, LoadResString(@SSupportLegacyFormats_8)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC30_EnCrypt, LoadResString(@SSupportLegacyFormats_9)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC30_DeCrypt, LoadResString(@SSupportLegacyFormats_10)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC32_EnCrypt, LoadResString(@SSupportLegacyFormats_11)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC32_DeCrypt, LoadResString(@SSupportLegacyFormats_12)]));
       WriteLn('');
 
-      WriteLn('=== ' + SExtras + ' ===');
-      WriteLn(Format('%s %-13s <File>     -- %s', [OwnName, Cmd_SecureDeleteFile, SExtras_1]));
-      WriteLn(Format('%s %-13s <Folder>   -- %s', [OwnName, Cmd_SecureDeleteFolder, SExtras_2]));
+      WriteLn('=== ' + LoadResString(@SExtras) + ' ===');
+      WriteLn(Format('%s %-13s <File>     -- %s', [OwnName, Cmd_SecureDeleteFile, LoadResString(@SExtras_1)]));
+      WriteLn(Format('%s %-13s <Folder>   -- %s', [OwnName, Cmd_SecureDeleteFolder, LoadResString(@SExtras_2)]));
       {$IFDEF Debug}
       WriteLn(Format('%s %-13s          -- Run internal testcases from folder ..\TestData', [OwnName, Cmd_Debug_Testcases]));
       WriteLn(Format('%s %-13s <DirName> <CSVResultFile> -- Run entropy test on directory', [OwnName, Cmd_Debug_EntropyTest]));
       {$ENDIF}
-      WriteLn(Format('%s %-13s            -- %s', [OwnName, Cmd_Help, SExtras_3]));
+      WriteLn(Format('%s %-13s            -- %s', [OwnName, Cmd_Help, LoadResString(@SExtras_3)]));
 
       if ParamCount = 0 then
       begin
         ExitCode := 0;
         WriteLn('');
-        Write(SPressAnyKey);
+        Write(LoadResString(@SPressAnyKey));
         ReadLn;
         WriteLn('');
       end
@@ -782,7 +782,7 @@ begin
     on E: Exception do
     begin
       ExitCode := 1;
-      WriteLn(Format(SError_S, [E.Message]));
+      WriteLn(Format(LoadResString(@SError_S), [E.Message]));
       WriteLn('');
     end;
   end;
@@ -793,9 +793,9 @@ begin
   begin
     WriteLn('');
     WriteLn('');
-    WriteLn(Format(SExitCode_D, [ExitCode]));
+    WriteLn(Format(LoadResString(@SExitCode_D), [ExitCode]));
     WriteLn('');
-    Write(SPressAnyKey);
+    Write(LoadResString(@SPressAnyKey));
     ReadLn;
     WriteLn('');
   end;

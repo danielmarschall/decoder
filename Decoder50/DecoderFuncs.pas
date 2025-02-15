@@ -95,18 +95,18 @@ var
 const
   ChunkSize = $100000; // value from System.Classes
 resourcestring
-  ProgrTask = 'ZLib compress';
+  SProgrTask = 'ZLib compress';
 begin
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, ProgrTask, TDcProgressState.Started);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, LoadResString(@SProgrTask), TDcProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       CompressionStream:=TCompressionStream.Create(clMax, CompressOutputStream);
       try
         if Assigned(OnProgressProc) then
         begin
-          OnProgressProc(CompressInputStream.Size, CompressInputStream.Position, ProgrTask, TDcProgressState.Processing);
+          OnProgressProc(CompressInputStream.Size, CompressInputStream.Position, LoadResString(@SProgrTask), TDcProgressState.Processing);
           rbs := CompressInputStream.ReadRawByteString(Min(ChunkSize,CompressInputStream.Size-CompressInputStream.Position));
           CompressionStream.WriteRawByteString(rbs);
         end
@@ -120,7 +120,7 @@ begin
     finally
       FreeAndNil(CompressOutputStream);
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, ProgrTask, TDcProgressState.Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, LoadResString(@SProgrTask), TDcProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
@@ -135,18 +135,18 @@ var
 const
   ChunkSize = $100000; // value from System.Classes
 resourcestring
-  ProgrTask = 'ZLib decompress';
+  SProgrTask = 'ZLib decompress';
 begin
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, ProgrTask, TDcProgressState.Started);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, LoadResString(@SProgrTask), TDcProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       DecompressionStream := TDecompressionStream.Create(CompressInputStream);
       try
         if Assigned(OnProgressProc) then
         begin
-          OnProgressProc(DecompressionStream.Size, DecompressionStream.Position, ProgrTask, TDcProgressState.Processing);
+          OnProgressProc(DecompressionStream.Size, DecompressionStream.Position, LoadResString(@SProgrTask), TDcProgressState.Processing);
           rbs := DecompressionStream.ReadRawByteString(Min(ChunkSize,DecompressionStream.Size-DecompressionStream.Position));
           CompressOutputStream.WriteRawByteString(rbs);
         end
@@ -160,7 +160,7 @@ begin
     finally
       FreeAndNil(CompressOutputStream);
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, ProgrTask, TDcProgressState.Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, LoadResString(@SProgrTask), TDcProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
@@ -238,7 +238,7 @@ resourcestring
 begin
   if not FileExists(AFileName) then Exit(False);
 
-  if Assigned(pcb) then pcb(Format(SDeleteFile_S, [AFileName]));
+  if Assigned(pcb) then pcb(Format(LoadResString(@SDeleteFile_S), [AFileName]));
 
   ClusterSize := 32000; // max available in Windows format dialog
   try
@@ -326,7 +326,7 @@ begin
      SameText(ADirName, 'C:') or
      SameText(ADirName, '/') then
   begin
-    raise Exception.Create(SNoNuke);
+    raise Exception.CreateRes(@SNoNuke);
   end;
 
   if not DirectoryExists(ADirName) then Exit(False);
@@ -348,7 +348,7 @@ begin
       EndsStr('\', IncludeTrailingPathDelimiter(ADirNameAbs))
     );
 
-  if Assigned(pcb) then pcb(Format(SStartDeleteFolder_S, [ADirName]));
+  if Assigned(pcb) then pcb(Format(LoadResString(@SStartDeleteFolder_S), [ADirName]));
 
   if FindFirst(IncludeTrailingPathDelimiter(ADirName) + '*', faAnyFile, F) = 0 then
   begin
@@ -397,18 +397,18 @@ begin
           // Undo renaming
           if ADirName <> ADirNameRenamed then
             RenameFile(ADirNameRenamed, ADirName);
-          if Assigned(pcb) then pcb(Format(SErrorDeletingEmptyFolder_S, [ADirName]));
+          if Assigned(pcb) then pcb(Format(LoadResString(@SErrorDeletingEmptyFolder_S), [ADirName]));
           result := false;
         end
         else
         begin
-          if Assigned(pcb) then pcb(Format(SDoneDeletingFolder_S, [ADirName]));
+          if Assigned(pcb) then pcb(Format(LoadResString(@SDoneDeletingFolder_S), [ADirName]));
           result := true;
         end;
       end
       else
       begin
-        if Assigned(pcb) then pcb(Format(SErrorDeletingFolderContents_S, [ADirName]));
+        if Assigned(pcb) then pcb(Format(LoadResString(@SErrorDeletingFolderContents_S), [ADirName]));
         result := false;
       end;
     end;
@@ -509,7 +509,7 @@ var
 const
   chunksize = 4096; // bigger = faster
 resourcestring
-  ProgrTask = 'Calc shannon entropy';
+  SProgrTask = 'Calc shannon entropy';
 begin
   for i := Low(counts) to High(counts) do
     Counts[i] := 0;
@@ -519,20 +519,20 @@ begin
     filesize := fs.Size;
     ProgrPos := 0;
     ProgrSize := Filesize div chunksize;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, ProgrTask, Started);
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, LoadResString(@SProgrTask), Started);
     while fs.Position < fs.Size do
     begin
       rbs := fs.ReadRawByteString(Min(chunksize,fs.Size-fs.Position));
       for i := Low(rbs) to High(rbs) do
         Inc(counts[Ord(rbs[i])]);
       Inc(ProgrPos);
-      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, ProgrTask, Processing);
+      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, LoadResString(@SProgrTask), Processing);
       {$IFNDEF Console}
       Application.ProcessMessages;
       if Application.Terminated then Abort;
       {$ENDIF}
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, ProgrTask, Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, LoadResString(@SProgrTask), Finished);
 
     // Shannon's entropy
     // https://stackoverflow.com/questions/990477/how-to-calculate-the-entropy-of-a-file
@@ -584,12 +584,12 @@ begin
   tmp := ExtractFileExt(Filename);
   if tmp = '' then
   begin
-    Result := SUnknown;
+    Result := LoadResString(@SUnknown);
   end
   else
   begin
     tmp := Copy(tmp, 1);
-    Result := Format(SSFile, [tmp.ToUpper]);
+    Result := Format(LoadResString(@SSFile), [tmp.ToUpper]);
   end;
 {$ENDIF}
 end;
@@ -627,7 +627,7 @@ begin
   except
     // Sollte nicht passieren
     if not FileAge(ExeFile, result) then
-      raise Exception.CreateFmt(SGetBuildTimestampFailed, [ExeFile]);
+      raise Exception.CreateResFmt(@SGetBuildTimestampFailed, [ExeFile]);
   end;
 end;
 

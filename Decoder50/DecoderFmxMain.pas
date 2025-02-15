@@ -132,14 +132,14 @@ begin
       {$REGION '(De)Coder 1.0 decrypt'}
       TAG_DC10_DECRYPT:
       begin
-        SaveDialog1.Filter := STextFiles+' (*.txt)|*.txt|'+SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@STextFiles)+' (*.txt)|*.txt|'+LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
         SaveDialog1.DefaultExt := 'txt';
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
           DeCoder10_DecodeFile(FChosenFile, AOutput, OnProgressProc);
-          ShowMessage(SInfoLegacyDecrypt);
+          MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
         end;
@@ -149,7 +149,7 @@ begin
       TAG_DC4X_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
         SaveDialog1.DefaultExt := ExtractFileExt(FDC4FileInfo.OrigFileName);
         SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2, Length(SaveDialog1.DefaultExt)-1);
@@ -166,7 +166,7 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
                   Abort;
               end;
             end;
@@ -185,14 +185,14 @@ begin
           // #0 means that the password char '*' is used
           RepeatedPassword := '';
           Application.ProcessMessages; // Otherwise, the text "Please repeat the password for encryption" vanishes if the user has entered the password wrong once
-          if not InputQuery(Caption, #0 + SPleaseRepeatPassword, RepeatedPassword) then
+          if not InputQuery(Caption, #0 + LoadResString(@SPleaseRepeatPassword), RepeatedPassword) then
             Abort;
           if RepeatedPassword <> PasswordEdit.Text then
-            MessageDlg(SPasswordsDoNotMatch, TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOk], 0)
+            MessageDlg(LoadResString(@SPasswordsDoNotMatch), TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOk], 0)
           else
             break;
         end;
-        SaveDialog1.Filter := SEncryptedFiles+' (*.dc4;*.dc5)|*.dc4;*.dc5|'+SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@SEncryptedFiles)+' (*.dc4;*.dc5)|*.dc4;*.dc5|'+LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
         SaveDialog1.DefaultExt := 'dc5';
         if SaveDialog1.Execute then
@@ -221,7 +221,7 @@ begin
       TAG_DC32_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -237,12 +237,12 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
                   Abort;
               end;
             end;
           end;
-          ShowMessage(SInfoLegacyDecrypt);
+          MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
         end;
@@ -252,7 +252,7 @@ begin
       TAG_DC30_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -268,12 +268,12 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
                   Abort;
               end;
             end;
           end;
-          ShowMessage(SInfoLegacyDecrypt);
+          MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
         end;
@@ -283,7 +283,7 @@ begin
       TAG_DC22_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -300,12 +300,12 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
                   Abort;
               end;
             end;
           end;
-          ShowMessage(SInfoLegacyDecrypt);
+          MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
         end;
@@ -315,7 +315,7 @@ begin
       TAG_DC21_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -332,12 +332,12 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
                   Abort;
               end;
             end;
           end;
-          ShowMessage(SInfoLegacyDecrypt);
+          MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
         end;
@@ -347,14 +347,14 @@ begin
       TAG_DC20_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
-        SaveDialog1.Filter := SAllFiles+' (*.*)|*.*';
+        SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
           DeCoder20_DecodeFile(FChosenFile, AOutput, OnProgressProc);
-          ShowMessage(SInfoLegacyDecrypt);
+          MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
           ExplorerNavigateToFile(AOutput);
         end;
       end;
@@ -368,10 +368,10 @@ begin
         else if DirectoryExists(FChosenFile) then
           SecureDeleteFolder(FChosenFile, TextCallback)
         else
-          raise Exception.Create(SFileOrFolderNotFound);
+          raise Exception.CreateRes(@SFileOrFolderNotFound);
         FChosenFile := '';
         GuiShowChosenFile;
-        OpenedFileLabel.Text := SDestroyComplete;
+        OpenedFileLabel.Text := LoadResString(@SDestroyComplete);
         PlayEmptyRecycleBinSound;
       end;
       {$ENDREGION}
@@ -402,7 +402,7 @@ procedure TDecoderMainForm.DropTarget1Dropped(Sender: TObject; const Data: TDrag
 resourcestring
   SOnlyOneFileAllowed = 'Please only choose one file!';
 begin
-  if Length(Data.Files) > 1 then raise Exception.Create(SOnlyOneFileAllowed);
+  if Length(Data.Files) > 1 then raise Exception.CreateRes(@SOnlyOneFileAllowed);
   try
     OpenFile(Data.Files[0]);
   except
@@ -477,21 +477,21 @@ resourcestring
   S_IntroLine_11 = '';
   SProductTitle = 'ViaThinkSoft (De)Coder 5.1';
 begin
-  Caption := SProductTitle;
-  OpenedFileLabel.Text := SProductTitle;
+  Caption := LoadResString(@SProductTitle);
+  OpenedFileLabel.Text := LoadResString(@SProductTitle);
   ShortInfoLabel.Text :=
-    Format(S_IntroLine_0_S, [DateTimeToStr(GetOwnBuildTimestamp)]) + #13#10 +
-    S_IntroLine_1 + #13#10 +
-    S_IntroLine_2 + #13#10 +
-    S_IntroLine_3 + #13#10 +
-    S_IntroLine_4 + #13#10 +
-    S_IntroLine_5 + #13#10 +
-    S_IntroLine_6 + #13#10 +
-    S_IntroLine_7 + #13#10 +
-    S_IntroLine_8 + #13#10 +
-    S_IntroLine_9 + #13#10 +
-    S_IntroLine_10 + #13#10 +
-    S_IntroLine_11;
+    Format(LoadResString(@S_IntroLine_0_S), [DateTimeToStr(GetOwnBuildTimestamp)]) + #13#10 +
+    LoadResString(@S_IntroLine_1) + #13#10 +
+    LoadResString(@S_IntroLine_2) + #13#10 +
+    LoadResString(@S_IntroLine_3) + #13#10 +
+    LoadResString(@S_IntroLine_4) + #13#10 +
+    LoadResString(@S_IntroLine_5) + #13#10 +
+    LoadResString(@S_IntroLine_6) + #13#10 +
+    LoadResString(@S_IntroLine_7) + #13#10 +
+    LoadResString(@S_IntroLine_8) + #13#10 +
+    LoadResString(@S_IntroLine_9) + #13#10 +
+    LoadResString(@S_IntroLine_10) + #13#10 +
+    LoadResString(@S_IntroLine_11);
   ProgressBar1.Visible := false; // will be automatically shown and hidden by OnProgressProc
   ProgressStepLabel.Visible := false;
   GuiShowElements([]);
@@ -504,7 +504,7 @@ begin
   ComboBox1.ItemIndex := CB1_IDX_DC45;
   try
     if ParamCount > 1 then
-      MessageDlg(SPleaseChooseOnlyOneFile, TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOK], 0)
+      MessageDlg(LoadResString(@SPleaseChooseOnlyOneFile), TMsgDlgType.mtWarning, [TMsgDlgBtn.mbOK], 0)
     else if ParamCount = 1 then
       OpenFile(ParamStr(1));
   except
@@ -529,7 +529,7 @@ resourcestring
   SEncryptedDc50 = 'This file was encrypted using (De)Coder 5.x';
   SEncryptedDc41Beta = 'This file was encrypted using (De)Coder 4.1 Beta';
   SEncryptedDc40 = 'This file was encrypted using (De)Coder 4.0';
-  SNoValidDc45File = 'This is not a valid (De)Coder 4.x/5.x file!';
+  SNoValidDc45File = 'This is not a valid (De)Coder 4.x/5.x file! (%s)';
   SThisIsAFolder = 'This is a folder which you can pack and encrypt using (De)Coder.';
   SThisIsAnUnencryptedFile = 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.';
   SDoYouWantPackAndEncrypt = 'Do you want to pack + encrypt it now?';
@@ -544,16 +544,16 @@ resourcestring
   SShredderButton = 'DESTROY';
 begin
   if not FileExists(AFileName) and not DirectoryExists(AFileName) then
-    raise Exception.CreateFmt(SFileOrFolderNotExisting, [AFileName]);
+    raise Exception.CreateResFmt(@SFileOrFolderNotExisting, [AFileName]);
 
   EncryptDecryptButton.Tag := 0;
 
   MoreInfoMemo.Lines.Clear;
   if FileExists(AFileName) then
-    MoreInfoMemo.Lines.Add(Format(SFileName_S, [ExtractFileName(AFileName)]))
+    MoreInfoMemo.Lines.Add(Format(LoadResString(@SFileName_S), [ExtractFileName(AFileName)]))
   else
-    MoreInfoMemo.Lines.Add(Format(SFolderName_S, [ExtractFileName(AFileName)]));
-  MoreInfoMemo.Lines.Add(Format(SLocation_S, [ExtractFilePath(AFileName)]));
+    MoreInfoMemo.Lines.Add(Format(LoadResString(@SFolderName_S), [ExtractFileName(AFileName)]));
+  MoreInfoMemo.Lines.Add(Format(LoadResString(@SLocation_S), [ExtractFilePath(AFileName)]));
 
   if ComboBox1.ItemIndex = CB1_IDX_DC45 then
   begin
@@ -562,9 +562,9 @@ begin
       {$REGION '(De)Coder 1.0 decrypt'}
       if DeCoder10_DetectFile(AFileName) then
       begin
-        ShortInfoLabel.Text := SEncryptedDc10 + #13#10 + SDoYouWantDecrypt;
+        ShortInfoLabel.Text := LoadResString(@SEncryptedDc10) + #13#10 + LoadResString(@SDoYouWantDecrypt) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
         EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
-        EncryptDecryptButton.Text := SDecrypt;
+        EncryptDecryptButton.Text := LoadResString(@SDecrypt);
         GuiShowElements([geStartButton]);
         FChosenFile := AFileName;
         GuiShowChosenFile;
@@ -576,15 +576,15 @@ begin
       try
         FDC4FileInfo := DeCoder4X_FileInfo(AFileName);
         if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc50 then
-          ShortInfoLabel.Text := SEncryptedDc50
+          ShortInfoLabel.Text := LoadResString(@SEncryptedDc50)
         else if FDC4FileInfo.Parameters.Dc4FormatVersion >= fvDc41Beta then
-          ShortInfoLabel.Text := SEncryptedDc41Beta
+          ShortInfoLabel.Text := LoadResString(@SEncryptedDc41Beta)
         else
-          ShortInfoLabel.Text := SEncryptedDc40;
-        ShortInfoLabel.Text := ShortInfoLabel.Text + #13#10 + SDoYouWantDecrypt;
+          ShortInfoLabel.Text := LoadResString(@SEncryptedDc40);
+        ShortInfoLabel.Text := ShortInfoLabel.Text + #13#10 + LoadResString(@SDoYouWantDecrypt);
         DeCoder4X_PrintFileInfo(FDC4FileInfo, MoreInfoMemo.Lines);
         EncryptDecryptButton.Tag := TAG_DC4X_DECRYPT;
-        EncryptDecryptButton.Text := SDecrypt;
+        EncryptDecryptButton.Text := LoadResString(@SDecrypt);
         GuiShowElements([gePassword, geStartButton, geInfos]);
         FChosenFile := AFileName;
         GuiShowChosenFile;
@@ -594,7 +594,7 @@ begin
         begin
           if AFileName.EndsWith('.dc4', true) or AFileName.EndsWith('.dc5', true) then
           begin
-            raise Exception.Create(SNoValidDc45File + #13#10 + E.Message);
+            raise Exception.CreateResFmt(@SNoValidDc45File, [E.Message]);
           end;
         end;
       end;
@@ -603,16 +603,16 @@ begin
 
     {$REGION '(De)Coder 5.x encrypt'}
     if DirectoryExists(AFileName) then
-      ShortInfoLabel.Text := SThisIsAFolder + #13#10 + SDoYouWantPackAndEncrypt
+      ShortInfoLabel.Text := LoadResString(@SThisIsAFolder) + #13#10 + LoadResString(@SDoYouWantPackAndEncrypt)
     else
-      ShortInfoLabel.Text := SThisIsAnUnencryptedFile + #13#10 + SDoYouWantEncrypt;
+      ShortInfoLabel.Text := LoadResString(@SThisIsAnUnencryptedFile) + #13#10 + LoadResString(@SDoYouWantEncrypt);
     EncryptDecryptButton.Tag := TAG_DC50_ENCRYPT;
-    EncryptDecryptButton.Text := SEncrypt;
+    EncryptDecryptButton.Text := LoadResString(@SEncrypt);
     if FileExists(AFileName) then
     begin
-      MoreInfoMemo.Lines.Add(Format(SFileType_S, [GetFileTypename(AFileName)]));
-      MoreInfoMemo.Lines.Add(Format(SFileSize_S, [FileSizeHumanReadable(TFile.GetSize(AFileName))]));
-      MoreInfoMemo.Lines.Add(Format(SModTime_S, [DateTimeToStr(TFile.GetLastWriteTime(AFileName))]));
+      MoreInfoMemo.Lines.Add(Format(LoadResString(@SFileType_S), [GetFileTypename(AFileName)]));
+      MoreInfoMemo.Lines.Add(Format(LoadResString(@SFileSize_S), [FileSizeHumanReadable(TFile.GetSize(AFileName))]));
+      MoreInfoMemo.Lines.Add(Format(LoadResString(@SModTime_S), [DateTimeToStr(TFile.GetLastWriteTime(AFileName))]));
     end;
     fp := DeCoder4X_GetDefaultParameters(High(TDc4FormatVersion));
     MetadataCheckbox.IsChecked := (fp.ContainFileOrigName=fpExpose) and fp.ContainFileOrigSize and fp.ContainFileOrigDate;
@@ -625,8 +625,8 @@ begin
   begin
     {$REGION '(De)Coder 3.2 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC32_DECRYPT;
-    EncryptDecryptButton.Text := SDecrypt;
-    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['3.2']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    EncryptDecryptButton.Text := LoadResString(@SDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['3.2']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -636,8 +636,8 @@ begin
   begin
     {$REGION '(De)Coder 3.0 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC30_DECRYPT;
-    EncryptDecryptButton.Text := SDecrypt;
-    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['3.0']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    EncryptDecryptButton.Text := LoadResString(@SDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['3.0']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -647,8 +647,8 @@ begin
   begin
     {$REGION '(De)Coder 2.2 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC22_DECRYPT;
-    EncryptDecryptButton.Text := SDecrypt;
-    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['2.2']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    EncryptDecryptButton.Text := LoadResString(@SDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.2']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -658,8 +658,8 @@ begin
   begin
     {$REGION '(De)Coder 2.1 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC21_DECRYPT;
-    EncryptDecryptButton.Text := SDecrypt;
-    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['2.1']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    EncryptDecryptButton.Text := LoadResString(@SDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.1']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -669,8 +669,8 @@ begin
   begin
     {$REGION '(De)Coder 2.0 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC20_DECRYPT;
-    EncryptDecryptButton.Text := SDecrypt;
-    ShortInfoLabel.Text := Format(SInfoLegacyDC_S, ['2.0']) + #13#10#13#10 + SInfoLegacyDecrypt;
+    EncryptDecryptButton.Text := LoadResString(@SDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.0']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
     GuiShowElements([geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -680,8 +680,8 @@ begin
   begin
     {$REGION 'File shredder'}
     EncryptDecryptButton.Tag := TAG_SHRED;
-    EncryptDecryptButton.Text := SShredderButton;
-    ShortInfoLabel.Text := #13#10#13#10 + SShredderInfo;
+    EncryptDecryptButton.Text := LoadResString(@SShredderButton);
+    ShortInfoLabel.Text := #13#10#13#10 + LoadResString(@SShredderInfo);
     GuiShowElements([geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;

@@ -94,7 +94,7 @@ begin
   result := '7z.32.dll';
   {$ENDIF}
   if not FileExists(Result) then
-    raise Exception.CreateFmt(SDllFileNotFound, [result]);
+    raise Exception.CreateResFmt(@SDllFileNotFound, [result]);
 end;
 
 procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
@@ -107,22 +107,24 @@ resourcestring
   SFileExtMissingForFolderPack = 'File extension missing for SevenZipFolder()';
 begin
   FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
-  ProgressCtx.Task := SPackFolderTask;
+  ProgressCtx.Task := LoadResString(@SPackFolderTask);
   ProgressCtx.DecProgress := AOnProgress;
   if AArchFile.EndsWith('.7z', true) then
     Arch := CreateOutArchive(CLSID_CFormat7z, SevenZipGetDll)
   else if AArchFile.EndsWith('.zip', true) then
     Arch := CreateOutArchive(CLSID_CFormatZip, SevenZipGetDll)
   else
-    raise Exception.Create(SFileExtMissingForFolderPack);
+    raise Exception.CreateRes(@SFileExtMissingForFolderPack);
   Arch.AddFiles(AFolderName, '', '*', true);
   SetCompressionLevel(Arch, 5);
   SevenZipSetCompressionMethod(Arch, m7BZip2);
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.SaveToFile(AArchFile);
 {$ELSE}
+resourcestring
+  SNo7zImplemented = '7zip-Pack/Unpack is not implemented for this Operating System.';
 begin
-  raise Exception.Create('7zip-Packen/Entpacken ist auf diesem System nicht möglich');
+  raise Exception.CreateRes(@SNo7zImplemented);
 {$ENDIF}
 end;
 
@@ -136,20 +138,22 @@ resourcestring
   SFileExtMissingForFolderUnpack = 'File extension missing for SevenZipExtract()';
 begin
   FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
-  ProgressCtx.Task := SUnpackFolderTask;
+  ProgressCtx.Task := LoadResString(@SUnpackFolderTask);
   ProgressCtx.DecProgress := AOnProgress;
   if AArchFile.EndsWith('.7z', true) then
     Arch := CreateInArchive(CLSID_CFormat7z, SevenZipGetDll)
   else if AArchFile.EndsWith('.zip', true) then
     Arch := CreateInArchive(CLSID_CFormatZip, SevenZipGetDll)
   else
-    raise Exception.Create(SFileExtMissingForFolderUnpack);
+    raise Exception.CreateRes(@SFileExtMissingForFolderUnpack);
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.OpenFile(AArchFile);
   Arch.ExtractTo(AFolder);
 {$ELSE}
+resourcestring
+  SNo7zImplemented = '7zip-Pack/Unpack is not implemented for this Operating System.';
 begin
-  raise Exception.Create('7zip-Packen/Entpacken ist auf diesem System nicht möglich');
+  raise Exception.CreateRes(@SNo7zImplemented);
 {$ENDIF}
 end;
 
