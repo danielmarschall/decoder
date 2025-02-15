@@ -3,7 +3,7 @@ unit DecoderOldCiphers;
 interface
 
 uses
-  SysUtils, DECCipherBase, DECCipherFormats, DECTypes;
+  System.SysUtils, DECCipherBase, DECCipherFormats, DECTypes;
 
 type
   TCipher_RepeatingXorSequence = class(TDECFormattedCipher)

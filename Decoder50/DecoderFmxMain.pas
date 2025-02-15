@@ -57,8 +57,7 @@ implementation
 {$R *.fmx}
 
 uses
-  DecoderFuncs, DECTypes, System.Rtti, System.IniFiles, System.TypInfo, System.SysConst,
-  Winapi.MMSystem;
+  DecoderFuncs, DECTypes, System.Rtti, System.IniFiles, System.TypInfo, System.SysConst;
 
 const
   // ComboBox1.ItemIndex

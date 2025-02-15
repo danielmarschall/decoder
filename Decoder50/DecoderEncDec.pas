@@ -3,10 +3,10 @@ unit DecoderEncDec;
 interface
 
 uses
-  Windows, SysUtils, Classes, DECFormatBase, DECTypes,
+  System.SysUtils, System.Classes, DECFormatBase, DECTypes,
   System.UITypes, DECCiphers, DECCipherBase, DECHash, DECHashBase,
   DECHashAuthentication, DECUtil, DECCipherFormats, 
-  EncdDecd, System.NetEncoding, DECCRC, DECBaseClass, Generics.Collections,
+  System.NetEncoding, DECCRC, DECBaseClass, Generics.Collections,
   DECRandom, System.IOUtils, DecoderFuncs;
 
 type
@@ -90,7 +90,12 @@ procedure Debug_ListCipherAlgos(Lines: TStrings; V: TDc4FormatVersion);
 implementation
 
 uses
-  DecoderOldCiphers, DecoderSevenZipUtils, DateUtils, StrUtils, Math;
+  DecoderOldCiphers, DecoderSevenZipUtils, System.DateUtils, System.StrUtils,
+  System.Math
+  {$IFDEF MsWindows}
+  , WinApi.Windows
+  {$ENDIF}
+  ;
 
 const
   DC4_ID_BASES: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of Int64 = (
@@ -1265,7 +1270,7 @@ var
   tmp64: Int64;
   IsZLibCompressed: boolean;
   IsFolder: boolean;
-  PbkdfIterations: long;
+  PbkdfIterations: Integer;
   V: TDc4FormatVersion;
   GCMAuthTagSizeInBytes: byte;
   tmpWS: WideString;
@@ -1766,7 +1771,7 @@ var
   bakSourcePosEncryptedData: Int64;
   IsZLibCompressed: boolean;
   IsFolder: boolean;
-  PbkdfIterations: Long;
+  PbkdfIterations: Integer;
   OrigNameEncrypted: RawByteString;
   iPaddingMode: Byte;
   cMac: RawByteString;
@@ -2341,7 +2346,7 @@ begin
         {$ENDREGION}
 
         {$REGION 'Output file info and parameters'}
-        ZeroMemory(@result, Sizeof(result));
+        FillChar(result, SizeOf(result), 0);
         result.IsZLibCompressed := IsZLibCompressed;
         result.IsCompressedFolder := IsFolder;
         result.OrigFileName := OrigName;

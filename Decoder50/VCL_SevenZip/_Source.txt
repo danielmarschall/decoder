@@ -1,4 +1,7 @@
 
+https://github.com/geoffsmith82/d7zip
+
+tiny changes:
 https://github.com/danielmarschall/d7zip
 
 which originates to the original source code

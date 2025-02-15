@@ -3,8 +3,8 @@ unit DecoderFuncs;
 interface
 
 uses
-  Windows, {$IFNDEF Console}Fmx.Forms, {$ENDIF} DECTypes, Classes, SysUtils,
-  Math, DECHashBase, DECHashAuthentication, IOUtils;
+  {$IFNDEF Console}Fmx.Forms, {$ENDIF} DECTypes, System.Classes, System.SysUtils,
+  System.Math, DECHashBase, DECHashAuthentication, System.IOUtils;
 
 type
   TDcProgressState = (Started, Processing, Finished);
@@ -62,15 +62,13 @@ procedure CountDown(const msg: string; timer: integer);
 implementation
 
 uses
-  DECUtil, DECRandom, ZLib, DateUtils, StrUtils, Registry, ShellAPI, MMSystem;
-
-{$IFDEF Unicode}
-function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
-  external 'shlwapi.dll' name 'PathCanonicalizeW';
-{$ELSE}
-function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
-  external 'shlwapi.dll' name 'PathCanonicalizeA';
-{$ENDIF}
+  DECUtil, DECRandom, System.ZLib, System.DateUtils, System.StrUtils,
+  {$IFDEF MsWindows}
+  Winapi.Windows, WinApi.ShellAPI, System.Win.Registry, Winapi.MMSystem
+  {$ENDIF}
+  {$IFDEF POSIX}
+  Posix.SysStatVFS
+  {$ENDIF};
 
 {$IFDEF Console}
 procedure CountDown(const msg: string; timer: integer);
@@ -182,24 +180,49 @@ begin
 end;
 
 function GetClusterSize(Drive: String): integer;
+{$IF Defined(MsWindows)} // Windows
 var
   SectorsPerCluster, BytesPerSector, dummy: Cardinal;
 begin
   SectorsPerCluster := 0;
   BytesPerSector := 0;
-  GetDiskFreeSpace(PChar(Drive), SectorsPerCluster, BytesPerSector, dummy, dummy);
-
-  Result := SectorsPerCluster * BytesPerSector;
+  if GetDiskFreeSpace(PChar(Drive), SectorsPerCluster, BytesPerSector, dummy, dummy) then
+    Result := SectorsPerCluster * BytesPerSector
+  else
+    Result := 512; // 1 sector
+{$ELSEIF Defined(POSIX)} // macOS, Linux, Android
+var
+  StatFS: statvfs;
+begin
+  if statvfs(PAnsiChar(AnsiString(ExtractFileDrive(Path))), StatFS) = 0 then
+    Result := StatFS.f_frsize // Fragment size (equivalent to cluster size)
+  else
+    Result := 512; // 1 sector
+end;
+{$ELSE}
+begin
+  Result := 512; // 1 sector
+{$ENDIF}
 end;
 
+{$IFDEF MsWindows}
+  {$IFDEF Unicode}
+  function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
+    external 'shlwapi.dll' name 'PathCanonicalizeW';
+  {$ELSE}
+  function PathCanonicalize(lpszDst: PChar; lpszSrc: PChar): LongBool; stdcall;
+    external 'shlwapi.dll' name 'PathCanonicalizeA';
+  {$ENDIF}
+{$ENDIF}
+
 function RelToAbs(RelPath: string; BasePath: string=''): string;
-var
-  Dst: array[0..MAX_PATH-1] of char;
 begin
-  if BasePath = '' then BasePath := GetCurrentDir;
-  if TPath.IsPathRooted(RelPath) then Exit(RelPath);
-  PathCanonicalize(@Dst[0], PChar(IncludeTrailingPathDelimiter(BasePath) + RelPath));
-  result := Dst;
+  // If no base path is provided, use the current directory
+  if BasePath.IsEmpty then
+    BasePath := TDirectory.GetCurrentDirectory;
+
+  // Combine and resolve to absolute path
+  Result := TPath.GetFullPath(TPath.Combine(BasePath, RelPath));
 end;
 
 function SecureDeleteFile(const AFileName: string; pcb: TextProgressCallback=nil): boolean;
@@ -267,7 +290,7 @@ begin
   end;
 
   // now delete the file
-  result := DeleteFile(AFileNameRenamed);
+  result := System.SysUtils.DeleteFile(AFileNameRenamed);
 end;
 
 function Occurrences(const Substring, Text: string): integer;
@@ -340,7 +363,7 @@ begin
           result := result and SecureDeleteFile(IncludeTrailingPathDelimiter(ADirName) + F.Name, pcb);
       until FindNext(F) <> 0;
     finally
-      FindClose(F);
+      System.SysUtils.FindClose(F);
     end;
 
     if not IsDriveOrShareRoot then
@@ -393,81 +416,84 @@ begin
 end;
 
 function IsCompressedFileType(const AFileName: string): boolean;
+var
+  ext: string;
 begin
+  ext := ExtractFileExt(AFileName);
   result :=
     // Compressed archive formats
     // TODO: Get more formats here (but only the compressed ones!): https://en.wikipedia.org/wiki/List_of_archive_formats
-    SameText(ExtractFileExt(AFileName), '.zip')  or // .zip - ZIP archive
-    SameText(ExtractFileExt(AFileName), '.7z')   or // .7z - 7-Zip archive
-    SameText(ExtractFileExt(AFileName), '.rar')  or // .rar - RAR archive
-    SameText(ExtractFileExt(AFileName), '.gz')   or // .gz - GZIP file (often combined with tar)
-    SameText(ExtractFileExt(AFileName), '.xz')   or // .xz - XZ archive (often combined with tar)
-    SameText(ExtractFileExt(AFileName), '.bz2')  or // .bz2 - BZ2 archive (often combined with tar)
-    SameText(ExtractFileExt(AFileName), '.tgz')  or // .tgz - TAR archive compressed with GZIP.
-    SameText(ExtractFileExt(AFileName), '.zst')  or // .zst - Zstandard compressed file
-    SameText(ExtractFileExt(AFileName), '.cab')  or // .cab - Microsoft Cabinet file
+    SameText(ext, '.zip')  or // .zip - ZIP archive
+    SameText(ext, '.7z')   or // .7z - 7-Zip archive
+    SameText(ext, '.rar')  or // .rar - RAR archive
+    SameText(ext, '.gz')   or // .gz - GZIP file (often combined with tar)
+    SameText(ext, '.xz')   or // .xz - XZ archive (often combined with tar)
+    SameText(ext, '.bz2')  or // .bz2 - BZ2 archive (often combined with tar)
+    SameText(ext, '.tgz')  or // .tgz - TAR archive compressed with GZIP.
+    SameText(ext, '.zst')  or // .zst - Zstandard compressed file
+    SameText(ext, '.cab')  or // .cab - Microsoft Cabinet file
     // Microsoft Office Formats
-    SameText(ExtractFileExt(AFileName), '.docx') or // .docx - Microsoft Word document
-    SameText(ExtractFileExt(AFileName), '.docm') or // .docm - Microsoft Word document macro-enabled
-    SameText(ExtractFileExt(AFileName), '.dotx') or // .dotx - Word templates
-    SameText(ExtractFileExt(AFileName), '.dotm') or // .dotm - Word template macro-enabled
-    SameText(ExtractFileExt(AFileName), '.xlsx') or // .xlsx - Microsoft Excel spreadsheet
-    SameText(ExtractFileExt(AFileName), '.xlsm') or // .xlsm - Microsoft Excel spreadsheet macro-enabled
-    SameText(ExtractFileExt(AFileName), '.xlam') or // .xlam - Excel macro-enabled add-ins
-    SameText(ExtractFileExt(AFileName), '.pptx') or // .pptx - Microsoft PowerPoint presentation
-    SameText(ExtractFileExt(AFileName), '.pptm') or // .pptm - Microsoft PowerPoint presentation macro-enabled
-    SameText(ExtractFileExt(AFileName), '.potx') or // .potx - PowerPoint templates
-    SameText(ExtractFileExt(AFileName), '.potm') or // .potm - PowerPoint templates macro-enabled
-    SameText(ExtractFileExt(AFileName), '.vsdx') or // .vsdx - Microsoft Visio diagram
+    SameText(ext, '.docx') or // .docx - Microsoft Word document
+    SameText(ext, '.docm') or // .docm - Microsoft Word document macro-enabled
+    SameText(ext, '.dotx') or // .dotx - Word templates
+    SameText(ext, '.dotm') or // .dotm - Word template macro-enabled
+    SameText(ext, '.xlsx') or // .xlsx - Microsoft Excel spreadsheet
+    SameText(ext, '.xlsm') or // .xlsm - Microsoft Excel spreadsheet macro-enabled
+    SameText(ext, '.xlam') or // .xlam - Excel macro-enabled add-ins
+    SameText(ext, '.pptx') or // .pptx - Microsoft PowerPoint presentation
+    SameText(ext, '.pptm') or // .pptm - Microsoft PowerPoint presentation macro-enabled
+    SameText(ext, '.potx') or // .potx - PowerPoint templates
+    SameText(ext, '.potm') or // .potm - PowerPoint templates macro-enabled
+    SameText(ext, '.vsdx') or // .vsdx - Microsoft Visio diagram
     // OpenDocument Formats (but they could also be a single XML file according to Wikipedia?!)
-    SameText(ExtractFileExt(AFileName), '.odt')  or // .odt - OpenDocument Text document
-    SameText(ExtractFileExt(AFileName), '.ods')  or // .ods - OpenDocument Spreadsheet
-    SameText(ExtractFileExt(AFileName), '.odp')  or // .odp - OpenDocument Presentation
-    SameText(ExtractFileExt(AFileName), '.odg')  or // .odg - OpenDocument Graphics
-    SameText(ExtractFileExt(AFileName), '.ott')  or // .ott - OpenDocument Text document template
-    SameText(ExtractFileExt(AFileName), '.ots')  or // .ots - OpenDocument Spreadsheet template
-    SameText(ExtractFileExt(AFileName), '.otp')  or // .otp - OpenDocument Presentation template
-    SameText(ExtractFileExt(AFileName), '.oxt')  or // .oxt - LibreOffice extensions
+    SameText(ext, '.odt')  or // .odt - OpenDocument Text document
+    SameText(ext, '.ods')  or // .ods - OpenDocument Spreadsheet
+    SameText(ext, '.odp')  or // .odp - OpenDocument Presentation
+    SameText(ext, '.odg')  or // .odg - OpenDocument Graphics
+    SameText(ext, '.ott')  or // .ott - OpenDocument Text document template
+    SameText(ext, '.ots')  or // .ots - OpenDocument Spreadsheet template
+    SameText(ext, '.otp')  or // .otp - OpenDocument Presentation template
+    SameText(ext, '.oxt')  or // .oxt - LibreOffice extensions
     // Audio formats
-    SameText(ExtractFileExt(AFileName), '.mp3')  or // .mp3 - MPEG audio
-    SameText(ExtractFileExt(AFileName), '.aac')  or // .aac - Advanced Audio Codec
-    SameText(ExtractFileExt(AFileName), '.flac') or // .flac - Free Lossless Audio Codec
-    SameText(ExtractFileExt(AFileName), '.ogg')  or // .ogg - Ogg Vorbis
-    SameText(ExtractFileExt(AFileName), '.wma')  or // .wma - Windows Media Audio (lossy, sometimes compressed)
+    SameText(ext, '.mp3')  or // .mp3 - MPEG audio
+    SameText(ext, '.aac')  or // .aac - Advanced Audio Codec
+    SameText(ext, '.flac') or // .flac - Free Lossless Audio Codec
+    SameText(ext, '.ogg')  or // .ogg - Ogg Vorbis
+    SameText(ext, '.wma')  or // .wma - Windows Media Audio (lossy, sometimes compressed)
     // Video formats
-    SameText(ExtractFileExt(AFileName), '.mp4')  or // .mp4 - MPEG-4 video
-    SameText(ExtractFileExt(AFileName), '.webm') or // .webm - WebM video
-    SameText(ExtractFileExt(AFileName), '.mkv')  or // .mkv - Matroska video
-    SameText(ExtractFileExt(AFileName), '.avi')  or // .avi - Audio Video Interleave. Uncompressed video is rare; often uses lossy codecs.
-    SameText(ExtractFileExt(AFileName), '.wmv')  or // .wmv - Windows Media Video (lossy, compressed)
+    SameText(ext, '.mp4')  or // .mp4 - MPEG-4 video
+    SameText(ext, '.webm') or // .webm - WebM video
+    SameText(ext, '.mkv')  or // .mkv - Matroska video
+    SameText(ext, '.avi')  or // .avi - Audio Video Interleave. Uncompressed video is rare; often uses lossy codecs.
+    SameText(ext, '.wmv')  or // .wmv - Windows Media Video (lossy, compressed)
     // Picture formats
-    SameText(ExtractFileExt(AFileName), '.png')  or // .png - Portable Network Graphics
-    SameText(ExtractFileExt(AFileName), '.gif')  or // .gif - Graphics Interchange Format
-    SameText(ExtractFileExt(AFileName), '.jpg')  or // .jpg, .jpeg, .jfif - JPEG image
-    SameText(ExtractFileExt(AFileName), '.jpeg') or // .jpg, .jpeg, .jfif - JPEG image
-    SameText(ExtractFileExt(AFileName), '.jfif') or // .jpg, .jpeg, .jfif - JPEG image
-    SameText(ExtractFileExt(AFileName), '.webp') or // .webp - WebP image
-    SameText(ExtractFileExt(AFileName), '.svgz') or // .svgz - Compressed SVG (Scalable Vector Graphics)
+    SameText(ext, '.png')  or // .png - Portable Network Graphics
+    SameText(ext, '.gif')  or // .gif - Graphics Interchange Format
+    SameText(ext, '.jpg')  or // .jpg, .jpeg, .jfif - JPEG image
+    SameText(ext, '.jpeg') or // .jpg, .jpeg, .jfif - JPEG image
+    SameText(ext, '.jfif') or // .jpg, .jpeg, .jfif - JPEG image
+    SameText(ext, '.webp') or // .webp - WebP image
+    SameText(ext, '.svgz') or // .svgz - Compressed SVG (Scalable Vector Graphics)
     // Other formats
-    SameText(ExtractFileExt(AFileName), '.epub') or // .epub - eBook format
-    SameText(ExtractFileExt(AFileName), '.jar')  or // .jar - Java Archive
-    SameText(ExtractFileExt(AFileName), '.apk')  or // .apk - Android application package
-    SameText(ExtractFileExt(AFileName), '.kmz')  or // .kmz - Google Earth data file (compressed version of KML)
-    SameText(ExtractFileExt(AFileName), '.xpi')  or // .xpi - Mozilla Firefox browser extension
-    SameText(ExtractFileExt(AFileName), '.war')  or // .war / .ear - Java web applications
-    SameText(ExtractFileExt(AFileName), '.ear')  or // .war / .ear - Java web applications
-    SameText(ExtractFileExt(AFileName), '.appx') or // .appx / .msix - Windows application package formats
-    SameText(ExtractFileExt(AFileName), '.msix') or // .appx / .msix - Windows application package formats
-    SameText(ExtractFileExt(AFileName), '.ipa')  or // .ipa - iOS application archive
-    SameText(ExtractFileExt(AFileName), '.cb7')  or // .cb7 - Comic Book 7z archive
-    SameText(ExtractFileExt(AFileName), '.cba')  or // .cba - Comic Book ACE archive
-    SameText(ExtractFileExt(AFileName), '.cbr')  or // .cbr - Comic Book RAR archive
-    SameText(ExtractFileExt(AFileName), '.cbt')  or // .cbt - Comic Book TAR archive
-    SameText(ExtractFileExt(AFileName), '.cbz')  or // .cbz - Comic Book ZIP archive
-    SameText(ExtractFileExt(AFileName),'.pkpass') or// .pkpass - Apple Wallet pass files, ZIP based
-    SameText(ExtractFileExt(AFileName), '.azw')  or // .azw - Amazon Kindle eBook format (old), compressed except metadata
-    SameText(ExtractFileExt(AFileName), '.azw3') or // .azw3 - Amazon Kindle eBook format "HF8", ZIP based
-    SameText(ExtractFileExt(AFileName), '.kfx');    // .kfx - Amazon Kindle eBook format, compressed
+    SameText(ext, '.epub') or // .epub - eBook format
+    SameText(ext, '.jar')  or // .jar - Java Archive
+    SameText(ext, '.apk')  or // .apk - Android application package
+    SameText(ext, '.kmz')  or // .kmz - Google Earth data file (compressed version of KML)
+    SameText(ext, '.xpi')  or // .xpi - Mozilla Firefox browser extension
+    SameText(ext, '.war')  or // .war / .ear - Java web applications
+    SameText(ext, '.ear')  or // .war / .ear - Java web applications
+    SameText(ext, '.appx') or // .appx / .msix - Windows application package formats
+    SameText(ext, '.msix') or // .appx / .msix - Windows application package formats
+    SameText(ext, '.ipa')  or // .ipa - iOS application archive
+    SameText(ext, '.cb7')  or // .cb7 - Comic Book 7z archive
+    SameText(ext, '.cba')  or // .cba - Comic Book ACE archive
+    SameText(ext, '.cbr')  or // .cbr - Comic Book RAR archive
+    SameText(ext, '.cbt')  or // .cbt - Comic Book TAR archive
+    SameText(ext, '.cbz')  or // .cbz - Comic Book ZIP archive
+    SameText(ext,'.pkpass') or// .pkpass - Apple Wallet pass files, ZIP based
+    SameText(ext, '.azw')  or // .azw - Amazon Kindle eBook format (old), compressed except metadata
+    SameText(ext, '.azw3') or // .azw3 - Amazon Kindle eBook format "HF8", ZIP based
+    SameText(ext, '.kfx');    // .kfx - Amazon Kindle eBook format, compressed
 end;
 
 function ShannonEntropy(const filename: string; OnProgressProc: TDcProgressEvent=nil): Extended;
@@ -540,6 +566,7 @@ begin
 end;
 
 function GetFileTypename(const Filename: string): string;
+{$IFDEF MsWindows}
 var
   Info: TSHFileInfo;
 begin
@@ -547,11 +574,33 @@ begin
     Result := Info.szTypeName
   else
     Result := '';
+{$ELSE}
+resourcestring
+  SSFile = '%s-File';
+  SUnknown = 'Unknown';
+var
+  tmp: string;
+begin
+  tmp := ExtractFileExt(Filename);
+  if tmp = '' then
+  begin
+    Result := SUnknown;
+  end
+  else
+  begin
+    tmp := Copy(tmp, 1);
+    Result := Format(SSFile, [tmp.ToUpper]);
+  end;
+{$ENDIF}
 end;
 
 procedure ExplorerNavigateToFile(const AFileName: string);
 begin
+{$IFDEF MsWindows}
   ShellExecute(0, 'open', 'explorer.exe', PChar('/select,'+AFileName), nil, SW_SHOWNORMAL);
+{$ELSE}
+  // Not implemented for this OS
+{$ENDIF}
 end;
 
 function GetBuildTimestamp(const ExeFile: string): TDateTime;
@@ -588,6 +637,7 @@ begin
 end;
 
 procedure PlayEmptyRecycleBinSound;
+{$IFDEF MsWindows}
 var
   reg: TRegistry;
   soundFile: string;
@@ -605,6 +655,10 @@ begin
   finally
     FreeAndNil(reg);
   end;
+{$ELSE}
+begin
+  // Not implemented for this OS
+{$ENDIF}
 end;
 
 { TStreamHelper }

@@ -5,13 +5,13 @@ program CoderCLI;
 {$R *.res}
 
 uses
-  SysUtils,
+  System.SysUtils,
   DECTypes,
   DECCiphers,
   DECCipherBase,
-  StrUtils,
-  Classes,
-  ZLib,
+  System.StrUtils,
+  System.Classes,
+  System.ZLib,
   Generics.Collections,
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
@@ -468,7 +468,7 @@ procedure Debug_EntroyTest(const ADirToTest, ACsvOutPutFile: string);
           end;
         until FindNext(searchResult)<>0
       finally
-        FindClose(searchResult);
+        System.SysUtils.FindClose(searchResult);
       end;
     end;
     WriteLn('Done');
@@ -717,9 +717,6 @@ begin
       WriteLn(SCautionDeleteFolder);
       WriteLn(RelToAbs(ParamStr(2)));
       WriteLn('');
-      // TODO: The countdown is good to avoid that someone deletes important files,
-      //       but on the other hand, we should have a flag which disables the countdown.
-      //       Otherwise this CLI tool is probably not good for some use-cases.
       CountDown(SCautionDeleteFolderCountdown_D, DeleteFolderCountDown);
       WriteLn('');
       SecureDeleteFolder(ParamStr(2), TextCallback);

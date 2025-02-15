@@ -3,15 +3,22 @@ unit DecoderSevenZipUtils;
 interface
 
 uses
-  SysUtils, Windows, DecoderFuncs{$IFNDEF Console}, Fmx.Forms{$ENDIF};
+  System.SysUtils, DecoderFuncs{$IFNDEF Console}, Fmx.Forms{$ENDIF};
 
 procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
 procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProgressEvent=nil);
 
 implementation
 
+{$IFDEF MsWindows}
+{$WARN UNIT_PLATFORM OFF}
 uses
   SevenZip;
+{$WARN UNIT_PLATFORM ON}
+{$ENDIF}
+
+const
+  E_ABORT = HRESULT($80004004); // taken from Winapi.Windows.pas
 
 type
   TSevenZipProgressContext = packed record
@@ -91,6 +98,7 @@ begin
 end;
 
 procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
+{$IFDEF MsWindows}
 var
   Arch: I7zOutArchive;
   ProgressCtx: TSevenZipProgressContext;
@@ -98,7 +106,7 @@ resourcestring
   SPackFolderTask = '7zip Pack folder';
   SFileExtMissingForFolderPack = 'File extension missing for SevenZipFolder()';
 begin
-  ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
+  FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
   ProgressCtx.Task := SPackFolderTask;
   ProgressCtx.DecProgress := AOnProgress;
   if AArchFile.EndsWith('.7z', true) then
@@ -112,9 +120,14 @@ begin
   SevenZipSetCompressionMethod(Arch, m7BZip2);
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.SaveToFile(AArchFile);
+{$ELSE}
+begin
+  raise Exception.Create('7zip-Packen/Entpacken ist auf diesem System nicht möglich');
+{$ENDIF}
 end;
 
 procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProgressEvent=nil);
+{$IFDEF MsWindows}
 var
   Arch: I7zInArchive;
   ProgressCtx: TSevenZipProgressContext;
@@ -122,7 +135,7 @@ resourcestring
   SUnpackFolderTask = '7zip Unpack folder';
   SFileExtMissingForFolderUnpack = 'File extension missing for SevenZipExtract()';
 begin
-  ZeroMemory(@ProgressCtx, Sizeof(ProgressCtx));
+  FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
   ProgressCtx.Task := SUnpackFolderTask;
   ProgressCtx.DecProgress := AOnProgress;
   if AArchFile.EndsWith('.7z', true) then
@@ -134,6 +147,10 @@ begin
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.OpenFile(AArchFile);
   Arch.ExtractTo(AFolder);
+{$ELSE}
+begin
+  raise Exception.Create('7zip-Packen/Entpacken ist auf diesem System nicht möglich');
+{$ENDIF}
 end;
 
 end.
