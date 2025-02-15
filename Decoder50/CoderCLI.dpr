@@ -507,7 +507,7 @@ begin
 end;
 
 const
-  DeleteFolderCountDown = 15;
+  DeleteFolderCountDown = 3;
 
 var
   iKey: integer;
