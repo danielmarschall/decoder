@@ -123,6 +123,7 @@ resourcestring
   SFileOrFolderNotFound = 'File or folder not found!';
   SDestroyComplete = 'Successfully shredded!';
   SInfoLegacyDecrypt = 'Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
+  STryAgain = 'Try again?';
 begin
   if FChosenFile = '' then exit;
   try
@@ -139,6 +140,7 @@ begin
         begin
           AOutput := SaveDialog1.FileName;
           DeCoder10_DecodeFile(FChosenFile, AOutput, OnProgressProc);
+          ShowMessage(SInfoLegacyDecrypt);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
         end;
@@ -155,7 +157,21 @@ begin
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          DeCoder4X_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
+          RepeatedPassword := PasswordEdit.Text;
+          while true do
+          begin
+            try
+              DeCoder4X_DecodeFile(FChosenFile, AOutput, RepeatedPassword, OnProgressProc);
+              break;
+            except
+              on E: Exception do
+              begin
+                // #0 means that the password char '*' is used
+                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                  Abort;
+              end;
+            end;
+          end;
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
         end;
@@ -212,7 +228,21 @@ begin
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          DeCoder32_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
+          RepeatedPassword := PasswordEdit.Text;
+          while true do
+          begin
+            try
+              DeCoder32_DecodeFile(FChosenFile, AOutput, RepeatedPassword, OnProgressProc);
+              break;
+            except
+              on E: Exception do
+              begin
+                // #0 means that the password char '*' is used
+                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                  Abort;
+              end;
+            end;
+          end;
           ShowMessage(SInfoLegacyDecrypt);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
@@ -229,7 +259,21 @@ begin
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          DeCoder30_DecodeFile(FChosenFile, AOutput, PasswordEdit.Text, OnProgressProc);
+          RepeatedPassword := PasswordEdit.Text;
+          while true do
+          begin
+            try
+              DeCoder30_DecodeFile(FChosenFile, AOutput, RepeatedPassword, OnProgressProc);
+              break;
+            except
+              on E: Exception do
+              begin
+                // #0 means that the password char '*' is used
+                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                  Abort;
+              end;
+            end;
+          end;
           ShowMessage(SInfoLegacyDecrypt);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
@@ -246,8 +290,22 @@ begin
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          if TryStrToInt(PasswordEdit.Text, iKey) then iKey := -1;
-          DeCoder22_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
+          RepeatedPassword := PasswordEdit.Text;
+          while true do
+          begin
+            try
+              if TryStrToInt(RepeatedPassword, iKey) then iKey := -1;
+              DeCoder22_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
+              break;
+            except
+              on E: Exception do
+              begin
+                // #0 means that the password char '*' is used
+                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                  Abort;
+              end;
+            end;
+          end;
           ShowMessage(SInfoLegacyDecrypt);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
@@ -264,8 +322,22 @@ begin
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
-          if TryStrToInt(PasswordEdit.Text, iKey) then iKey := -1;
-          DeCoder21_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
+          RepeatedPassword := PasswordEdit.Text;
+          while true do
+          begin
+            try
+              if TryStrToInt(RepeatedPassword, iKey) then iKey := -1;
+              DeCoder21_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
+              break;
+            except
+              on E: Exception do
+              begin
+                // #0 means that the password char '*' is used
+                if not InputQuery(Caption, #0 + E.Message + ' ' + STryAgain, RepeatedPassword) then
+                  Abort;
+              end;
+            end;
+          end;
           ShowMessage(SInfoLegacyDecrypt);
           ExplorerNavigateToFile(AOutput);
           PasswordEdit.Text := '';
@@ -285,7 +357,6 @@ begin
           DeCoder20_DecodeFile(FChosenFile, AOutput, OnProgressProc);
           ShowMessage(SInfoLegacyDecrypt);
           ExplorerNavigateToFile(AOutput);
-          PasswordEdit.Text := '';
         end;
       end;
       {$ENDREGION}
