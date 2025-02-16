@@ -136,8 +136,10 @@ begin
       begin
         {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@STextFiles)+' (*.txt)|*.txt|'+LoadResString(@SAllFiles)+' (*.*)|*.*';
-        {$ENDIF}
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
+        {$ELSE}
+        SaveDialog1.FileName := ExtractFileName(ChangeFileExt(FChosenFile, '_decoded.txt'));
+        {$ENDIF}
         SaveDialog1.DefaultExt := 'txt';
         if SaveDialog1.Execute then
         begin
@@ -157,8 +159,10 @@ begin
         if PasswordEdit.Text = '' then exit;
         {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
-        {$ENDIF}
         SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
+        {$ELSE}
+        SaveDialog1.FileName := ExtractFileName(FDC4FileInfo.OrigFileName);
+        {$ENDIF}
         SaveDialog1.DefaultExt := ExtractFileExt(FDC4FileInfo.OrigFileName);
         SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2); // remove dot from the beginning
         if SaveDialog1.Execute then
@@ -206,8 +210,10 @@ begin
         end;
         {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SEncryptedFiles)+' (*.dc4;*.dc5)|*.dc4;*.dc5|'+LoadResString(@SAllFiles)+' (*.*)|*.*';
-        {$ENDIF}
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
+        {$ELSE}
+        SaveDialog1.FileName := ExtractFileName(ChangeFileExt(FChosenFile, '.dc5'));
+        {$ENDIF}
         SaveDialog1.DefaultExt := 'dc5';
         if SaveDialog1.Execute then
         begin
