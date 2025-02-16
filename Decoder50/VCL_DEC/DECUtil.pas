@@ -652,7 +652,10 @@ end;
 
 function BytesToRawString(const Source: TBytes): RawByteString;
 begin
-  result := RawByteString(StringOf(Source));
+  SetLength(Result, Length(Source));
+  if Length(Source) > 0 then
+    Move(Source[low(Source)], Result[low(Result)], Length(Source)); // Copy bytes directly
+
 end;
 
 function RawStringToBytes(const RawString: RawByteString): TBytes;

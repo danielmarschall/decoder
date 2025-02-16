@@ -121,7 +121,9 @@ resourcestring
   SPasswordsDoNotMatch = 'Passwords do not match!';
   SFileOrFolderNotFound = 'File or folder not found!';
   SDestroyComplete = 'Successfully shredded!';
-  SInfoLegacyDecrypt = 'Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
+  SInfoLegacyDecrypt = 'Decryption process done. Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
+  SDecryptDone = 'Decryption process done';
+  SEncryptDone = 'Encryption process done';
   STryAgain = 'Try again?';
 begin
   if FChosenFile = '' then exit;
@@ -132,7 +134,9 @@ begin
       {$REGION '(De)Coder 1.0 decrypt'}
       TAG_DC10_DECRYPT:
       begin
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@STextFiles)+' (*.txt)|*.txt|'+LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '_decoded.txt');
         SaveDialog1.DefaultExt := 'txt';
         if SaveDialog1.Execute then
@@ -140,7 +144,9 @@ begin
           AOutput := SaveDialog1.FileName;
           DeCoder10_DecodeFile(FChosenFile, AOutput, OnProgressProc);
           MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ENDIF}
           PasswordEdit.Text := '';
         end;
       end;
@@ -149,10 +155,12 @@ begin
       TAG_DC4X_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := FDC4FileInfo.OrigFileName;
         SaveDialog1.DefaultExt := ExtractFileExt(FDC4FileInfo.OrigFileName);
-        SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2, Length(SaveDialog1.DefaultExt)-1);
+        SaveDialog1.DefaultExt := Copy(SaveDialog1.DefaultExt, 2); // remove dot from the beginning
         if SaveDialog1.Execute then
         begin
           AOutput := SaveDialog1.FileName;
@@ -171,7 +179,11 @@ begin
               end;
             end;
           end;
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ELSE}
+          MessageDlg(LoadResString(@SDecryptDone), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$ENDIF}
           PasswordEdit.Text := '';
         end;
       end;
@@ -192,7 +204,9 @@ begin
           else
             break;
         end;
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SEncryptedFiles)+' (*.dc4;*.dc5)|*.dc4;*.dc5|'+LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := ChangeFileExt(FChosenFile, '.dc5');
         SaveDialog1.DefaultExt := 'dc5';
         if SaveDialog1.Execute then
@@ -212,7 +226,11 @@ begin
             fp.ContainFileOrigDate := false;
           end;
           DeCoder4X_EncodeFile(FChosenFile, AOutput, PasswordEdit.Text, fp, OnProgressProc);
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ELSE}
+          MessageDlg(LoadResString(@SEncryptDone), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$ENDIF}
           PasswordEdit.Text := '';
         end;
       end;
@@ -221,7 +239,9 @@ begin
       TAG_DC32_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -243,7 +263,9 @@ begin
             end;
           end;
           MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ENDIF}
           PasswordEdit.Text := '';
         end;
       end;
@@ -252,7 +274,9 @@ begin
       TAG_DC30_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -274,7 +298,9 @@ begin
             end;
           end;
           MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ENDIF}
           PasswordEdit.Text := '';
         end;
       end;
@@ -283,7 +309,9 @@ begin
       TAG_DC22_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -306,7 +334,9 @@ begin
             end;
           end;
           MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ENDIF}
           PasswordEdit.Text := '';
         end;
       end;
@@ -315,7 +345,9 @@ begin
       TAG_DC21_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -338,7 +370,9 @@ begin
             end;
           end;
           MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ENDIF}
           PasswordEdit.Text := '';
         end;
       end;
@@ -347,7 +381,9 @@ begin
       TAG_DC20_DECRYPT:
       begin
         if PasswordEdit.Text = '' then exit;
+        {$IFDEF MsWindows}
         SaveDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*';
+        {$ENDIF}
         SaveDialog1.FileName := '';
         SaveDialog1.DefaultExt := '';
         if SaveDialog1.Execute then
@@ -355,7 +391,9 @@ begin
           AOutput := SaveDialog1.FileName;
           DeCoder20_DecodeFile(FChosenFile, AOutput, OnProgressProc);
           MessageDlg(LoadResString(@SInfoLegacyDecrypt), TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOk], 0);
+          {$IFDEF MsWindows}
           ExplorerNavigateToFile(AOutput);
+          {$ENDIF}
         end;
       end;
       {$ENDREGION}
@@ -392,9 +430,19 @@ begin
 end;
 
 procedure TDecoderMainForm.DropTarget1Click(Sender: TObject);
+resourcestring
+  SAllFiles = 'All files';
+  SEncryptedFiles = 'DC4/5 Encrypted files';
 begin
+  {$IFDEF MsWindows}
+  OpenDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*|'+LoadResString(@SEncryptedFiles)+' (*.dc4;*.dc5)|*.dc4;*.dc5';
+  {$ENDIF}
+  OpenDialog1.FileName := '';
+  OpenDialog1.DefaultExt := '';
   if OpenDialog1.Execute then
+  begin
     OpenFile(OpenDialog1.FileName);
+  end;
 end;
 
 procedure TDecoderMainForm.DropTarget1Dropped(Sender: TObject; const Data: TDragObject;

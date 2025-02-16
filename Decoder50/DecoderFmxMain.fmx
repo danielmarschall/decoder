@@ -4,7 +4,7 @@ object DecoderMainForm: TDecoderMainForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = Single
   ClientHeight = 362
-  ClientWidth = 650
+  ClientWidth = 681
   Position = ScreenCenter
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -12,12 +12,23 @@ object DecoderMainForm: TDecoderMainForm
   OnCreate = FormCreate
   OnShow = FormShow
   DesignerMasterStyle = 0
+  object ShortInfoLabel: TLabel
+    Anchors = [akLeft, akTop, akRight]
+    Position.X = 200.000000000000000000
+    Position.Y = 57.000000000000000000
+    Size.Width = 466.000000000000000000
+    Size.Height = 292.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.VertAlign = Leading
+    TextSettings.Trimming = None
+    TabOrder = 61
+  end
   object DropTarget1: TDropTarget
     Filter = '*'
     Position.X = 8.000000000000000000
     Position.Y = 8.000000000000000000
-    Size.Width = 153.000000000000000000
-    Size.Height = 153.000000000000000000
+    Size.Width = 176.000000000000000000
+    Size.Height = 176.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     Text = 'Click or drag file or folder here'
@@ -27,39 +38,25 @@ object DecoderMainForm: TDecoderMainForm
   object ProgressBar1: TProgressBar
     Anchors = [akLeft, akTop, akRight]
     Orientation = Horizontal
-    Position.X = 440.000000000000000000
+    Position.X = 464.000000000000000000
     Position.Y = 152.000000000000000000
-    Size.Width = 195.000000000000000000
+    Size.Width = 202.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
   end
   object OpenedFileLabel: TLabel
     Anchors = [akLeft, akTop, akRight]
     StyledSettings = [Family, Style, FontColor]
-    Position.X = 176.000000000000000000
+    Position.X = 200.000000000000000000
     Position.Y = 8.000000000000000000
-    Size.Width = 459.000000000000000000
+    Size.Width = 466.000000000000000000
     Size.Height = 41.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Font.Size = 24.000000000000000000
     TextSettings.WordWrap = False
-    TabOrder = 56
-  end
-  object ShortInfoLabel: TLabel
-    Anchors = [akLeft, akTop, akRight]
-    Position.X = 176.000000000000000000
-    Position.Y = 57.000000000000000000
-    Size.Width = 459.000000000000000000
-    Size.Height = 292.000000000000000000
-    Size.PlatformDefault = False
-    TextSettings.VertAlign = Leading
-    TextSettings.Trimming = None
-    TabOrder = 59
+    TabOrder = 58
   end
   object OpenDialog1: TOpenDialog
-    Filter = 
-      'All files (*.*)|*.*|DC4/5 Encrypted files (*.dc4;*.dc5)|*.dc4;*.' +
-      'dc5'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Left = 24
     Top = 24
@@ -69,20 +66,20 @@ object DecoderMainForm: TDecoderMainForm
     DataDetectorTypes = []
     ReadOnly = True
     Anchors = [akLeft, akTop, akRight, akBottom]
-    Position.X = 176.000000000000000000
+    Position.X = 200.000000000000000000
     Position.Y = 200.000000000000000000
-    Size.Width = 459.000000000000000000
+    Size.Width = 466.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 49
-    Viewport.Width = 455.000000000000000000
+    TabOrder = 51
+    Viewport.Width = 462.000000000000000000
     Viewport.Height = 118.000000000000000000
   end
   object PasswordEdit: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 1
     Password = True
-    Position.X = 176.000000000000000000
+    Position.X = 200.000000000000000000
     Position.Y = 152.000000000000000000
     Size.Width = 168.000000000000000000
     Size.Height = 22.000000000000000000
@@ -90,17 +87,19 @@ object DecoderMainForm: TDecoderMainForm
   end
   object EncryptDecryptButton: TButton
     Default = True
-    Position.X = 352.000000000000000000
+    Position.X = 376.000000000000000000
     Position.Y = 152.000000000000000000
+    Size.Width = 80.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     TabOrder = 2
-    Text = 'Decrypt'
     TextSettings.Trimming = None
     OnClick = EncryptDecryptButtonClick
   end
   object PasswordEditLabel: TLabel
-    Position.X = 176.000000000000000000
+    Position.X = 200.000000000000000000
     Position.Y = 134.000000000000000000
-    Size.Width = 113.000000000000000000
+    Size.Width = 168.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None
@@ -108,9 +107,10 @@ object DecoderMainForm: TDecoderMainForm
     TabOrder = 13
   end
   object MoreInfoLabel: TLabel
-    Position.X = 176.000000000000000000
+    Anchors = [akLeft, akTop, akRight]
+    Position.X = 200.000000000000000000
     Position.Y = 182.000000000000000000
-    Size.Width = 529.000000000000000000
+    Size.Width = 466.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None
@@ -119,9 +119,9 @@ object DecoderMainForm: TDecoderMainForm
   end
   object MetadataCheckbox: TCheckBox
     Anchors = [akLeft, akBottom]
-    Position.X = 176.000000000000000000
+    Position.X = 200.000000000000000000
     Position.Y = 330.000000000000000000
-    Size.Width = 386.000000000000000000
+    Size.Width = 393.000000000000000000
     Size.Height = 19.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 4
@@ -130,17 +130,15 @@ object DecoderMainForm: TDecoderMainForm
       ' date'
   end
   object SaveDialog1: TSaveDialog
-    Filter = 
-      'DC4/5 Encrypted files (*.dc4;*.dc5)|*.dc4;*.dc5|All files (*.*)|' +
-      '*.*'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
     Left = 32
     Top = 160
   end
   object ProgressStepLabel: TLabel
-    Position.X = 440.000000000000000000
+    Anchors = [akLeft, akTop, akRight]
+    Position.X = 464.000000000000000000
     Position.Y = 175.000000000000000000
-    Size.Width = 191.000000000000000000
+    Size.Width = 202.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None
@@ -158,7 +156,7 @@ object DecoderMainForm: TDecoderMainForm
       'File shredder')
     Position.X = 8.000000000000000000
     Position.Y = 327.000000000000000000
-    Size.Width = 153.000000000000000000
+    Size.Width = 176.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 48
