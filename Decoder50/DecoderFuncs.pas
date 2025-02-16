@@ -17,14 +17,14 @@ type
   public
     procedure Read(var Value; Size: Integer);
     function ReadByte: Byte;
-    function ReadLongBE: LongWord;
+    function ReadLongBE: Cardinal;
     function ReadInt32: Int32;
     function ReadInt64: Int64;
     function ReadRawByteString(len: integer): RawByteString;
     function ReadRawBytes(len: integer): TBytes;
     procedure Write(var Value; Size: Integer);
     procedure WriteByte(b: Byte);
-    procedure WriteLongBE(lw: LongWord);
+    procedure WriteLongBE(lw: Cardinal);
     procedure WriteInt32(i32: Int32);
     procedure WriteInt64(i64: Int64);
     procedure WriteRawByteString(rb: RawByteString);
@@ -179,8 +179,8 @@ begin
   until Length(Result) = len;
 end;
 
-function GetClusterSize(Drive: String): integer;
 {$IF Defined(MsWindows)} // Windows
+function GetClusterSize(Drive: String): integer;
 var
   SectorsPerCluster, BytesPerSector, dummy: Cardinal;
 begin
@@ -190,20 +190,18 @@ begin
     Result := SectorsPerCluster * BytesPerSector
   else
     Result := 512; // 1 sector
+end;
 {$ELSEIF Defined(POSIX)} // macOS, Linux, Android
+function GetClusterSize(Path: String): integer;
 var
-  StatFS: statvfs;
+  Info: _statvfs;
 begin
-  if statvfs(PAnsiChar(AnsiString(ExtractFileDrive(Path))), StatFS) = 0 then
-    Result := StatFS.f_frsize // Fragment size (equivalent to cluster size)
+  if statvfs(PAnsiChar(AnsiString(ExtractFileDrive(Path))), Info) = 0 then
+    Result := Info.f_frsize // Fragment size (equivalent to cluster size)
   else
     Result := 512; // 1 sector
 end;
-{$ELSE}
-begin
-  Result := 512; // 1 sector
 {$ENDIF}
-end;
 
 {$IFDEF MsWindows}
   {$IFDEF Unicode}
@@ -242,9 +240,13 @@ begin
 
   ClusterSize := 32000; // max available in Windows format dialog
   try
+    {$IF Defined(MsWindows)}
     drive := ExtractFileDrive(RelToAbs(AFileName));
     if drive <> '' then
       ClusterSize := GetClusterSize(drive);
+    {$ELSEIF Defined(POSIX)}
+    ClusterSize := GetClusterSize(ExtractFilePath(AFileName));
+    {$ENDIF}
   except
     // If we can't get it, that's not a problem
   end;
@@ -673,7 +675,7 @@ begin
   Read(Result, SizeOf(Result));
 end;
 
-function TStreamHelper.ReadLongBE: LongWord;
+function TStreamHelper.ReadLongBE: Cardinal;
 begin
   Read(Result, SizeOf(Result));
   Result := Result shl 24 or Result shr 24 or Result shl 8 and $00FF0000 or Result shr 8 and $0000FF00;
@@ -711,7 +713,7 @@ begin
   Write(b, SizeOf(b));
 end;
 
-procedure TStreamHelper.WriteLongBE(lw: LongWord);
+procedure TStreamHelper.WriteLongBE(lw: Cardinal);
 begin
   lw := lw shl 24 or lw shr 24 or lw shl 8 and $00FF0000 or lw shr 8 and $0000FF00;
   Write(lw, SizeOf(lw));
