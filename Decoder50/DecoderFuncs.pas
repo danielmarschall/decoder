@@ -20,6 +20,7 @@ type
     function ReadLongBE: Cardinal;
     function ReadInt32: Int32;
     function ReadInt64: Int64;
+    function ReadGuid: TGuid;
     function ReadRawByteString(len: integer): RawByteString;
     function ReadRawBytes(len: integer): TBytes;
     procedure Write(var Value; Size: Integer);
@@ -27,6 +28,7 @@ type
     procedure WriteLongBE(lw: Cardinal);
     procedure WriteInt32(i32: Int32);
     procedure WriteInt64(i64: Int64);
+    procedure WriteGuid(Guid: TGuid);
     procedure WriteRawByteString(rb: RawByteString);
     procedure WriteRawBytes(b: TBytes);
   end;
@@ -770,9 +772,14 @@ begin
   Read(Result, SizeOf(Result));
 end;
 
+function TStreamHelper.ReadGuid: TGuid;
+begin
+  Read(Result, SizeOf(Result));
+end;
+
 function TStreamHelper.ReadRawByteString(len: integer): RawByteString;
 begin
-  if len = 0 then exit;  
+  if len = 0 then exit;
   SetLength(Result, len);
   Read(Result[Low(Result)], Length(Result));
 end;
@@ -806,6 +813,11 @@ end;
 procedure TStreamHelper.WriteInt64(i64: Int64);
 begin
   Write(i64, SizeOf(i64));
+end;
+
+procedure TStreamHelper.WriteGuid(Guid: TGuid);
+begin
+  Write(Guid, SizeOf(Guid));
 end;
 
 procedure TStreamHelper.WriteRawByteString(rb: RawByteString);

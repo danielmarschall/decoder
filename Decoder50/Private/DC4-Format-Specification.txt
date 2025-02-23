@@ -1,14 +1,15 @@
-=============================
-DC4 FILE FORMAT SPECIFICATION
-=============================
+=================================
+DC4/DC5 FILE FORMAT SPECIFICATION
+=================================
 
 Type:       Encrypted file
 Contents:   Binary information
 Used by:    ViaThinkSoft (De)Coder 4.0
             ViaThinkSoft (De)Coder 4.1 Beta
-            ViaThinkSoft (De)Coder 5.0 + 5.1
+            ViaThinkSoft (De)Coder 5.0
+            ViaThinkSoft (De)Coder 5.1
 Author:     Daniel Marschall, ViaThinkSoft
-Revision:   12 February 2025
+Revision:   23 February 2025
 
 
 CONTENTS
@@ -22,7 +23,9 @@ CONTENTS
 
 [4.0]	DC4 Standard 3 used by (De)Coder 4.1 Final/Cancelled
 
-[5.0]	DC4 Standard 3 used by (De)Coder 5.0 + 5.1
+[5.0]	DC4 Standard 4 used by (De)Coder 5.0
+
+[6.0]	DC4 Standard 5 used by (De)Coder 5.1
 
 [APP A]	Links to websites
 
@@ -361,19 +364,19 @@ Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
 
 
-[5.0] DC4 STANDARD 4 USED BY (DE)CODER 5.0 + 5.1
-================================================
+[5.0] DC4 STANDARD 4 USED BY (DE)CODER 5.0
+==========================================
 
-This file format is used by (De)Coder 5.0 and (De)Coder 5.1. The file-name extension can be dc4 or dc5.
+This file format is used by (De)Coder 5.0. The file-name extension can be dc4 or dc5.
 
 The file format version is 4 (mentioned in the last arc of the OID in the magic sequence).
 
 ---------------------------------------------------------------------------------------------------
 Offset	Type	Size		Content/Description
 ---------------------------------------------------------------------------------------------------
-00h	Binary	31		1. Magic Sequence; Hardcoded value: "[1.3.6.1.4.1.37476.2.2.1.4.4]" + CRLF
+00h	Binary	31		Magic Sequence; Hardcoded value: "[1.3.6.1.4.1.37476.2.2.1.4.4]" + CRLF
 					This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) std4(4) }
-1Fh	Byte	1		2. Flags
+1Fh	Byte	1		Flags
 					Bit 0/LSB:  [Ver1+] Is 7zip-packed folder (1) or a regular file (0)?
 					Bit 1:      [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
 					Bit 2:      Reserved
@@ -382,14 +385,14 @@ Offset	Type	Size		Content/Description
 					Bit 5:      Reserved
 					Bit 6:      Reserved
 					Bit 7/MSB:  Reserved
-20h	Byte	1		3. Size of the filename that follows
-21h	Binary	var		4. Original file name, UTF-8 Encoded; possible values:
+20h	Byte	1		Size of the filename that follows
+21h	Binary	var		Original file name, UTF-8 Encoded; possible values:
 					- Original name in its entirety (example "foobar.txt")
 					- Just its extension (example "*.txt")
 					- Redacted (empty string "", default)
-	Int64LE	8		5. Original File Size in Bytes, little endian. -1 if redacted (default).
-	Int64LE	8		6. Original File Date/Time, little endian. Unix Timestamp or -1 if redacted (default).
-	Int32BE	4		7. DEC 6.5 Cipher idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
+	Int64LE	8		Original File Size in Bytes, little endian. -1 if redacted (default).
+	Int64LE	8		Original File Date/Time, little endian. Unix Timestamp or -1 if redacted (default).
+	Int32BE	4		DEC 6.5 Cipher idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
 					0x0005E9C6	TCipher_2DDES (KeySize: 16, BlockSize: 16, BufferSize: 16)
 					0x03676321	TCipher_RC4 (KeySize: 256, BlockSize: 1, BufferSize: 16)
 					0x067B1B39	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
@@ -425,7 +428,7 @@ Offset	Type	Size		Content/Description
 					0xEA04C614	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
 					0xED69020D	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
 					0xFEA5D6A8	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8)
-	Byte	1		8. DEC 6.5 Cipher mode
+	Byte	1		DEC 6.5 Cipher mode
 					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default, proprietary to DEC)
 					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
 					0x02	CFB8	8bit Cipher Feedback mode
@@ -439,7 +442,7 @@ Offset	Type	Size		Content/Description
 					0x0A	CTS3	double CBC, with less secure padding of truncated final block (deprecated)
 					Note: According to tests, all cipher modes can handle truncated final blocks, except ECB,
 					      this requires an input file with a size which is a multiple of 16 bytes.
-	Int32BE	4		9. DEC 6.5 Hash idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
+	Int32BE	4		DEC 6.5 Hash idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
 					0x01DCD639	THash_SHA3_256 (DigestSize: 32, BlockSize: 136)
 					0x0BE5E708	THash_SHA1 (DigestSize: 20, BlockSize: 64)
 					0x2F5EA7BA	THash_Keccak_224 (DigestSize: 28, BlockSize: 144)
@@ -478,26 +481,21 @@ Offset	Type	Size		Content/Description
 					0xEE234C4A	THash_SHA256 (DigestSize: 32, BlockSize: 64)
 					0xF4867A38	THash_Sapphire (DigestSize: 64, BlockSize: 1)
 					0xF7DACACC	THash_Shake256 (DigestSize: 0, BlockSize: 136)
-	Byte	1		10. IV Size (default: 16 = 0x10)
-	Binary	var		11. IV (Random Data)
-	Byte	1		12. IV filler byte (default: 0xFF)
-	Byte	1		13. Padding mode
+	Byte	1		IV Size (default: 16 = 0x10)
+	Binary	var		IV (Random Data)
+	Byte	1		IV filler byte (default: 0xFF)
+	Byte	1		Padding mode
 					0x00	None (default)
-					0x01	PKCS#5 (new in DC 5.1)
-					0x02	PKCS#7 (new in DC 5.1)
-					0x03	ANSI X9.23 (new in DC 5.1)
-					0x04	ISO 10126 (new in DC 5.1)
-					0x05	ISO 7816 (new in DC 5.1)
-	Byte	1		14. Size of seed (default 32 = 0x20)
-	Binary	0-255		15. Seed (Random data)
-	Byte	1		16. KDF version
+	Byte	1		Size of seed (default 32 = 0x20)
+	Binary	0-255		Seed (Random data)
+	Byte	1		KDF version
 					0x01	KDF1
 					0x02	KDF2
 					0x03	KDF3
 					0x04	KDFx (default, proprietary to DEC)
 					0x05	PBKDF2
-	Int32LE	0-4		17. PBKDF iterations (ONLY present if KDF Version = 0x05), little endian
-	Byte	0-1		18. Size of GCM Auth Tag in bytes (ONLY present if cipher mode is GCM)
+	Int32LE	0-4		PBKDF iterations (ONLY present if KDF Version = 0x05), little endian
+	Byte	0-1		Size of GCM Auth Tag in bytes (ONLY present if cipher mode is GCM)
 				Usual lengths are:
 					0x04	 32 bits (not recommended)
 					0x08	 64 bits (not recommended)
@@ -506,17 +504,185 @@ Offset	Type	Size		Content/Description
 					0x0E	112 bits
 					0x0F	120 bits
 					0x10	128 bits (default)
-	Binary	var		19. With DEC 6.5 encrypted data (read until file end minus the size of the checksum)
+	Binary	var		With DEC 6.5 encrypted data (read until file end minus the size of the checksum)
 					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
 					Note that the password is treated as UTF-8
-	Binary	0-255		20. DEC's "CalcMAC"
+	Binary	0-255		DEC's "CalcMAC"
 					This is a C-MAC which is the encryption of the last block concatention feedback.
 					Size is one cipher block.
 					(NOT present if cipher mode is ECB)
-	Binary	0-255		21. GCM Auth Tag
+	Binary	0-255		GCM Auth Tag
 					Size as specified before.
 					(ONLY present if cipher mode is GCM)
-	Binary	var		22. HMAC checksum (Encrypt-then-HMAC)
+	Binary	var		HMAC checksum (Encrypt-then-HMAC)
+					= HMAC(HMacKey, Whole encrypted file except HMAC part)
+					with Key = Encryption-Password
+					Size dependend on the hash algorithm (DigestSize).
+					The algorithms of DEC give out a hash with the length 16-64.
+					Note that the password is treated as UTF-8
+---------------------------------------------------------------------------------------------------
+
+
+[6.0] DC4 STANDARD 5 USED BY (DE)CODER 5.1
+==========================================
+
+This file format is used by (De)Coder 5.1. The file-name extension can be dc4 or dc5.
+
+The file format version is 5 (mentioned in the last arc of the OID in the magic sequence).
+
+---------------------------------------------------------------------------------------------------
+Offset	Type	Size		Content/Description
+---------------------------------------------------------------------------------------------------
+00h	Binary	31		1. Magic Sequence; Hardcoded value: "[1.3.6.1.4.1.37476.2.2.1.4.5]" + CRLF
+					This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) std5(5) }
+1Fh	Byte	1		2. Flags
+					Bit 0/LSB:  [Ver1+] Is packed folder (1) or a regular file (0)?
+					Bit 1:      [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
+					Bit 2:      Reserved
+					Bit 3:      Reserved
+					Bit 4:      Reserved
+					Bit 5:      Reserved
+					Bit 6:      Reserved
+					Bit 7/MSB:  Reserved
+20h	Guid	16		3. GUID of the 7z.dll Compression Algorithm. Usual values are:
+					{00000000-0000-0000-0000-000000000000} = None (for files)
+					{23170F69-40C1-278A-1000-000110070000} = 7zip (default for folders)
+					{23170F69-40C1-278A-1000-000110010000} = ZIP
+					Other values are allowed if they are implemented in 7z.dll
+30h	Byte	1		4. Size of the filename that follows
+31h	Binary	var		5. Original file name, UTF-8 Encoded; possible values:
+					- Original name in its entirety (example "foobar.txt")
+					- Just its extension (example "*.txt")
+					- Redacted (empty string "", default)
+	Int64LE	8		6. Original File Size in Bytes, little endian. -1 if redacted (default).
+	Int64LE	8		7. Original File Date/Time, little endian. Unix Timestamp or -1 if redacted (default).
+	Int32BE	4		8. DEC 6.5 Cipher idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
+					0x0005E9C6	TCipher_2DDES (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x03676321	TCipher_RC4 (KeySize: 256, BlockSize: 1, BufferSize: 16)
+					0x067B1B39	TCipher_2DES (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x1282B983	TCipher_AES256 (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x14CEB4D7	TCipher_1DES (KeySize: 8, BlockSize: 8, BufferSize: 8)
+					0x1E9E700C	TCipher_TEAN (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x238839FE	TCipher_Misty (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x241E4D6F	TCipher_3Way (KeySize: 12, BlockSize: 12, BufferSize: 12)
+					0x242D1EEF	TCipher_Blowfish (KeySize: 56, BlockSize: 8, BufferSize: 8)
+					0x2E2D64C2	TCipher_NewDES (KeySize: 15, BlockSize: 8, BufferSize: 8)
+					0x323E180B	TCipher_Sapphire (KeySize: 1024, BlockSize: 1, BufferSize: 32)
+					0x366FED8E	TCipher_Mars (KeySize: 56, BlockSize: 16, BufferSize: 16)
+					0x3706BE67	TCipher_Cast256 (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0x3D65C076	TCipher_3DDES (KeySize: 24, BlockSize: 16, BufferSize: 16)
+					0x49FC4DEC	TCipher_IDEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x59907F62	TCipher_Square (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0x66BC7BE6	TCipher_Null (KeySize: 0, BlockSize: 1, BufferSize: 8)
+					0x6D7C97E9	TCipher_3TDES (KeySize: 24, BlockSize: 24, BufferSize: 24)
+					0x71DF3DA6	TCipher_TEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0x746053B7	TCipher_RC5 (KeySize: 256, BlockSize: 8, BufferSize: 8)
+					0x988B2D75	TCipher_AES (KeySize: 32, BlockSize: 16, BufferSize: 16, default)
+					0x9DB9BBFE	TCipher_Cast128 (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xA2EC8332	TCipher_Skipjack (KeySize: 10, BlockSize: 8, BufferSize: 8)
+					0xB83DBC1A	TCipher_AES128 (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0xBB1C8CCF	TCipher_AES192 (KeySize: 24, BlockSize: 16, BufferSize: 16)
+					0xBD7FDE66	TCipher_XTEA (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xBEC77C5C	TCipher_3DES (KeySize: 24, BlockSize: 8, BufferSize: 8)
+					0xC34E0F9D	TCipher_Twofish (KeySize: 32, BlockSize: 16, BufferSize: 16)
+					0xC7CCBE8E	TCipher_Q128 (KeySize: 16, BlockSize: 16, BufferSize: 16)
+					0xD4338402	TCipher_Gost (KeySize: 32, BlockSize: 8, BufferSize: 8)
+					0xE34824EA	TCipher_SCOP (KeySize: 48, BlockSize: 4, BufferSize: 32)
+					0xE70AA3F1	TCipher_SAFER (KeySize: 16, BlockSize: 8, BufferSize: 8)
+					0xEA04C614	TCipher_RC2 (KeySize: 128, BlockSize: 8, BufferSize: 8)
+					0xED69020D	TCipher_RC6 (KeySize: 256, BlockSize: 16, BufferSize: 16)
+					0xFEA5D6A8	TCipher_Shark (KeySize: 16, BlockSize: 8, BufferSize: 8)
+	Byte	1		9. DEC 6.5 Cipher mode
+					0x00	CTSx	double CBC, with CFS8 padding of truncated final block (default, proprietary to DEC)
+					0x01	CBCx	Cipher Block Chainung, with CFB8 padding of truncated final block
+					0x02	CFB8	8bit Cipher Feedback mode
+					0x03	CFBx	CFB on Blocksize of Cipher
+					0x04	OFB8	8bit Output Feedback mode
+					0x05	OFBx	OFB on Blocksize bytes
+					0x06	CFS8	8Bit CFS, double CFB
+					0x07	CFSx	CFS on Blocksize bytes
+					0x08	ECBx	Electronic Code Book
+					0x09	GCM	Galois Counter Mode
+					0x0A	CTS3	double CBC, with less secure padding of truncated final block (deprecated)
+					Note: According to tests, all cipher modes can handle truncated final blocks, except ECB,
+					      this requires an input file with a size which is a multiple of 16 bytes.
+	Int32BE	4		10. DEC 6.5 Hash idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:
+					0x01DCD639	THash_SHA3_256 (DigestSize: 32, BlockSize: 136)
+					0x0BE5E708	THash_SHA1 (DigestSize: 20, BlockSize: 64)
+					0x2F5EA7BA	THash_Keccak_224 (DigestSize: 28, BlockSize: 144)
+					0x372A123A	THash_RipeMD128 (DigestSize: 16, BlockSize: 64)
+					0x394CFB97	THash_Snefru256 (DigestSize: 32, BlockSize: 32)
+					0x3A754E66	THash_RipeMD320 (DigestSize: 40, BlockSize: 64)
+					0x3D0004D7	THash_MD5 (DigestSize: 16, BlockSize: 64)
+					0x42F48DAB	THash_Panama (DigestSize: 32, BlockSize: 32)
+					0x4A073441	THash_MD4 (DigestSize: 16, BlockSize: 64)
+					0x4F6CBBA1	THash_SHA224 (DigestSize: 28, BlockSize: 64)
+					0x5BBEA36F	THash_SHA3_384 (DigestSize: 48, BlockSize: 104)
+					0x5D65CF55	THash_Shake128 (DigestSize: 0, BlockSize: 168)
+					0x5D9D5F0C	THash_RipeMD160 (DigestSize: 20, BlockSize: 64)
+					0x6792C1A1	THash_SHA3_512 (DigestSize: 64, BlockSize: 72, default)
+					0x6AF8C76A	THash_Haval256 (DigestSize: 32, BlockSize: 128)
+					0x7CE2D79E	THash_SHA0 (DigestSize: 20, BlockSize: 64)
+					0x7EC9E343	THash_Tiger (DigestSize: 24, BlockSize: 64)
+					0x886D5BD2	THash_SHA512 (DigestSize: 64, BlockSize: 128)
+					0x8E115051	THash_Keccak_256 (DigestSize: 32, BlockSize: 136)
+					0x93F3FE0E	THash_Snefru128 (DigestSize: 16, BlockSize: 48)
+					0x9D9517A3	THash_RipeMD256 (DigestSize: 32, BlockSize: 64)
+					0xA09321D2	THash_SHA3_224 (DigestSize: 28, BlockSize: 144)
+					0xA2A52389	THash_Whirlpool0 (DigestSize: 64, BlockSize: 64)
+					0xA3649174	THash_MD2 (DigestSize: 16, BlockSize: 16)
+					0xAAF08FC5	THash_Haval160 (DigestSize: 20, BlockSize: 128)
+					0xB441391C	THash_SHA384 (DigestSize: 48, BlockSize: 128)
+					0xC047C2F3	THash_Haval128 (DigestSize: 16, BlockSize: 128)
+					0xC366F226	THash_Haval192 (DigestSize: 24, BlockSize: 128)
+					0xCBB73081	THash_Haval224 (DigestSize: 28, BlockSize: 128)
+					0xD4732507	THash_Keccak_384 (DigestSize: 48, BlockSize: 104)
+					0xD5A2131F	THash_Whirlpool1 (DigestSize: 64, BlockSize: 64)
+					0xE85F47C9	THash_Keccak_512 (DigestSize: 64, BlockSize: 72)
+					0xE87A86C8	THash_WhirlpoolT (DigestSize: 64, BlockSize: 64)
+					0xE9AF729E	THash_Square (DigestSize: 16, BlockSize: 16)
+					0xEC61EF43	THash_BCrypt (DigestSize: 23, BlockSize: 8)
+					0xEE234C4A	THash_SHA256 (DigestSize: 32, BlockSize: 64)
+					0xF4867A38	THash_Sapphire (DigestSize: 64, BlockSize: 1)
+					0xF7DACACC	THash_Shake256 (DigestSize: 0, BlockSize: 136)
+	Byte	1		11. IV Size (default: 16 = 0x10)
+	Binary	var		12. IV (Random Data)
+	Byte	1		13. IV filler byte (default: 0xFF)
+	Byte	1		14. Padding mode
+					0x00	None (default)
+					0x01	PKCS#5
+					0x02	PKCS#7
+					0x03	ANSI X9.23
+					0x04	ISO 10126
+					0x05	ISO 7816
+	Byte	1		15. Size of seed (default 32 = 0x20)
+	Binary	0-255		16. Seed (Random data)
+	Byte	1		17. KDF version
+					0x01	KDF1
+					0x02	KDF2
+					0x03	KDF3
+					0x04	KDFx (default, proprietary to DEC)
+					0x05	PBKDF2
+	Int32LE	0-4		18. PBKDF iterations (ONLY present if KDF Version = 0x05), little endian
+	Byte	0-1		19. Size of GCM Auth Tag in bytes (ONLY present if cipher mode is GCM). Usual lengths are:
+					0x04	 32 bits (not recommended)
+					0x08	 64 bits (not recommended)
+					0x0C	 96 bits
+					0x0D	104 bits
+					0x0E	112 bits
+					0x0F	120 bits
+					0x10	128 bits (default)
+	Binary	var		20. With DEC 6.5 encrypted data (read until file end minus the size of the checksum)
+					Encryption-Password = Hash->KDf<Version>(User-Password, Seed)
+					Note that the password is treated as UTF-8
+	Binary	0-255		21. DEC's "CalcMAC"
+					This is a C-MAC which is the encryption of the last block concatention feedback.
+					Size is one cipher block.
+					(NOT present if cipher mode is ECB)
+	Binary	0-255		22. GCM Auth Tag
+					Size as specified before.
+					(ONLY present if cipher mode is GCM)
+	Binary	var		23. HMAC checksum (Encrypt-then-HMAC)
 					= HMAC(HMacKey, Whole encrypted file except HMAC part)
 					with Key = Encryption-Password
 					Size dependend on the hash algorithm (DigestSize).

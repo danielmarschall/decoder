@@ -10,7 +10,7 @@ uses
   DECRandom, System.IOUtils, DecoderFuncs;
 
 type
-  TDc4FormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50);
+  TDc4FormatVersion = (fvHagenReddmannExample, fvDc40, fvDc41Beta, fvDc41FinalCancelled, fvDc50, fvDc51);
 
   TKdfVersion = (kvUnknown, kvKdf1, kvKdf2, kvKdf3, kvKdfx, kvPbkdf2);
 
@@ -31,6 +31,7 @@ type
     CipherMode: TCipherMode;
     PaddingMode: TPaddingMode;
     GCMAuthTagSizeInBytes: byte;
+    SevenZipAlgo: TGuid;
     ContainFileOrigName: TDc4FileNamePolicy;
     ContainFileOrigSize: boolean;
     ContainFileOrigDate: boolean;
@@ -98,12 +99,19 @@ uses
   ;
 
 const
+  CLSID_Null            : TGUID = '{00000000-0000-0000-0000-000000000000}';
+  // Taken from sevenzip.pas:
+  CLSID_CFormat7z       : TGUID = '{23170F69-40C1-278A-1000-000110070000}'; // [OUT] 7z
+  CLSID_CFormatZip      : TGUID = '{23170F69-40C1-278A-1000-000110010000}'; // [OUT] zip jar xpi
+
+const
   DC4_ID_BASES: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of Int64 = (
     $84485225, // Hagen Reddmann Example (no .dc4 files)
     $59178954, // (De)Coder 4.0
     $84671842, // (De)Coder 4.1 beta*
     $19387612, // (De)Coder 4.1 final (cancelled)*
-    $1259d82a  // (De)Coder 5.x
+    $1259d82a, // (De)Coder 5.0
+    $1259d82a  // (De)Coder 5.1
     // * = can be changed in the file format
   );
 
@@ -982,6 +990,12 @@ begin
     result.GCMAuthTagSizeInBytes := 128 shr 3
   else
     result.GCMAuthTagSizeInBytes := 0;
+  if V >= fvDc50 then
+    result.SevenZipAlgo := CLSID_CFormat7z
+  else if V >= fvDc40 then
+    result.SevenZipAlgo := CLSID_CFormatZip
+  else
+    result.SevenZipAlgo := CLSID_Null;
   result.ContainFileOrigSize := false; // available since ver4, but disabled by default
   result.ContainFileOrigDate := false; // available since ver4, but disabled by default
 end;
@@ -1008,6 +1022,9 @@ resourcestring
   SOrigFileNameOnlyHiddenInVer4 = 'Orig File Name can only be hidden in format version 4';
   SOrigFileSizeOnlyAvailableInVer4 = 'Orig FileSize only available in format version 4';
   SOrigFileDateOnlyAvailableInVer4 = 'Orig FileDate only available in format version 4';
+  SSevenZipAlgoMustBeNull = 'For this format version, the 7z compression algorithm must be NULL';
+  SSevenZipAlgoMustBeZip = 'For this format version, the 7z compression algorithm must be ZIP';
+  SSevenZipAlgoMustBe7zip = 'For this format version, the 7z compression algorithm must be 7ZIP';
 begin
   // Uncommented, because IsCompressedFolder is part of TDC4FileInfo, not of TDC4Parameters
   //if (AParameters.Dc4FormatVersion < fvDc40) and (AParameters.IsCompressedFolder) then
@@ -1056,6 +1073,17 @@ begin
     raise Exception.CreateRes(@SOrigFileSizeOnlyAvailableInVer4);
   if (AParameters.Dc4FormatVersion < fvDc50) and AParameters.ContainFileOrigDate then
     raise Exception.CreateRes(@SOrigFileDateOnlyAvailableInVer4);
+
+  if (AParameters.Dc4FormatVersion = fvHagenReddmannExample) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_Null) then
+    raise Exception.CreateRes(@SSevenZipAlgoMustBeNull);
+  if (AParameters.Dc4FormatVersion >= fvDc40) and (AParameters.Dc4FormatVersion < fvDc50) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_CFormatZip) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_Null) then
+    raise Exception.CreateRes(@SSevenZipAlgoMustBeZip);
+  if (AParameters.Dc4FormatVersion = fvDc50) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_CFormat7z) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_Null) then
+    raise Exception.CreateRes(@SSevenZipAlgoMustBe7zip);
+  if (AParameters.Dc4FormatVersion >= fvDc51) then
+  begin
+    // TODO: Validate if 7z is okay
+  end;
 end;
 
 procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
@@ -1065,29 +1093,31 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
     DC4_SUBFORMAT_VERSION_1 = '(De)Coder 4.0';
     DC4_SUBFORMAT_VERSION_2 = '(De)Coder 4.1 Beta';
     DC4_SUBFORMAT_VERSION_3 = '(De)Coder 4.1 Final (Cancelled)';
-    DC4_SUBFORMAT_VERSION_4 = '(De)Coder 5.x';
+    DC4_SUBFORMAT_VERSION_4 = '(De)Coder 5.0';
+    DC4_SUBFORMAT_VERSION_5 = '(De)Coder 5.1';
   const
     DC4_SUBFORMAT_VERSION: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of PResStringRec = (
       @DC4_SUBFORMAT_VERSION_0,
       @DC4_SUBFORMAT_VERSION_1,
       @DC4_SUBFORMAT_VERSION_2,
       @DC4_SUBFORMAT_VERSION_3,
-      @DC4_SUBFORMAT_VERSION_4
+      @DC4_SUBFORMAT_VERSION_4,
+      @DC4_SUBFORMAT_VERSION_5
     );
 
   resourcestring
-    INTEGRITY_CHECK_INFO_0 = 'DEC CalcMac';
-    INTEGRITY_CHECK_INFO_1 = 'Hash of source data';
-    INTEGRITY_CHECK_INFO_2 = 'Nested Hash of source data with password';
-    INTEGRITY_CHECK_INFO_3 = 'Nested Hash of source data with password';
-    INTEGRITY_CHECK_INFO_4 = 'Encrypt-then-HMAC';
+    INTEGRITY_CHECK_INFO_DecCalcMac = 'DEC CalcMac';
+    INTEGRITY_CHECK_INFO_SourceHash = 'Hash of source data';
+    INTEGRITY_CHECK_INFO_NestedHash = 'Nested Hash of source data with password';
+    INTEGRITY_CHECK_INFO_EncryptThenMac = 'Encrypt-then-HMAC';
   const
     INTEGRITY_CHECK_INFO: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of PResStringRec = (
-      @INTEGRITY_CHECK_INFO_0,
-      @INTEGRITY_CHECK_INFO_1,
-      @INTEGRITY_CHECK_INFO_2,
-      @INTEGRITY_CHECK_INFO_3,
-      @INTEGRITY_CHECK_INFO_4
+      @INTEGRITY_CHECK_INFO_DecCalcMac,
+      @INTEGRITY_CHECK_INFO_SourceHash,
+      @INTEGRITY_CHECK_INFO_NestedHash,
+      @INTEGRITY_CHECK_INFO_NestedHash,
+      @INTEGRITY_CHECK_INFO_EncryptThenMac,
+      @INTEGRITY_CHECK_INFO_EncryptThenMac
     );
 
   resourcestring
@@ -1276,6 +1306,8 @@ var
   tmpWS: WideString;
   outFileDidExist: boolean;
   PasswordRBS: RawByteString;
+  SevenZipAlgo: TGUID;
+  SevenZipExt: string;
   (*
   IsFolder   IsZLib    SourceFile           ATempFileNameZLib       Source stream
   ---------------------------------------------------------------------------------------
@@ -1323,23 +1355,31 @@ begin
   ATempFileNameZLib := '';
   try
     try
+      {$REGION 'Determine Folder Compress Algorithm'}
+      if not IsFolder then
+        SevenZipAlgo := CLSID_Null
+      else if AParameters.Dc4FormatVersion >= fvDc51 then
+        SevenZipAlgo := AParameters.SevenZipAlgo
+      else if AParameters.Dc4FormatVersion >= fvDc50 then
+        SevenZipAlgo := CLSID_CFormat7z
+      else if AParameters.Dc4FormatVersion >= fvDc40 then
+        SevenZipAlgo := CLSID_CFormatZip
+      else
+        raise Exception.CreateRes(@SFolderEncryptionNotAllowed);
+
+      if IsEqualGUID(SevenZipAlgo, CLSID_CFormatZip) then
+        SevenZipExt := '.zip'
+      else if IsEqualGUID(SevenZipAlgo, CLSID_CFormat7z) then
+        SevenZipExt := '.7z'
+      else
+        SevenZipExt := '.compress';
+      {$ENDREGION}
+
       {$REGION 'Encrypt folder? => Pack it to a file (version 1+)'}
       if IsFolder then
       begin
-        if AParameters.Dc4FormatVersion >= fvDc50 then
-        begin
-          SourceFile := ExcludeTrailingPathDelimiter(AFileName) + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z';
-          SevenZipFolder(AFileName, SourceFile, OnProgressProc);
-        end
-        else if AParameters.Dc4FormatVersion >= fvDc40 then
-        begin
-          SourceFile := ExcludeTrailingPathDelimiter(AFileName) + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip';
-          SevenZipFolder(AFileName, SourceFile, OnProgressProc);
-        end
-        else
-        begin
-          raise Exception.CreateRes(@SFolderEncryptionNotAllowed);
-        end;
+        SourceFile := ExcludeTrailingPathDelimiter(AFileName) + '_Tmp_' + RandStringFileNameFriendly(10) + SevenZipExt;
+        SevenZipFolder(AFileName, SourceFile, SevenZipAlgo, OnProgressProc);
       end
       else
       begin
@@ -1437,12 +1477,19 @@ begin
       end;
       {$ENDREGION}
 
+      {$REGION '3. Folder Compression Algorithm (version 5+)'}
+      if V >= fvDc51 then
+      begin
+        tempstream.WriteGuid(SevenZipAlgo);
+      end;
+      {$ENDREGION}
+
       {$REGION 'Version (only version 1..3)'}
       if (V>=fvDc40) and (V<fvDc50) then
         tempstream.WriteByte(Ord(V));
       {$ENDREGION}
 
-      {$REGION '3./4. Filename (version 1+)'}
+      {$REGION '4./5. Filename (version 1+)'}
       if V = fvDc40 then
       begin
         // Ver1: Clear text filename, terminated with "?"
@@ -1530,7 +1577,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '5. File Size (version 4+)'}
+      {$REGION '6. File Size (version 4+)'}
       if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigSize and IsFolder then
@@ -1542,7 +1589,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '6. File Date/Time (version 4+)'}
+      {$REGION '7. File Date/Time (version 4+)'}
       if V >= fvDc50 then
       begin
         if AParameters.ContainFileOrigDate and IsFolder then
@@ -1560,22 +1607,22 @@ begin
         tempstream.WriteLongBE(idBase);
       {$ENDREGION}
 
-      {$REGION '7. Cipher identity (version 0 and 2+)'}
+      {$REGION '8. Cipher identity (version 0 and 2+)'}
       Assert(not CipherClass.InheritsFrom(TCipher_VtsDeCoderOldCipher)); // You must not use DC2 or DC3 ciphers in DC4/DC5 files
       if V <> fvDc40 then
         tempstream.WriteLongBE(DC_DEC_Identity(idBase, CipherClass.ClassName, V<fvDc50));
       {$ENDREGION}
 
-      {$REGION '8. Cipher mode (version 0 and 2+)'}
+      {$REGION '9. Cipher mode (version 0 and 2+)'}
       if V <> fvDc40 then tempstream.WriteByte(Ord(Cipher.Mode));
       {$ENDREGION}
 
-      {$REGION '9. Hash identity (version 0 and 2+)'}
+      {$REGION '10. Hash identity (version 0 and 2+)'}
       if V <> fvDc40 then
         tempstream.WriteLongBE(DC_DEC_Identity(idBase, HashClass.ClassName, V<fvDc50));
       {$ENDREGION}
 
-      {$REGION '10./11. IV (only version 4+)'}
+      {$REGION '11./12. IV (only version 4+)'}
       if V >= fvDc50 then
       begin
         tempstream.WriteByte(Length(IV));
@@ -1583,26 +1630,26 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '12. IV Fill Byte (only version 4+)'}
+      {$REGION '13. IV Fill Byte (only version 4+)'}
       if V >= fvDc50 then
       begin
         tempstream.WriteByte(IvFillByte);
       end;
       {$ENDREGION}
 
-      {$REGION '13. Cipher padding mode (only version 4+; currently unused by DEC)'}
+      {$REGION '14. Cipher padding mode (only version 4+; currently unused by DEC)'}
       if V >= fvDc50 then
       begin
         tempstream.WriteByte(Ord(Cipher.PaddingMode));
       end;
       {$ENDREGION}
 
-      {$REGION '14./15. Seed (only version 0 or version 2+)'}
+      {$REGION '15./16. Seed (only version 0 or version 2+)'}
       if V <> fvDc40 then tempstream.WriteByte(Length(Seed));
       tempstream.WriteRawByteString(Seed);
       {$ENDREGION}
 
-      {$REGION '16. KDF version (only version 4+)'}
+      {$REGION '17. KDF version (only version 4+)'}
       if V >= fvDc50 then
       begin
         // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
@@ -1610,12 +1657,12 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '17. PBKDF2 Iterations (only for KdfVersion=kvPbkdf2)'}
+      {$REGION '18. PBKDF2 Iterations (only for KdfVersion=kvPbkdf2)'}
       if KdfVersion = kvPbkdf2 then
         tempstream.WriteInt32(PbkdfIterations);
       {$ENDREGION}
 
-      {$REGION '18. GCM Tag length (only if GCM mode)'}
+      {$REGION '19. GCM Tag length (only if GCM mode)'}
       if (V>=fvDc50) and (Cipher.Mode=cmGCM) then
       begin
         if GCMAuthTagSizeInBytes > 16 then GCMAuthTagSizeInBytes := 16; // 128 bits this is the size of CalcGaloisHash()
@@ -1624,7 +1671,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '19. Encrypted data (version 0 with length prefix, version 1+ without)'}
+      {$REGION '20. Encrypted data (version 0 with length prefix, version 1+ without)'}
       Cipher.Init(Key, IV, IvFillByte, Cipher.PaddingMode);
       try
         Source.Position := 0;
@@ -1640,7 +1687,7 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '20. DEC CalcMAC (not if ECB mode)'}
+      {$REGION '21. DEC CalcMAC (not if ECB mode)'}
       if ((V=fvHagenReddmannExample) or (V>=fvDc50)) and (Cipher.Mode<>cmECBx) then
       begin
         HashResult2 := Cipher.CalcMAC;
@@ -1652,14 +1699,14 @@ begin
       end;
       {$ENDREGION}
 
-      {$REGION '21. GCM Tag (only if GCM mode)'}
+      {$REGION '22. GCM Tag (only if GCM mode)'}
       if (V>=fvDc50) and (Cipher.Mode=cmGCM) then
       begin
         tempstream.WriteRawBytes(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult);
       end;
       {$ENDREGION}
 
-      {$REGION '22. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
+      {$REGION '23. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
       if V = fvDc40 then
       begin
         Source.Position := 0;
@@ -1779,6 +1826,8 @@ var
   OnlyReadFileInfo: boolean;
   outFileDidExist: boolean;
   PasswordRBS: RawByteString;
+  SevenZipAlgo: TGUID;
+  SevenZipExt: string;
   (*
   IsFolder   IsZLib    ATempFileNameZipOrDirectOutput   ATempFileNameZLib    tempstream
   ---------------------------------------------------------------------------------------
@@ -1890,17 +1939,32 @@ begin
         if not V_Detected then
           raise Exception.CreateRes(@SUnsupportedFileFormatVersion);
 
+        {$REGION '3. Folder Compression Algorithm (version 5+)'}
+        if V >= fvDc51 then
+          SevenZipAlgo := Source.ReadGuid
+        else if not IsFolder then
+          SevenZipAlgo := CLSID_Null
+        else if V >= fvDc50 then
+          SevenZipAlgo := CLSID_CFormat7z
+        else if V >= fvDc40 then
+          SevenZipAlgo := CLSID_CFormatZip
+        else
+          Assert(False); // cannot happen because of Hagen Reddmann Format, IsFolder would be default to False.
+
+        if IsEqualGUID(SevenZipAlgo, CLSID_CFormatZip) then
+          SevenZipExt := '.zip'
+        else if IsEqualGUID(SevenZipAlgo, CLSID_CFormat7z) then
+          SevenZipExt := '.7z'
+        else
+          SevenZipExt := '.compress';
+        {$ENDREGION}
+
         {$REGION 'Create output stream'}
         if not OnlyReadFileInfo then
         begin
           if IsFolder then
           begin
-            if V >= fvDc50 then
-              ATempFileNameZipOrDirectOutput := ExcludeTrailingPathDelimiter(AOutput) + '_Tmp_'+RandStringFileNameFriendly(10)+'.7z'
-            else if V >= fvDc50 then
-              ATempFileNameZipOrDirectOutput := ExcludeTrailingPathDelimiter(AOutput) + '_Tmp_'+RandStringFileNameFriendly(10)+'.zip'
-            else
-              Assert(False);
+            ATempFileNameZipOrDirectOutput := ExcludeTrailingPathDelimiter(AOutput) + '_Tmp_' + RandStringFileNameFriendly(10) + SevenZipExt;
           end
           else
           begin
@@ -1945,7 +2009,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '3./4. Filename (version 1+)'}
+        {$REGION '4./5. Filename (version 1+)'}
         FileNameUserPasswordEncrypted := false;
         if V <> fvHagenReddmannExample then
         begin
@@ -1993,14 +2057,14 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '5. File Size (version 4+)'}
+        {$REGION '6. File Size (version 4+)'}
         if V >= fvDc50 then
         begin
           OrigFileSize := Source.ReadInt64;
         end;
         {$ENDREGION}
 
-        {$REGION '6. File Date/Time (version 4+)'}
+        {$REGION '7. File Date/Time (version 4+)'}
         if V >= fvDc50 then
         begin
           OrigFileDate := Source.ReadInt64;
@@ -2014,7 +2078,7 @@ begin
           idBase := DC4_ID_BASES[V];
         {$ENDREGION}
 
-        {$REGION '7. Cipher identity (only version 0 or 2+)'}
+        {$REGION '8. Cipher identity (only version 0 or 2+)'}
         if V <> fvHagenReddmannExample then // If V=fvHagenReddmannExample, then we already checked it and the stream position should be 4.
         begin
           // Now query with the new actual fitting id base version (dependant on V)
@@ -2029,14 +2093,14 @@ begin
         Cipher := CipherClass.Create;
         {$ENDREGION}
 
-        {$REGION '8. Cipher mode (only version 0 or 2+)'}
+        {$REGION '9. Cipher mode (only version 0 or 2+)'}
         if V = fvDc40 then
           Cipher.Mode := TCipherMode.cmCTSx
         else
           Cipher.Mode := TCipherMode(Source.ReadByte);
         {$ENDREGION}
 
-        {$REGION '9. Hash identity (only version 0 or version 2+)'}
+        {$REGION '10. Hash identity (only version 0 or version 2+)'}
         if V = fvDc40 then
           HashClass := THash_SHA512
         else
@@ -2044,21 +2108,21 @@ begin
         AHash := HashClass.Create;
         {$ENDREGION}
 
-        {$REGION '10./11. IV (only version 4+)'}
+        {$REGION '11./12. IV (only version 4+)'}
         if V >= fvDc50 then
           IV := Source.ReadRawBytes(Source.ReadByte)
         else
           SetLength(IV, 0);
         {$ENDREGION}
 
-        {$REGION '12. IV Fill Byte (only version 4+)'}
+        {$REGION '13. IV Fill Byte (only version 4+)'}
         if V >= fvDc50 then
           IvFillByte := Source.ReadByte
         else
           IvFillByte := $FF;
         {$ENDREGION}
 
-        {$REGION '13. Cipher padding mode (only version 4+; currently unused by DEC)'}
+        {$REGION '14. Cipher padding mode (only version 4+; currently unused by DEC)'}
         if V >= fvDc50 then
         begin
           iPaddingMode := Source.ReadByte;
@@ -2072,14 +2136,14 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '14./15. Seed (only version 0 or version 2+)'}
+        {$REGION '15./16. Seed (only version 0 or version 2+)'}
         if V = fvDc40 then
           Seed := Source.ReadRawByteString(16)
         else
           Seed := Source.ReadRawByteString(Source.ReadByte);
         {$ENDREGION}
 
-        {$REGION '16. KDF version (only version 4+)'}
+        {$REGION '17. KDF version (only version 4+)'}
         // 1=KDF1, 2=KDF2, 3=KDF3, 4=KDFx, 5=PBKDF2
         // For PBKDF2, a DWORD with the iterations follows
         if V >= fvDc50 then
@@ -2096,7 +2160,7 @@ begin
           raise Exception.CreateRes(@SInvalidKdfVersion);
         {$ENDREGION}
 
-        {$REGION '17. PBKDF2 Iterations (ONLY PRESENT for PBKDF2)'}
+        {$REGION '18. PBKDF2 Iterations (ONLY PRESENT for PBKDF2)'}
         if KDFVersion = kvPbkdf2 then
           PbkdfIterations := Source.ReadInt32
         else
@@ -2143,14 +2207,14 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '18. GCM Tag Length (only version 4+)'}
+        {$REGION '19. GCM Tag Length (only version 4+)'}
         if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           TDECFormattedCipher(Cipher).AuthenticationResultBitLength := Source.ReadByte * 8;
         end;
         {$ENDREGION}
 
-        {$REGION '19. Encrypted data (version 0 with length prefix, version 1+ without)'}
+        {$REGION '20. Encrypted data (version 0 with length prefix, version 1+ without)'}
         if not OnlyReadFileInfo then
         begin
           Cipher.Init(Key, IV, IvFillByte, Cipher.PaddingMode);
@@ -2182,7 +2246,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '20. DEC CalcMAC (version 0 with length prefix, version 4+ without)'}
+        {$REGION '21. DEC CalcMAC (version 0 with length prefix, version 4+ without)'}
         if not OnlyReadFileInfo and ((V=fvHagenReddmannExample) or (V>=fvDc50)) and (Cipher.Mode <> cmECBx) then
         begin
           if V=fvHagenReddmannExample then
@@ -2194,7 +2258,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '21. GCM Tag (only version 4+)'}
+        {$REGION '22. GCM Tag (only version 4+)'}
         if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           if BytesToRawByteString(TDECFormattedCipher(Cipher).CalculatedAuthenticationResult) <> Source.ReadRawByteString(TDECFormattedCipher(Cipher).AuthenticationResultBitLength shr 3) then
@@ -2239,7 +2303,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION '22. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
+        {$REGION '23. Hash/HMAC (version 1-3 hash on source, version 4+ hmac on encrypted file)'}
         // (For version 4, the HMAC was checked above, before encrypting, so we exclude the check here)
         if not OnlyReadFileInfo and (V >= fvDc40) and (V < fvDc50) then
         begin
@@ -2319,7 +2383,8 @@ begin
               try
                 // version 1..3 = ZIP
                 // version 4+ = 7zip
-                SevenZipExtract(ATempFileNameZipOrDirectOutput, RelToAbs(AOutput), OnProgressProc);
+                // version 5+ = variable
+                SevenZipExtract(ATempFileNameZipOrDirectOutput, RelToAbs(AOutput), SevenZipAlgo, OnProgressProc);
               except
                 // Can happen if the 7z.*.dll files are missing. Let the user unpack themselves
                 // Remove the temp stuff from the name

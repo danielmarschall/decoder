@@ -5,8 +5,11 @@ interface
 uses
   System.SysUtils, DecoderFuncs{$IFNDEF Console}, Fmx.Forms{$ENDIF};
 
-procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
-procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProgressEvent=nil);
+procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil); overload;
+procedure SevenZipFolder(const AFolderName, AArchFile: string; AAlgo: TGuid; AOnProgress: TDcProgressEvent=nil); overload;
+
+procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProgressEvent=nil); overload;
+procedure SevenZipExtract(const AArchFile, AFolder: string; AAlgo: TGuid; AOnProgress: TDcProgressEvent=nil); overload;
 
 implementation
 
@@ -19,6 +22,11 @@ uses
 
 const
   E_ABORT = HRESULT($80004004); // taken from Winapi.Windows.pas
+
+const
+  // Taken from sevenzip.pas:
+  CLSID_CFormat7z       : TGUID = '{23170F69-40C1-278A-1000-000110070000}'; // [OUT] 7z
+  CLSID_CFormatZip      : TGUID = '{23170F69-40C1-278A-1000-000110010000}'; // [OUT] zip jar xpi
 
 type
   TSevenZipProgressContext = packed record
@@ -98,23 +106,32 @@ begin
 end;
 
 procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
+resourcestring
+  SFileExtMissingForFolderPack = 'File extension missing for SevenZipFolder()';
+var
+  Algo: TGuid;
+begin
+  if AArchFile.EndsWith('.7z', true) then
+    Algo := CLSID_CFormat7z
+  else if AArchFile.EndsWith('.zip', true) then
+    Algo := CLSID_CFormatZip
+  else
+    raise Exception.CreateRes(@SFileExtMissingForFolderPack);
+  SevenZipFolder(AFolderName, AArchFile, Algo, AOnProgress);
+end;
+
+procedure SevenZipFolder(const AFolderName, AArchFile: string; AAlgo: TGuid; AOnProgress: TDcProgressEvent=nil);
 {$IFDEF MsWindows}
 var
   Arch: I7zOutArchive;
   ProgressCtx: TSevenZipProgressContext;
 resourcestring
   SPackFolderTask = '7zip Pack folder';
-  SFileExtMissingForFolderPack = 'File extension missing for SevenZipFolder()';
 begin
   FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
   ProgressCtx.Task := LoadResString(@SPackFolderTask);
   ProgressCtx.DecProgress := AOnProgress;
-  if AArchFile.EndsWith('.7z', true) then
-    Arch := CreateOutArchive(CLSID_CFormat7z, SevenZipGetDll)
-  else if AArchFile.EndsWith('.zip', true) then
-    Arch := CreateOutArchive(CLSID_CFormatZip, SevenZipGetDll)
-  else
-    raise Exception.CreateRes(@SFileExtMissingForFolderPack);
+  Arch := CreateOutArchive(AAlgo, SevenZipGetDll);
   Arch.AddFiles(AFolderName, '', '*', true);
   SetCompressionLevel(Arch, 5);
   SevenZipSetCompressionMethod(Arch, m7BZip2);
@@ -129,23 +146,32 @@ begin
 end;
 
 procedure SevenZipExtract(const AArchFile, AFolder: string; AOnProgress: TDcProgressEvent=nil);
+resourcestring
+  SFileExtMissingForFolderUnpack = 'File extension missing for SevenZipExtract()';
+var
+  Algo: TGuid;
+begin
+  if AArchFile.EndsWith('.7z', true) then
+    Algo := CLSID_CFormat7z
+  else if AArchFile.EndsWith('.zip', true) then
+    Algo := CLSID_CFormatZip
+  else
+    raise Exception.CreateRes(@SFileExtMissingForFolderUnpack);
+  SevenZipExtract(AArchFile, AFolder, Algo, AOnProgress);
+end;
+
+procedure SevenZipExtract(const AArchFile, AFolder: string; AAlgo: TGuid; AOnProgress: TDcProgressEvent=nil);
 {$IFDEF MsWindows}
 var
   Arch: I7zInArchive;
   ProgressCtx: TSevenZipProgressContext;
 resourcestring
   SUnpackFolderTask = '7zip Unpack folder';
-  SFileExtMissingForFolderUnpack = 'File extension missing for SevenZipExtract()';
 begin
   FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
   ProgressCtx.Task := LoadResString(@SUnpackFolderTask);
   ProgressCtx.DecProgress := AOnProgress;
-  if AArchFile.EndsWith('.7z', true) then
-    Arch := CreateInArchive(CLSID_CFormat7z, SevenZipGetDll)
-  else if AArchFile.EndsWith('.zip', true) then
-    Arch := CreateInArchive(CLSID_CFormatZip, SevenZipGetDll)
-  else
-    raise Exception.CreateRes(@SFileExtMissingForFolderUnpack);
+  Arch := CreateInArchive(AAlgo, SevenZipGetDll);
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.OpenFile(AArchFile);
   Arch.ExtractTo(AFolder);
