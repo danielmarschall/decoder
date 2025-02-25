@@ -1794,7 +1794,7 @@ var
   OrigFileSize: Int64;
   OrigFileDate: Int64;
   ch: RawByteString;
-  F: byte;
+  Flags: byte;
   V: TDc4FormatVersion;
   V_Detected: boolean;
   Cipher: TDECCipher;
@@ -1840,7 +1840,6 @@ var
   ATempFileNameZipOrDirectOutput: string; // If IsFolder, then =AOutput+.7z, else =AOutput
 resourcestring
   SFileOrFolderNotFound = 'File or folder %s not found';
-  SFormatNotSupported = 'Format not supported';
   SUnsupportedFileFormatVersion = 'Unsupported file format version. Please try downloading the latest version of (De)Coder';
   SInvalidFileName = 'Invalid file name';
   SInvalidPaddingMode = 'Invalid padding mode';
@@ -1871,69 +1870,87 @@ begin
   OrigFileDate := -1;
   outFileDidExist := FileExists(AOutput);
   V_Detected := false;
-  V := fvHagenReddmannExample; // to avoid that the compiler complains
+  Flags := 0;
+  CipherClass := TCipher_Null; // to avoid that the compiler complains. Our code paths set this correctly
   try
     try
       try
-        {$REGION 'Is it the Hagen Reddmann example file format?'}
-        CipherClass := DC_DEC_CipherById(DC4_ID_BASES[fvHagenReddmannExample], Source.ReadLongBE, true, true);
-        if Assigned(CipherClass) then
+        {$REGION '1./2. Magic sequence + Flags (version 4+)'}
+        for V := fvDc50 to High(TDc4FormatVersion) do
         begin
-          V := fvHagenReddmannExample;
-          V_Detected := true;
-        end
-        else
-        begin
-          Source.Position := 0;
+          MagicSeq := '[' + RawByteString(DeCoder4X_GetOID(V)) + ']' + #13#10;
+          if (Source.Size >= Length(MagicSeq) + 1{Flags}) and (Source.ReadRawByteString(Length(MagicSeq)) = MagicSeq) then
+          begin
+            V_Detected := true;
+            Flags := Source.ReadByte;
+            break; // V stays
+          end
+          else
+            Source.Position := 0;
         end;
         {$ENDREGION}
 
-        {$REGION '1. Magic sequence (version 4+)'}
-        if not V_Detected then
+        {$REGION '... or is it the Hagen Reddmann example file format? (Version 0)'}
+        if not V_Detected and (Source.Size >= 4) then
         begin
-          for V := fvDc50 to High(TDc4FormatVersion) do
+          CipherClass := DC_DEC_CipherById(DC4_ID_BASES[fvHagenReddmannExample], Source.ReadLongBE, true, true);
+          if Assigned(CipherClass) then
           begin
-            MagicSeq := '[' + RawByteString(DeCoder4X_GetOID(V)) + ']' + #13#10;
-            if (Source.Size >= Length(MagicSeq)) and (Source.ReadRawByteString(Length(MagicSeq)) = MagicSeq) then
-            begin
-              V_Detected := true;
-              break;
-            end
-            else
-              Source.Position := 0;
+            V := fvHagenReddmannExample;
+            V_Detected := true;
+            Flags := 0;
+          end
+          else
+          begin
+            Source.Position := 0;
           end;
         end;
         {$ENDREGION}
 
-        {$REGION '2. Flags (version 1+)'}
-        if not V_Detected or (V_Detected and (V>=fvDc40)) then
+        {$REGION '... or Flags + Version byte (only version 1..3)'}
+        if not V_Detected and (Source.Size >= 2) then
         begin
-          // Bit 0:    [Ver1+] Is packed folder (1) or a regular file (0)?
-          // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
-          // Bit 2:    Reserved
-          // Bit 3:    Reserved
-          // Bit 4:    Reserved
-          // Bit 5:    Reserved
-          // Bit 6:    Reserved
-          // Bit 7:    Reserved
-          F := Source.ReadByte;
-          IsFolder := (F and 1) <> 0;
-          IsZLibCompressed := (F and 2) <> 0;
-        end;
-        {$ENDREGION}
-
-        {$REGION 'Version byte (only version 1..3)'}
-        if not V_Detected then
-        begin
+          Flags := Source.ReadByte;
           // 01 = (De)Coder 4.0
           // 02 = (De)Coder 4.1 Beta
           // 03 = (De)Coder 4.1 Final Cancelled (never released)
           iTmp := Source.ReadByte;
-          if (iTmp < {Low(TDc4FormatVersion)}Ord(fvDc40)) or (iTmp > {High(TDc4FormatVersion)}Ord(fvDc41FinalCancelled)) then
-            raise Exception.CreateRes(@SFormatNotSupported);
-          V := TDc4FormatVersion(iTmp);
-          V_Detected := true;
+          if (iTmp >= {Low(TDc4FormatVersion)}Ord(fvDc40)) or (iTmp <= {High(TDc4FormatVersion)}Ord(fvDc41FinalCancelled)) then
+          begin
+            V := TDc4FormatVersion(iTmp);
+            V_Detected := true;
+          end;
         end;
+        {$ENDREGION}
+
+        {$REGION 'Process and check flags'}
+
+        // Bit 0:    [Ver1+] Is packed folder (1) or a regular file (0)?
+        IsFolder := (Flags and 1) <> 0;
+        if V_Detected and (V < fvDc40) and IsFolder then V_Detected := false; // unexpected bit
+
+        // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
+        IsZLibCompressed := (Flags and 2) <> 0;
+        if V_Detected and (V < fvDc41Beta) and IsZLibCompressed then V_Detected := false; // unexpected bit
+
+        // Bit 2:    Reserved
+        if V_Detected and ((Flags and 4) <> 0) then V_Detected := false; // unexpected bit
+
+        // Bit 3:    Reserved
+        if V_Detected and ((Flags and 8) <> 0) then V_Detected := false; // unexpected bit
+
+        // Bit 4:    Reserved
+        if V_Detected and ((Flags and 16) <> 0) then V_Detected := false; // unexpected bit
+
+        // Bit 5:    Reserved
+        if V_Detected and ((Flags and 32) <> 0) then V_Detected := false; // unexpected bit
+
+        // Bit 6:    Reserved
+        if V_Detected and ((Flags and 64) <> 0) then V_Detected := false; // unexpected bit
+
+        // Bit 7:    Reserved
+        if V_Detected and ((Flags and 128) <> 0) then V_Detected := false; // unexpected bit
+
         {$ENDREGION}
 
         if not V_Detected then
@@ -1983,14 +2000,14 @@ begin
         end;
         {$ENDREGION}
 
-        // Note in re Hagen Redmann example: From here, variable V can be used to check it
-
+        {$REGION 'Decide if password is ANSI (ver 0..3) or UTF-8 (ver 4+)'}
         if V >= fvDc50 then
           PasswordRBS := UTF8Encode(APassword)  // version 4+: Password treated as UTF-8
         else
           PasswordRBS := AnsiString(APassword); // version 0..3: Password treated as ANSI
+        {$ENDREGION}
 
-        {$REGION 'Decide about file terminus'}
+        {$REGION 'Decide about file terminus (for version 2 and 3)'}
         if (V = fvHagenReddmannExample) or (V = fvDc40) then
         begin
           FileTerminus := '';
