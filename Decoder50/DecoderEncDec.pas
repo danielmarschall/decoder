@@ -1282,7 +1282,7 @@ var
   OrigNameEncrypted: RawByteString;
   HashResult: TBytes;
   FileNameUserPasswordEncrypted: Boolean;
-  F: byte;
+  Flags: byte;
   Cipher: TDECCipher;
   Seed: RawByteString;
   Source: TFileStream;
@@ -1417,10 +1417,12 @@ begin
       FileNameUserPasswordEncrypted := AParameters.ContainFileOrigName = fpEncryptWithUserKey;
       {$ENDREGION}
 
+      {$REGION 'Decide if password is ANSI (ver 0..3) or UTF-8 (ver 4+)'}
       if V >= fvDc50 then
         PasswordRBS := UTF8Encode(APassword)  // version 4+: Password treated as UTF-8
       else
         PasswordRBS := AnsiString(APassword); // version 0..3: Password treated as ANSI
+      {$ENDREGION}
 
       {$REGION 'Compress stream if the file type is not already compressed'}
       if IsZLibCompressed and (V>=fvDc40) then
@@ -1462,7 +1464,7 @@ begin
       {$REGION '2. Flags (version 1+)'}
       if V >= fvDc40 then
       begin
-        // Bit 0:    [Ver1+] Is ZIP compressed folder (1) or a regular file (0)?
+        // Bit 0:    [Ver1+] Is compressed folder (1) or a regular file (0)?
         // Bit 1:    [Ver2+] Additionally ZLib compressed (1) or not ZLib compressed (0)?
         // Bit 2:    Reserved
         // Bit 3:    Reserved
@@ -1470,11 +1472,16 @@ begin
         // Bit 5:    Reserved
         // Bit 6:    Reserved
         // Bit 7:    Reserved
-        F := 0;
-        if IsFolder then F := F + 1;
-        if IsZLibCompressed then F := F + 2;
-        tempstream.WriteByte(F);
+        Flags := 0;
+        if IsFolder then Flags := Flags + 1;
+        if IsZLibCompressed then Flags := Flags + 2;
+        tempstream.WriteByte(Flags);
       end;
+      {$ENDREGION}
+
+      {$REGION 'Version byte (only version 1..3)'}
+      if (V>=fvDc40) and (V<fvDc50) then
+        tempstream.WriteByte(Ord(V));
       {$ENDREGION}
 
       {$REGION '3. Folder Compression Algorithm (version 5+)'}
@@ -1482,11 +1489,6 @@ begin
       begin
         tempstream.WriteGuid(SevenZipAlgo);
       end;
-      {$ENDREGION}
-
-      {$REGION 'Version (only version 1..3)'}
-      if (V>=fvDc40) and (V<fvDc50) then
-        tempstream.WriteByte(Ord(V));
       {$ENDREGION}
 
       {$REGION '4./5. Filename (version 1+)'}
