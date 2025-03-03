@@ -99,10 +99,7 @@ uses
   ;
 
 const
-  CLSID_Null            : TGUID = '{00000000-0000-0000-0000-000000000000}';
-  // Taken from sevenzip.pas:
-  CLSID_CFormat7z       : TGUID = '{23170F69-40C1-278A-1000-000110070000}'; // [OUT] 7z
-  CLSID_CFormatZip      : TGUID = '{23170F69-40C1-278A-1000-000110010000}'; // [OUT] zip jar xpi
+  CLSID_Null: TGUID = '{00000000-0000-0000-0000-000000000000}';
 
 const
   DC4_ID_BASES: array[Low(TDc4FormatVersion)..High(TDc4FormatVersion)] of Int64 = (
@@ -118,7 +115,7 @@ const
 function DeCoder4X_GetOID(V: TDc4FormatVersion): string;
 begin
   // This is the OID { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 37476 products(2) decoder(2) fileformat(1) dc4(4) stdX(X) }
-  result := '1.3.6.1.4.1.37476.2.2.1.4.'+IntToStr(Ord(V));
+  result := '1.3.6.1.4.1.37476.2.2.1.4.' + IntToStr(Ord(V));
 end;
 
 function DC_DEC_ClassExistedInDEC51(const cn: string): boolean;
@@ -1025,6 +1022,7 @@ resourcestring
   SSevenZipAlgoMustBeNull = 'For this format version, the 7z compression algorithm must be NULL';
   SSevenZipAlgoMustBeZip = 'For this format version, the 7z compression algorithm must be ZIP';
   SSevenZipAlgoMustBe7zip = 'For this format version, the 7z compression algorithm must be 7ZIP';
+  SSevenZipAlgoPackingNotImplemented = 'The 7z compression algorithm is either unknown or packing is not implemented';
 begin
   // Uncommented, because IsCompressedFolder is part of TDC4FileInfo, not of TDC4Parameters
   //if (AParameters.Dc4FormatVersion < fvDc40) and (AParameters.IsCompressedFolder) then
@@ -1074,15 +1072,29 @@ begin
   if (AParameters.Dc4FormatVersion < fvDc50) and AParameters.ContainFileOrigDate then
     raise Exception.CreateRes(@SOrigFileDateOnlyAvailableInVer4);
 
-  if (AParameters.Dc4FormatVersion = fvHagenReddmannExample) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_Null) then
-    raise Exception.CreateRes(@SSevenZipAlgoMustBeNull);
-  if (AParameters.Dc4FormatVersion >= fvDc40) and (AParameters.Dc4FormatVersion < fvDc50) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_CFormatZip) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_Null) then
-    raise Exception.CreateRes(@SSevenZipAlgoMustBeZip);
-  if (AParameters.Dc4FormatVersion = fvDc50) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_CFormat7z) and not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_Null) then
-    raise Exception.CreateRes(@SSevenZipAlgoMustBe7zip);
-  if (AParameters.Dc4FormatVersion >= fvDc51) then
+  if (AParameters.Dc4FormatVersion = fvHagenReddmannExample) and
+     not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_Null) then
   begin
-    // TODO: Validate if 7z is okay
+    raise Exception.CreateRes(@SSevenZipAlgoMustBeNull);
+  end;
+  if (AParameters.Dc4FormatVersion >= fvDc40) and
+     (AParameters.Dc4FormatVersion < fvDc50) and
+     not IsEqualGuid(AParameters.SevenZipAlgo, CLSID_Null) and
+     not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_CFormatZip) then
+  begin
+    raise Exception.CreateRes(@SSevenZipAlgoMustBeZip);
+  end;
+  if (AParameters.Dc4FormatVersion = fvDc50) and
+     not IsEqualGuid(AParameters.SevenZipAlgo, CLSID_Null) and
+     not IsEqualGUID(AParameters.SevenZipAlgo, CLSID_CFormat7z) then
+  begin
+    raise Exception.CreateRes(@SSevenZipAlgoMustBe7zip);
+  end;
+  if (AParameters.Dc4FormatVersion >= fvDc51) and
+     not IsEqualGuid(AParameters.SevenZipAlgo, CLSID_Null) and
+     not SevenZip_SupportedPackAlgo(AParameters.SevenZipAlgo) then
+  begin
+    raise Exception.CreateRes(@SSevenZipAlgoPackingNotImplemented);
   end;
 end;
 
@@ -1367,12 +1379,7 @@ begin
       else
         raise Exception.CreateRes(@SFolderEncryptionNotAllowed);
 
-      if IsEqualGUID(SevenZipAlgo, CLSID_CFormatZip) then
-        SevenZipExt := '.zip'
-      else if IsEqualGUID(SevenZipAlgo, CLSID_CFormat7z) then
-        SevenZipExt := '.7z'
-      else
-        SevenZipExt := '.compress';
+      SevenZipExt := SevenZip_GetDefaultExtForAlgo(SevenZipAlgo, '.pack');
       {$ENDREGION}
 
       {$REGION 'Encrypt folder? => Pack it to a file (version 1+)'}
@@ -1970,12 +1977,7 @@ begin
         else
           Assert(False); // cannot happen because of Hagen Reddmann Format, IsFolder would be default to False.
 
-        if IsEqualGUID(SevenZipAlgo, CLSID_CFormatZip) then
-          SevenZipExt := '.zip'
-        else if IsEqualGUID(SevenZipAlgo, CLSID_CFormat7z) then
-          SevenZipExt := '.7z'
-        else
-          SevenZipExt := '.compress';
+        SevenZipExt := SevenZip_GetDefaultExtForAlgo(SevenZipAlgo, '.pack');
         {$ENDREGION}
 
         {$REGION 'Create output stream'}
