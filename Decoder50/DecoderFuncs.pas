@@ -635,81 +635,11 @@ begin
       raise Exception.CreateResFmt(@SGetBuildTimestampFailed, [ExeFile]);
   end;
 {$ELSEIF Defined(MacOS)}
-type
-  mach_header_64 = record
-    magic: UInt32;
-    cputype: Int32;
-    cpusubtype: Int32;
-    filetype: UInt32;
-    ncmds: UInt32;
-    sizeofcmds: UInt32;
-    flags: UInt32;
-    reserved: UInt32; // Only present for 64-bit (ARM64, Intel64)
-  end;
-
-  load_command = record
-    cmd: UInt32;
-    cmdsize: UInt32;
-  end;
-
-  link_library_command = record
-    cmd: UInt32;
-    cmdsize: UInt32;
-    stringoffset: Uint32;
-    timestamp: Uint32;
-    currentversion: Uint32;
-    compatibleVersion: Uint32;
-    //filepathstring: ...;
-  end;
-
-
-var
-  F: TFileStream;
-  Header: mach_header_64;
-  Cmd: load_command;
-  DylibCmd: link_library_command;
-  i, Timestamp: UInt32;
 begin
-  Result := 0;
-  try
-    F := TFileStream.Create(ExeFile, fmOpenRead or fmShareDenyWrite);
-
-    // Read Mach-O header
-    F.ReadBuffer(Header, SizeOf(mach_header_64));
-
-    // Iterate through load commands
-    for i := 0 to Header.ncmds - 1 do
-    begin
-      F.ReadBuffer(Cmd, SizeOf(load_command));
-
-//      showmessage(inttohex(cmd.cmd,8));
-
-      // Check if it's a dylib load command (LC_LOAD_DYLIB = $800000c)
-      if (Cmd.cmd = $c) or (Cmd.cmd = $d) or (Cmd.cmd = $18) then
-      begin
-        F.Seek(-SizeOf(load_command), soCurrent);
-        F.ReadBuffer(DylibCmd, SizeOf(link_library_command));
-// TODO: does not work, always output "2"?
-        Timestamp := DylibCmd.timestamp;
-//        Result := UnixToDateTime(Timestamp);
-//        Exit;
-
-
-        // Move to the next command
-        F.Seek(Cmd.cmdsize - SizeOf(link_library_command), soCurrent);
-
-      end
-      else
-      begin
-        // Move to the next command
-        F.Seek(Cmd.cmdsize - SizeOf(load_command), soCurrent);
-      end;
-
-    end;
-  finally
-    FreeAndNil(F);
-  end;
+  // TODO: This is not very good! But the load commands do not contain a useable timestamp!
+  Result := TFile.GetLastWriteTime(ParamStr(0));
 {$ELSE}
+begin
   result := 0;
 {$ENDIF}
 end;

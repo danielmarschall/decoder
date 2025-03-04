@@ -283,6 +283,7 @@ begin
   {$ENDIF}
 end;
 
+{$IFDEF MsWindows}
 function SevenZipGetDll: string;
 resourcestring
   SDllFileNotFound = 'File %s not found. Therefore, cannot compress or uncompress folders.';
@@ -297,6 +298,7 @@ begin
   if not FileExists(Result) then
     raise Exception.CreateResFmt(@SDllFileNotFound, [result]);
 end;
+{$ENDIF}
 
 procedure SevenZipFolder(const AFolderName, AArchFile: string; AOnProgress: TDcProgressEvent=nil);
 var
