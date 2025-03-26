@@ -175,6 +175,10 @@ begin
               DeCoder4X_DecodeFile(FChosenFile, AOutput, RepeatedPassword, OnProgressProc);
               break;
             except
+              on E: EAbort do
+              begin
+                Abort;
+              end;
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
@@ -260,6 +264,10 @@ begin
               DeCoder32_DecodeFile(FChosenFile, AOutput, RepeatedPassword, OnProgressProc);
               break;
             except
+              on E: EAbort do
+              begin
+                Abort;
+              end;
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
@@ -295,6 +303,10 @@ begin
               DeCoder30_DecodeFile(FChosenFile, AOutput, RepeatedPassword, OnProgressProc);
               break;
             except
+              on E: EAbort do
+              begin
+                Abort;
+              end;
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
@@ -331,6 +343,10 @@ begin
               DeCoder22_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
               break;
             except
+              on E: EAbort do
+              begin
+                Abort;
+              end;
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
@@ -367,6 +383,10 @@ begin
               DeCoder21_DecodeFile(FChosenFile, AOutput, iKey, OnProgressProc);
               break;
             except
+              on E: EAbort do
+              begin
+                Abort;
+              end;
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
@@ -460,6 +480,10 @@ begin
   try
     OpenFile(Data.Files[0]);
   except
+    on E: EAbort do
+    begin
+      Abort;
+    end;
     on E: Exception do
     begin
       // We need to do this, because for some reason an Exception will be swallowed in this event
@@ -562,6 +586,10 @@ begin
     else if ParamCount = 1 then
       OpenFile(ParamStr(1));
   except
+    on E: EAbort do
+    begin
+      Abort;
+    end;
     on E: Exception do
     begin
       MessageDlg(e.Message, TMsgDlgType.mtError, [TMsgDlgBtn.mbOk], 0);
@@ -644,6 +672,10 @@ begin
         GuiShowChosenFile;
         Exit;
       except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
         on E: Exception do
         begin
           if AFileName.EndsWith('.dc4', true) or AFileName.EndsWith('.dc5', true) then

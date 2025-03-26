@@ -465,6 +465,10 @@ procedure Debug_EntroyTest(const ADirToTest, ACsvOutPutFile: string);
             try
               AnalyzeFile(IncludeTrailingPathDelimiter(dirName)+searchResult.Name);
             except
+              on E: EAbort do
+              begin
+                Abort;
+              end;
               on E: Exception do
               begin
                 WriteLn(IncludeTrailingPathDelimiter(dirName)+searchResult.Name+#9+E.Message);
@@ -787,6 +791,10 @@ begin
     end;
     {$ENDREGION}
   except
+    on E: EAbort do
+    begin
+      Abort;
+    end;
     on E: Exception do
     begin
       ExitCode := 1;

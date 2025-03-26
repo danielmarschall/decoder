@@ -251,6 +251,10 @@ begin
     {$ENDIF}
   except
     // If we can't get it, that's not a problem
+    on E: EAbort do
+    begin
+      Abort;
+    end;
   end;
 
   fs := TFileStream.Create(AFileName, fmOpenReadWrite);
@@ -261,6 +265,10 @@ begin
       fs.Size := Ceil(fs.Size / ClusterSize) * ClusterSize;
     except
       // We might be out of disk space
+      on E: EAbort do
+      begin
+        Abort;
+      end;
     end;
 
     // secure wipe contents
@@ -291,6 +299,10 @@ begin
     TFile.SetLastAccessTimeUtc(AFileNameRenamed, 0);
     TFile.SetAttributes(AFileNameRenamed, []);
   except
+    on E: EAbort do
+    begin
+      Abort;
+    end;
   end;
 
   // now delete the file
@@ -393,6 +405,10 @@ begin
           TDirectory.SetLastAccessTimeUtc(ADirNameRenamed, 0);
           TDirectory.SetAttributes(ADirNameRenamed, []);
         except
+          on E: EAbort do
+          begin
+            Abort;
+          end;
         end;
 
         // and now delete empty directory
@@ -495,7 +511,7 @@ begin
     SameText(ext, '.cbt')  or // .cbt - Comic Book TAR archive
     SameText(ext, '.cbz')  or // .cbz - Comic Book ZIP archive
     SameText(ext,'.pkpass') or// .pkpass - Apple Wallet pass files, ZIP based
-    SameText(ext, '.azw')  or // .azw - Amazon Kindle eBook format (old), compressed except metadata
+    SameText(ext, '.azw')  or // .azw - Amazon Kindle eBook format (old), compressed (but metadata is not compressed)
     SameText(ext, '.azw3') or // .azw3 - Amazon Kindle eBook format "HF8", ZIP based
     SameText(ext, '.kfx');    // .kfx - Amazon Kindle eBook format, compressed
 end;
@@ -630,9 +646,16 @@ begin
       FreeAndNil(fs);
     end;
   except
-    // Sollte nicht passieren
-    if not FileAge(ExeFile, result) then
-      raise Exception.CreateResFmt(@SGetBuildTimestampFailed, [ExeFile]);
+    on E: EAbort do
+    begin
+      Abort;
+    end;
+    on E: Exception do
+    begin
+      // Sollte nicht passieren
+      if not FileAge(ExeFile, result) then
+        raise Exception.CreateResFmt(@SGetBuildTimestampFailed, [ExeFile]);
+    end;
   end;
 {$ELSEIF Defined(MacOS)}
 begin

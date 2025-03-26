@@ -398,11 +398,22 @@ begin
       if Assigned(tempstream) then FreeAndNil(tempstream);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -498,11 +509,22 @@ begin
       if Assigned(tempstream) then FreeAndNil(tempstream);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -562,11 +584,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -604,11 +637,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -646,11 +690,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -688,11 +743,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -730,11 +796,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -772,11 +849,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -814,11 +902,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -856,11 +955,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -898,11 +1008,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -940,11 +1061,22 @@ begin
       FreeAndNil(ssIn);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -1789,11 +1921,22 @@ begin
         SecureDeleteFile(ATempFileNameZLib);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -2407,20 +2550,27 @@ begin
                 // version 5+ = variable
                 SevenZipExtract(ATempFileNameZipOrDirectOutput, RelToAbs(AOutput), SevenZipAlgo, OnProgressProc);
               except
-                // Can happen if the 7z.*.dll files are missing. Let the user unpack themselves
-                // Remove the temp stuff from the name
-                if RenameFile(ATempFileNameZipOrDirectOutput, AOutput + ExtractFileExt(ATempFileNameZipOrDirectOutput)) then
+                on E: EAbort do
                 begin
-                  // and let the calling procedure know that the name is different
-                  AOutput := AOutput + ExtractFileExt(ATempFileNameZipOrDirectOutput);
-                end
-                else
-                begin
-                  // and let the calling procedure know that the name is different
-                  AOutput := ATempFileNameZipOrDirectOutput;
+                  Abort;
                 end;
-                // and avoid that the file is deleted (if renaming failed)
-                ATempFileNameZipOrDirectOutput := '';
+                on E: Exception do
+                begin
+                  // Can happen if the 7z.*.dll files are missing. Let the user unpack themselves
+                  // Remove the temp stuff from the name
+                  if RenameFile(ATempFileNameZipOrDirectOutput, AOutput + ExtractFileExt(ATempFileNameZipOrDirectOutput)) then
+                  begin
+                    // and let the calling procedure know that the name is different
+                    AOutput := AOutput + ExtractFileExt(ATempFileNameZipOrDirectOutput);
+                  end
+                  else
+                  begin
+                    // and let the calling procedure know that the name is different
+                    AOutput := ATempFileNameZipOrDirectOutput;
+                  end;
+                  // and avoid that the file is deleted (if renaming failed)
+                  ATempFileNameZipOrDirectOutput := '';
+                end;
               end;
             end
             else
@@ -2467,8 +2617,15 @@ begin
         DeCoder4X_ValidateParameterBlock(result.Parameters); // Should always pass
         {$ENDREGION}
       except
-        if Assigned(tempstream) then ProtectStream(tempstream);
-        raise;
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+        on E: Exception do
+        begin
+          if Assigned(tempstream) then ProtectStream(tempstream);
+          raise;
+        end;
       end;
     finally
       if Assigned(Source) then FreeAndNil(Source);
@@ -2481,11 +2638,22 @@ begin
         SecureDeleteFile(ATempFileNameZipOrDirectOutput);
     end;
   except
-    try
-      if not outFileDidExist then SecureDeleteFile(AOutput);
-    except
+    on E: EAbort do
+    begin
+      Abort;
     end;
-    raise;
+    on E: Exception do
+    begin
+      try
+        if not outFileDidExist then SecureDeleteFile(AOutput);
+      except
+        on E: EAbort do
+        begin
+          Abort;
+        end;
+      end;
+      raise;
+    end;
   end;
 end;
 
@@ -2503,7 +2671,14 @@ begin
     DeCoder4X_FileInfo(AFileName);
     result := true;
   except
-    result := false;
+    on E: EAbort do
+    begin
+      Abort;
+    end;
+    on E: Exception do
+    begin
+      result := false;
+    end;
   end;
 end;
 
