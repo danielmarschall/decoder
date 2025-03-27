@@ -1,6 +1,12 @@
 
 https://github.com/MHumm/DelphiEncryptionCompendium/
 
+"Source" directory only
+
+Line endings as exported using GitHub Desktop cloning
+
 Currently commit
 https://github.com/MHumm/DelphiEncryptionCompendium/commit/3943bd26963ff183bc16ec76574dc83ac316c50f
 19 January 2025
+
++ Change applied from dev branch https://github.com/MHumm/DelphiEncryptionCompendium/commit/266a13eeeedcd0b504558d5e1df0ce69a84975f5
