@@ -53,8 +53,7 @@ function BytesToRawByteString(const Bytes: TBytes): RawByteString; inline;
 function FileSizeHumanReadable(Bytes: Int64): string;
 procedure ExplorerNavigateToFile(const AFileName: string);
 function GetFileTypename(const FileName: string): string;
-function GetBuildTimestamp(const ExeFile: string): TDateTime;
-function GetOwnBuildTimestamp: TDateTime;
+function GetDecoderVersion: string;
 procedure PlayEmptyRecycleBinSound;
 
 {$IFDEF Console}
@@ -64,7 +63,7 @@ procedure CountDown(const msg: string; timer: integer);
 implementation
 
 uses
-  DECUtil, DECRandom, System.ZLib, System.DateUtils, System.StrUtils,
+  DecoderConst, DECUtil, DECRandom, System.ZLib, System.DateUtils, System.StrUtils,
   {$IFDEF MsWindows}
   Winapi.Windows, WinApi.ShellAPI, System.Win.Registry, Winapi.MMSystem
   {$ENDIF}
@@ -623,53 +622,9 @@ begin
 {$ENDIF}
 end;
 
-function GetBuildTimestamp(const ExeFile: string): TDateTime;
-{$IF Defined(MsWindows)}
-var
-  fs: TFileStream;
-  unixTime: integer;
-  peOffset: Integer;
-resourcestring
-  SGetBuildTimestampFailed = 'GetBuildTimestamp(%s) failed';
+function GetDecoderVersion: string;
 begin
-  try
-    fs := TFileStream.Create(ExeFile, fmOpenRead or fmShareDenyNone);
-    try
-      fs.Seek($3C, soFromBeginning);
-      fs.Read(peOffset, 4);
-
-      fs.Seek(peOffset+8, soFromBeginning);
-      fs.Read(unixTime, 4);
-
-      result := UnixToDateTime(unixTime, false);
-    finally
-      FreeAndNil(fs);
-    end;
-  except
-    on E: EAbort do
-    begin
-      Abort;
-    end;
-    on E: Exception do
-    begin
-      // Sollte nicht passieren
-      if not FileAge(ExeFile, result) then
-        raise Exception.CreateResFmt(@SGetBuildTimestampFailed, [ExeFile]);
-    end;
-  end;
-{$ELSEIF Defined(MacOS)}
-begin
-  // TODO: This is not very good! But the load commands do not contain a useable timestamp!
-  Result := TFile.GetLastWriteTime(ParamStr(0));
-{$ELSE}
-begin
-  result := 0;
-{$ENDIF}
-end;
-
-function GetOwnBuildTimestamp: TDateTime;
-begin
-  result := GetBuildTimestamp(ParamStr(0));
+  result := DC_VERSION_INFO;
 end;
 
 procedure PlayEmptyRecycleBinSound;

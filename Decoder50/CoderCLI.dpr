@@ -16,7 +16,8 @@ uses
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
   DecoderOldCiphers in 'DecoderOldCiphers.pas',
-  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas';
+  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas',
+  DecoderConst in 'DecoderConst.pas';
 
 procedure OnProgressProc(Size, Pos: Int64; const Task: string; State: TDcProgressState);
 begin
@@ -533,7 +534,7 @@ resourcestring
   SCautionDeleteFolder = 'Caution! You are about to delete this folder and all of its contents:';
   SCautionDeleteFolderCountdown_D = 'Press Ctrl+C to cancel or wait to continue ... %d seconds';
   SProductName = 'ViaThinkSoft (De)Coder 5.1';
-  SBuilt_S = 'Built %s';
+  SVersion_S = 'Version %s';
   SDevelopedByDanielMarschall = 'Developed by Daniel Marschall';
   SDMHomepage = 'www.daniel-marschall.de';
   SLicenseLine = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
@@ -740,7 +741,7 @@ begin
     begin
       OwnName := ChangeFileExt(Uppercase(ExtractFileName(ParamStr(0))),'');
 
-      WriteLn(Format('%-35s %s', [LoadResString(@SProductName), Format(LoadResString(@SBuilt_S), [DateTimeToStr(GetOwnBuildTimestamp)])]));
+      WriteLn(Format('%-35s %s', [LoadResString(@SProductName), Format(LoadResString(@SVersion_S), [GetDecoderVersion])]));
       WriteLn(Format('%-35s %s', [LoadResString(@SDevelopedByDanielMarschall), LoadResString(@SDMHomepage)]));
       WriteLn(Format(LoadResString(@SLicenseLine), []));
       WriteLn('');

@@ -2673,6 +2673,7 @@ begin
   except
     on E: EAbort do
     begin
+      result := false; // to avoid compiler warning
       Abort;
     end;
     on E: Exception do

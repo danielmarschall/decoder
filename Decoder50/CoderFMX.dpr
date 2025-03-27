@@ -12,7 +12,8 @@ uses
   DecoderEncDec in 'DecoderEncDec.pas',
   DecoderFuncs in 'DecoderFuncs.pas',
   DecoderOldCiphers in 'DecoderOldCiphers.pas',
-  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas';
+  DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas',
+  DecoderConst in 'DecoderConst.pas';
 
 {$R *.res}
 

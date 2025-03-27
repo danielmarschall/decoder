@@ -541,7 +541,7 @@ end;
 
 procedure TDecoderMainForm.InitView;
 resourcestring
-  S_IntroLine_0_S = 'Built %s';
+  S_IntroLine_0_S = 'Version %s';
   S_IntroLine_1 = 'Developed by Daniel Marschall - www.daniel-marschall.de';
   S_IntroLine_2 = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
   S_IntroLine_3 = '';
@@ -558,7 +558,7 @@ begin
   Caption := LoadResString(@SProductTitle);
   OpenedFileLabel.Text := LoadResString(@SProductTitle);
   ShortInfoLabel.Text :=
-    Format(LoadResString(@S_IntroLine_0_S), [DateTimeToStr(GetOwnBuildTimestamp)]) + #13#10 +
+    Format(LoadResString(@S_IntroLine_0_S), [GetDecoderVersion]) + #13#10 +
     LoadResString(@S_IntroLine_1) + #13#10 +
     LoadResString(@S_IntroLine_2) + #13#10 +
     LoadResString(@S_IntroLine_3) + #13#10 +

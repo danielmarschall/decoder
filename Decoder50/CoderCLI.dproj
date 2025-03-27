@@ -1,14 +1,15 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{C69B1573-22E2-43C3-8377-D96D0AD74DA6}</ProjectGuid>
-        <ProjectVersion>20.2</ProjectVersion>
+        <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>None</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <Platform Condition="'$(Platform)'==''">OSX64</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>135171</TargetedPlatforms>
         <AppType>Console</AppType>
         <MainSource>CoderCLI.dpr</MainSource>
+        <ProjectName Condition="'$(ProjectName)'==''">CoderCLI</ProjectName>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -203,6 +204,7 @@
         <DCCReference Include="DecoderFuncs.pas"/>
         <DCCReference Include="DecoderOldCiphers.pas"/>
         <DCCReference Include="DecoderSevenZipUtils.pas"/>
+        <DCCReference Include="DecoderConst.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -246,7 +248,19 @@
                 </DeployFile>
                 <DeployFile LocalName="bin\CoderCLI.32.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="bin\CoderCLI.64.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="bin\CoderCLI.64.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>CoderCLI.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="bin\CoderCLI.64.exe" Configuration="Release" Class="ProjectOutput"/>
+                <DeployFile LocalName="bin\CoderCLI.64.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>CoderCLI.rsm</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="iOSSimulator">
                         <Operation>1</Operation>
@@ -358,6 +372,16 @@
                     </Platform>
                     <Platform Name="Android64">
                         <RemoteDir>res\values-v31</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="AndroidSplashStylesV35">
+                    <Platform Name="Android">
+                        <RemoteDir>res\values-v35</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Android64">
+                        <RemoteDir>res\values-v35</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
