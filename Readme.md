@@ -26,11 +26,11 @@ to keep the product simple and clean.
 
 ## Screenshots
 
-![Original file](Decoder50/Private/Screenshot1.png)
+![Original file](Decoder5X/Private/Screenshot1.png)
 
-![Encoded file](Decoder50/Private/Screenshot2.png)
+![Encoded file](Decoder5X/Private/Screenshot2.png)
 
-![Command line tool](Decoder50/Private/Screenshot3.png)
+![Command line tool](Decoder5X/Private/Screenshot3.png)
 
 
 ## Disclaimer
