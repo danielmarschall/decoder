@@ -411,6 +411,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -522,6 +526,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -597,6 +605,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -649,6 +661,10 @@ begin
         on E: EAbort do
         begin
           Abort;
+        end;
+        on E: Exception do
+        begin
+          // ignore
         end;
       end;
       raise;
@@ -703,6 +719,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -755,6 +775,10 @@ begin
         on E: EAbort do
         begin
           Abort;
+        end;
+        on E: Exception do
+        begin
+          // ignore
         end;
       end;
       raise;
@@ -809,6 +833,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -861,6 +889,10 @@ begin
         on E: EAbort do
         begin
           Abort;
+        end;
+        on E: Exception do
+        begin
+          // ignore
         end;
       end;
       raise;
@@ -915,6 +947,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -967,6 +1003,10 @@ begin
         on E: EAbort do
         begin
           Abort;
+        end;
+        on E: Exception do
+        begin
+          // ignore
         end;
       end;
       raise;
@@ -1021,6 +1061,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -1073,6 +1117,10 @@ begin
         on E: EAbort do
         begin
           Abort;
+        end;
+        on E: Exception do
+        begin
+          // ignore
         end;
       end;
       raise;
@@ -1934,6 +1982,10 @@ begin
         begin
           Abort;
         end;
+        on E: Exception do
+        begin
+          // ignore
+        end;
       end;
       raise;
     end;
@@ -2650,6 +2702,10 @@ begin
         on E: EAbort do
         begin
           Abort;
+        end;
+        on E: Exception do
+        begin
+          // ignore
         end;
       end;
       raise;
