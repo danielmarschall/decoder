@@ -124,7 +124,7 @@ resourcestring
   SInfoLegacyDecrypt = 'Decryption process done. Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
   SDecryptDone = 'Decryption process done';
   SEncryptDone = 'Encryption process done';
-  STryAgain = 'Try again?';
+  STryAgain = 'Please try again.';
 begin
   if FChosenFile = '' then exit;
   try
@@ -182,7 +182,7 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
+                if not InputQuery(Caption, #0 + LoadResString(@STryAgain) + ' ' + E.Message, RepeatedPassword) then
                   Abort;
               end;
             end;
@@ -271,7 +271,7 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
+                if not InputQuery(Caption, #0 + LoadResString(@STryAgain) + ' ' + E.Message, RepeatedPassword) then
                   Abort;
               end;
             end;
@@ -310,7 +310,7 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
+                if not InputQuery(Caption, #0 + LoadResString(@STryAgain) + ' ' + E.Message, RepeatedPassword) then
                   Abort;
               end;
             end;
@@ -350,7 +350,7 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
+                if not InputQuery(Caption, #0 + LoadResString(@STryAgain) + ' ' + E.Message, RepeatedPassword) then
                   Abort;
               end;
             end;
@@ -390,7 +390,7 @@ begin
               on E: Exception do
               begin
                 // #0 means that the password char '*' is used
-                if not InputQuery(Caption, #0 + E.Message + ' ' + LoadResString(@STryAgain), RepeatedPassword) then
+                if not InputQuery(Caption, #0 + LoadResString(@STryAgain) + ' ' + E.Message, RepeatedPassword) then
                   Abort;
               end;
             end;
