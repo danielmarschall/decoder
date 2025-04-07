@@ -99,7 +99,54 @@
         </DeployFile>
     </ItemGroup>
     <ItemGroup Condition="'$(Platform)'=='Win32'"/>
-    <ItemGroup Condition="'$(Platform)'=='OSXARM64'"/>
+    <ItemGroup Condition="'$(Platform)'=='OSXARM64'">
+        <DeployFile Include="CoderFMX_Icns.icns" Condition="'$(Config)'=='Release'">
+            <RemoteDir>CoderFMX.app\Contents\Resources\</RemoteDir>
+            <RemoteName>CoderFMX.icns</RemoteName>
+            <DeployClass>ProjectOSXResource</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="bin\CoderFMX.info.plist" Condition="'$(Config)'=='Release'">
+            <RemoteDir>CoderFMX.app\Contents\</RemoteDir>
+            <RemoteName>Info.plist</RemoteName>
+            <DeployClass>ProjectOSXInfoPList</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="bin\CoderFMX" Condition="'$(Config)'=='Release'">
+            <RemoteDir>CoderFMX.app\Contents\MacOS\</RemoteDir>
+            <RemoteName>CoderFMX</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+        <DeployFile Include="Transparent.Style" Condition="'$(Config)'=='Release'">
+            <RemoteDir>CoderFMX.app\Contents\Resources\StartUp\</RemoteDir>
+            <RemoteName>Transparent.Style</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="bin\CoderFMX.entitlements" Condition="'$(Config)'=='Release'">
+            <RemoteDir>CoderFMX.app\..\</RemoteDir>
+            <RemoteName>CoderFMX.entitlements</RemoteName>
+            <DeployClass>ProjectOSXEntitlements</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+    </ItemGroup>
     <ItemGroup Condition="'$(Platform)'=='Win64'">
         <DeployFile Include="bin\CoderFMX.64.exe" Condition="'$(Config)'=='Debug'">
             <RemoteDir>CoderFMX\</RemoteDir>
@@ -111,7 +158,26 @@
             <Overwrite>True</Overwrite>
             <Required>True</Required>
         </DeployFile>
+        <DeployFile Include="bin\CoderFMX.64.exe" Condition="'$(Config)'=='Release'">
+            <RemoteDir>CoderFMX\</RemoteDir>
+            <RemoteName>CoderFMX.exe</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
         <DeployFile Include="Transparent.Style" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>CoderFMX\</RemoteDir>
+            <RemoteName>Transparent.Style</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="Transparent.Style" Condition="'$(Config)'=='Release'">
             <RemoteDir>CoderFMX\</RemoteDir>
             <RemoteName>Transparent.Style</RemoteName>
             <DeployClass>ProjectFile</DeployClass>

@@ -12,10 +12,10 @@ It uses the high-security AES encryption.
 - Backwards compatible with ALL previous (De)Coder versions
 - Inclusion of metadata (filename, size, date) is now optional
 - Available as GUI ("CoderFMX") or as a command-line tool ("CoderCLI")
-- 32-bit and 64-bit binaries
+- 32-bit and 64-bit binaries for Windows and 64-bit binaries for Mac OS X
 - Secure deletion of files and folders (only in the CLI tool)
 - Drag and drop support
-- Completely re-written with the latest development tools (Delphi 12, DEC 6.5)
+- Completely re-written with the latest development tools (Delphi 12.3, DEC 6.5)
 - Encrypt and decrypt files or folders (integrated 7zip packer)
 - Internally compresses data using ZLib, but only if the file is not already compressed or has a high entropy
 - Translated to English (currently, no German translation available anymore)
