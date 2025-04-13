@@ -525,7 +525,7 @@ begin
       WriteLn(Format('%s %-13s <File>     -- %s', [OwnName, Cmd_SecureDeleteFile, LoadResString(@SExtras_1)]));
       WriteLn(Format('%s %-13s <Folder>   -- %s', [OwnName, Cmd_SecureDeleteFolder, LoadResString(@SExtras_2)]));
       {$IFDEF Debug}
-      WriteLn(Format('%s %-13s          -- Run internal testcases from folder ..\TestData', [OwnName, Cmd_Debug_Testcases]));
+      WriteLn(Format('%s %-13s          -- Run internal testcases from folder ..\TestData', [OwnName, Cmd_Debug_ListAlgos]));
       WriteLn(Format('%s %-13s <DirName> <CSVResultFile> -- Run entropy test on directory', [OwnName, Cmd_Debug_EntropyTest]));
       {$ENDIF}
       WriteLn(Format('%s %-13s            -- %s', [OwnName, Cmd_Help, LoadResString(@SExtras_3)]));

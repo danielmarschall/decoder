@@ -2424,7 +2424,7 @@ begin
         {$ENDREGION}
 
         {$REGION '19. GCM Tag Length (only version 4+)'}
-        if not OnlyReadFileInfo and (V>=fvDc50) and (Cipher.Mode = cmGCM) then
+        if (V>=fvDc50) and (Cipher.Mode = cmGCM) then
         begin
           TDECFormattedCipher(Cipher).AuthenticationResultBitLength := Source.ReadByte * 8;
         end;

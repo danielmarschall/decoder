@@ -6,6 +6,7 @@ del *.local
 del *.identcache
 del *.~*
 del *.o
+del *.rsm
 attrib __history -h
 if exist __history rmdir /s /q __history
 attrib __recovery -h
