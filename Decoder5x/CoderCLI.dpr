@@ -501,7 +501,7 @@ begin
 
       WriteLn('=== ' + LoadResString(@SEncryptDecryptFilesAndFolders) + ' ===');
       WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_NoInfo, LoadResString(@SEncryptDecryptFilesAndFolders_1)]));
-      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Cmd_DC50_EnCrypt_NoInfo, LoadResString(@SEncryptDecryptFilesAndFolders_2)]));
+      WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_EnCrypt_WithInfo, Format(LoadResString(@SEncryptDecryptFilesAndFolders_2),[Cmd_DC50_EnCrypt_NoInfo])]));
       WriteLn(Format('%s %-13s <InFile> <OutFile> <Password>  -- %s', [OwnName, Cmd_DC50_DeCrypt, LoadResString(@SEncryptDecryptFilesAndFolders_3)]));
       WriteLn(Format('%s %-13s <InFile>                       -- %s', [OwnName, Cmd_DC50_FileInfo, LoadResString(@SEncryptDecryptFilesAndFolders_4)]));
       WriteLn('');
