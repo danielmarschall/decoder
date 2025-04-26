@@ -18,7 +18,7 @@ It uses the high-security AES encryption.
 - Completely re-written with the latest development tools (Delphi 12.3, DEC 6.5)
 - Encrypt and decrypt files or folders (integrated 7zip packer)
 - Internally compresses data using ZLib, but only if the file is not already compressed or has a high entropy
-- Translated to English (currently, no German translation available anymore)
+- German / English multi-lingual
 
 A few features like shell integration and installer have been removed,
 to keep the product simple and clean.
@@ -43,6 +43,13 @@ The developers are not liable for any program bugs or data loss.
 Please always backup your unencrypted data before using (De)Coder, or if you choose to delete the
 original unencrypted files, then check at least if the decryption works as expected.
 Please do not download or use the software if you do not agree with these conditions.
+
+
+## Tools required for editing the source code
+
+* Embarcadero Delphi 12 (Community edition available for non-commercial use)
+
+* [Better Translation Manager](https://github.com/andersmelander/better-translation-manager/)
 
 
 ## License and Credits
