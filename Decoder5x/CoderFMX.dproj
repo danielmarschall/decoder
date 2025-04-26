@@ -5,11 +5,10 @@
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
-        <Platform Condition="'$(Platform)'==''">Win64</Platform>
+        <Platform Condition="'$(Platform)'==''">OSX64</Platform>
         <TargetedPlatforms>135171</TargetedPlatforms>
         <AppType>Application</AppType>
         <MainSource>CoderFMX.dpr</MainSource>
-        <ProjectName Condition="'$(ProjectName)'==''">CoderFMX</ProjectName>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -99,8 +98,8 @@
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <DCC_UnitSearchPath>VCL_DEC;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-        <DCC_ExeOutput>bin</DCC_ExeOutput>
-        <DCC_DcuOutput>.</DCC_DcuOutput>
+        <DCC_ExeOutput>Output\mac64</DCC_ExeOutput>
+        <DCC_DcuOutput>Output\mac64</DCC_DcuOutput>
         <Debugger_Launcher>/usr/X11/bin/xterm -e &quot;%debuggee%&quot;</Debugger_Launcher>
         <Manifest_File>(Ohne)</Manifest_File>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
@@ -114,8 +113,8 @@
         <Debugger_Launcher>/usr/X11/bin/xterm -e &quot;%debuggee%&quot;</Debugger_Launcher>
         <Manifest_File>(Ohne)</Manifest_File>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
-        <DCC_ExeOutput>bin</DCC_ExeOutput>
-        <DCC_DcuOutput>.</DCC_DcuOutput>
+        <DCC_ExeOutput>Output\mac64arm</DCC_ExeOutput>
+        <DCC_DcuOutput>Output\mac64arm</DCC_DcuOutput>
         <DCC_UnitSearchPath>VCL_DEC;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Icon_MainIcon>CoderFMX_Icon.ico</Icon_MainIcon>
         <Icns_MainIcns>CoderFMX_Icns.icns</Icns_MainIcns>

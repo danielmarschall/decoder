@@ -63,3 +63,4 @@ This product uses the following third-party components:
 - [Delphi Encryption Compendium](https://github.com/MHumm/DelphiEncryptionCompendium/) (License: Apache 2.0)
 - [7zip](https://7-zip.org/) DLL files by Igor Pavlov (License: LGPL)
 - [7zip Wrapper for Delphi](https://github.com/danielmarschall/d7zip/) by Henri Gourvest (License: MPL1.1)
+- Translated using [Better Translation Manager](https://github.com/andersmelander/better-translation-manager) by Anders Melander
