@@ -3,10 +3,10 @@
         <ProjectGuid>{73BC218A-8BD8-4759-9C76-844A649DFB91}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="CoderCLI.dproj">
+        <Projects Include="CoderFMX.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="CoderFMX.dproj">
+        <Projects Include="CoderCLI.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="CoderTest.dproj">
@@ -20,15 +20,6 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
-    <Target Name="CoderCLI">
-        <MSBuild Projects="CoderCLI.dproj"/>
-    </Target>
-    <Target Name="CoderCLI:Clean">
-        <MSBuild Projects="CoderCLI.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="CoderCLI:Make">
-        <MSBuild Projects="CoderCLI.dproj" Targets="Make"/>
-    </Target>
     <Target Name="CoderFMX">
         <MSBuild Projects="CoderFMX.dproj"/>
     </Target>
@@ -37,6 +28,15 @@
     </Target>
     <Target Name="CoderFMX:Make">
         <MSBuild Projects="CoderFMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CoderCLI">
+        <MSBuild Projects="CoderCLI.dproj"/>
+    </Target>
+    <Target Name="CoderCLI:Clean">
+        <MSBuild Projects="CoderCLI.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CoderCLI:Make">
+        <MSBuild Projects="CoderCLI.dproj" Targets="Make"/>
     </Target>
     <Target Name="CoderTest">
         <MSBuild Projects="CoderTest.dproj"/>
@@ -48,13 +48,13 @@
         <MSBuild Projects="CoderTest.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="CoderCLI;CoderFMX;CoderTest"/>
+        <CallTarget Targets="CoderFMX;CoderCLI;CoderTest"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="CoderCLI:Clean;CoderFMX:Clean;CoderTest:Clean"/>
+        <CallTarget Targets="CoderFMX:Clean;CoderCLI:Clean;CoderTest:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="CoderCLI:Make;CoderFMX:Make;CoderTest:Make"/>
+        <CallTarget Targets="CoderFMX:Make;CoderCLI:Make;CoderTest:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

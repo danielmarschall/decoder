@@ -98,6 +98,90 @@ uses
   {$ENDIF}
   ;
 
+resourcestring
+  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
+  SDecodeStream = 'Decode stream';
+  SEncodeStream = 'Encode stream';
+  SFileOrFolderSNotFound = 'File or folder %s not found';
+  SHashId_DD_NotFound = 'Hash ID 0x%.8x with base 0x%.8x not found';
+  SCipherId_DD_NotFound = 'Cipher ID 0x%.8x with base 0x%.8x not found';
+  SDC1Encode = '(De)Coder 1.0 encoding';
+  SOnlyAsciiFilesAllowed = 'Only ASCII text files can be encrypted with (De)Coder 1.0';
+  SDC1Decode = '(De)Coder 1.0 decoding';
+  SNoDc10File = 'This file was not encrypted with (De)Coder 1.0';
+  SZipRequiresDc40 = 'ZIP folder requires DC40';
+  SDc40HashNotAccepted = 'Hash not accepted in DC40 version';
+  SDc40CipherNotAccepted = 'Cipher not accepted in DC40 version';
+  SDc40KdfVersionNotAccepted = 'KDF version not accepted in DC40 version';
+  SDc40SeedSizeNotAccepted = 'Seed size not accepted in DC40 version';
+  SDc40CipherModeNotAccepted = 'CiperMode not accepted in DC40 version';
+  SZlibRequiresDc41beta = 'ZLib requires DC41beta+ version';
+  SIndivFillByteOnlyVer4plus = 'Indiv IvFillByte only accepted in format version 4+';
+  SIndivIvOnlyVer4plus = 'Indiv IV only accepted in format version 4+';
+  SIndivKdfOnlyVer4plus = 'Indiv KDF only accepted in format version 4+';
+  SGcmAuthTagOnlyForGcm = 'GCM Auth Tag only allowed for cipher mode GCM';
+  SGcmAuthTagRequired = 'GCM Auth Tag required for cipher mode GCM';
+  SGcmAuthTagTooSmall = 'GCM Auth Tag too small (choose at least 32 bits = 4 bytes)';
+  SGcmAuthTagTooLarge = 'GCM Auth Tag too large (max 128 bits = 16 bytes)';
+  SPbkdfIterationsMayNotBe0 = 'PBKDF Iterations must be >0';
+  SPbkdfIterationsMustBe0 = 'PBKDF Iterations must be =0';
+  SEncFileNameOnlyVerDc41Final = 'Encrypted Filename only accepted in DC41Final version';
+  SOrigFileNameOnlyHiddenInVer4 = 'Orig File Name can only be hidden in format version 4';
+  SOrigFileSizeOnlyAvailableInVer4 = 'Orig FileSize only available in format version 4';
+  SOrigFileDateOnlyAvailableInVer4 = 'Orig FileDate only available in format version 4';
+  SSevenZipAlgoMustBeNull = 'For this format version, the 7z compression algorithm must be NULL';
+  SSevenZipAlgoMustBeZip = 'For this format version, the 7z compression algorithm must be ZIP';
+  SSevenZipAlgoMustBe7zip = 'For this format version, the 7z compression algorithm must be 7ZIP';
+  SSevenZipAlgoPackingNotImplemented = 'The 7z compression algorithm is either unknown or packing is not implemented';
+  SYes = 'Yes';
+  SNo = 'No';
+  SAuto = 'Auto';
+  SUnknown = 'unknown';
+  SNotAvailable = 'not available';
+  SFileFormat_S = 'File Format: %s';
+  SSubFormat_S = 'Sub-Format: %s';
+  SDC45EncryptedFile = '(De)Coder 4.x/5.x Encrypted File';
+  SIsCompresseFolder_S = 'Is compressed folder: %s';
+  S7zFormat = '7-Zip format';
+  SZipFormat = 'ZIP format';
+  SAdditionalZLibCompressed_S = 'Data additionally ZLib-compressed: %s';
+  SOriginalFilename_S = 'Original filename: %s';
+  SOriginalFilesize_S = 'Original filesize: %s';
+  SOriginalDatetime_S = 'Original datetime: %s';
+  SPasswordEncrypteedFileName_S = 'Password Encrypted File Name: %s';
+  SKDF_S = 'Key Derivation Algorithm: %s';
+  SPBKDFIterations_D = 'PBKDF Iterations: %d';
+  SHashAlgo_S = 'Hashing Algorithm: %s';
+  SHashDigestSize_D = 'Hash Digest Size: %d';
+  SHashBlockSize_D = 'Hash Block Size: %d';
+  SHashSeedSize_D = 'Hash Seed Size: %d';
+  SEncAlgo_S = 'Encryption Algorithm: %s';
+  SCipherKeySize_D = 'Cipher Key Size: %d';
+  SCipherBlockSize_D = 'Cipher Block Size: %d';
+  SCipherBufferSize_D = 'Cipher Buffer Size: %d';
+  SCipherIvSize_D  = 'Cipher IV Size: %d';
+  SCipherIvFillByte_S = 'Cipher IV Fill Byte: %s';
+  SCipherMode_S = 'Cipher Mode: %s';
+  SCipherPaddingMode_S = 'Cipher Padding Mode: %s';
+  SGcmAuthTagSize_D = 'GCM Auth Tag Size: %d bits';
+  SMAC_S = 'Message Authentication: %s';
+  SFolderEncryptionNotAllowed = 'Encryption of folders is not supported. Please pack the file contents using an external tool.';
+  SFilenameTooLong = 'Filename too long';
+  SCalcHash = 'Calc hash';
+  SCalcHMac = 'Calc HMAC';
+  SUnsupportedFileFormatVersion = 'Unsupported file format version. Please try downloading the latest version of (De)Coder';
+  SInvalidFileName = 'Invalid file name';
+  SInvalidPaddingMode = 'Invalid padding mode';
+  SInvalidKdfVersion = 'Invalid KDF version';
+  SEmptyPasswordNotAllowed = 'An empty password is not allowed';
+  SVerifyHMac = 'Verify HMAC';
+  SDecCalcMacMismatch = 'DEC CalcMAC mismatch';
+  SGCMAuthTagMismatch = 'GCM Auth Tag mismatch';
+  SVerifyHash = 'Verify hash';
+  SHMacMismatch = 'HMAC mismatch. Password wrong or file corrupt.';
+  SHashMismatch = 'Hash mismatch. Password wrong or file corrupt.';
+  SFileTerminusWrong = 'File terminus wrong';
+
 const
   CLSID_Null: TGUID = '{00000000-0000-0000-0000-000000000000}';
 
@@ -213,8 +297,6 @@ function DC_DEC_HashById(IdentityBase, Identity: Int64; dc51compat: boolean; NoE
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
-resourcestring
-  SHashId_DD_NotFound = 'Hash ID 0x%.8x with base 0x%.8x not found';
 begin
   for p in TDECHash.ClassList do
   begin
@@ -236,8 +318,6 @@ function DC_DEC_CipherById(IdentityBase, Identity: Int64; dc51compat: boolean; N
 var
   p: TPair<int64, TDECClass>;
   c: TDECClass;
-resourcestring
-  SCipherId_DD_NotFound = 'Cipher ID 0x%.8x with base 0x%.8x not found';
 begin
   for p in TDECCipher.ClassList do
   begin
@@ -354,10 +434,6 @@ var
   outFileDidExist: boolean;
 const
   chunksize = 4096; // bigger = faster
-resourcestring
-  SDC1Encode = '(De)Coder 1.0 encoding';
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SOnlyAsciiFilesAllowed = 'Only ASCII text files can be encrypted with (De)Coder 1.0';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -438,10 +514,6 @@ var
   outFileDidExist: boolean;
 const
   chunksize = 4096*3; // bigger = faster. Must be multiple of 3
-resourcestring
-  SDC1Decode = '(De)Coder 1.0 decoding';
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SNoDc10File = 'This file was not encrypted with (De)Coder 1.0';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -564,9 +636,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SEncodeStream = 'Encode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -621,9 +690,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SDecodeStream = 'Decode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -678,9 +744,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SEncodeStream = 'Encode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -735,9 +798,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SDecodeStream = 'Decode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -792,9 +852,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SEncodeStream = 'Encode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -849,9 +906,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SDecodeStream = 'Decode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -906,9 +960,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SEncodeStream = 'Encode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -963,9 +1014,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SDecodeStream = 'Decode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -1020,9 +1068,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SEncodeStream = 'Encode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -1077,9 +1122,6 @@ var
   ssOut: TFileStream;
   Cipher: TDECCipher;
   outFileDidExist: boolean;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SDecodeStream = 'Decode stream';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   ssIn := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
@@ -1178,31 +1220,6 @@ begin
 end;
 
 procedure DeCoder4X_ValidateParameterBlock(AParameters: TDC4Parameters);
-resourcestring
-  SZipRequiresDc40 = 'ZIP folder requires DC40';
-  SDc40HashNotAccepted = 'Hash not accepted in DC40 version';
-  SDc40CipherNotAccepted = 'Cipher not accepted in DC40 version';
-  SDc40KdfVersionNotAccepted = 'KDF version not accepted in DC40 version';
-  SDc40SeedSizeNotAccepted = 'Seed size not accepted in DC40 version';
-  SDc40CipherModeNotAccepted = 'CiperMode not accepted in DC40 version';
-  SZlibRequiresDc41beta = 'ZLib requires DC41beta+ version';
-  SIndivFillByteOnlyVer4plus = 'Indiv IvFillByte only accepted format version 4+';
-  SIndivIvOnlyVer4plus = 'Indiv IV only accepted format version 4+';
-  SIndivKdfOnlyVer4plus = 'Indiv KDF only accepted format version 4+';
-  SGcmAuthTagOnlyForGcm = 'GCM Auth Tag only allowed for cipher mode GCM';
-  SGcmAuthTagRequired = 'GCM Auth Tag required for cipher mode GCM';
-  SGcmAuthTagTooSmall = 'GCM Auth Tag too small (choose at least 32 bits = 4 bytes)';
-  SGcmAuthTagTooLarge = 'GCM Auth Tag too large (max 128 bits = 16 bytes)';
-  SPbkdfIterationsMayNotBe0 = 'PBKDF Iterations must be >0';
-  SPbkdfIterationsMustBe0 = 'PBKDF Iterations must be =0';
-  SEncFileNameOnlyVerDc41Final = 'Encrypted Filename only accepted in DC41Final version';
-  SOrigFileNameOnlyHiddenInVer4 = 'Orig File Name can only be hidden in format version 4';
-  SOrigFileSizeOnlyAvailableInVer4 = 'Orig FileSize only available in format version 4';
-  SOrigFileDateOnlyAvailableInVer4 = 'Orig FileDate only available in format version 4';
-  SSevenZipAlgoMustBeNull = 'For this format version, the 7z compression algorithm must be NULL';
-  SSevenZipAlgoMustBeZip = 'For this format version, the 7z compression algorithm must be ZIP';
-  SSevenZipAlgoMustBe7zip = 'For this format version, the 7z compression algorithm must be 7ZIP';
-  SSevenZipAlgoPackingNotImplemented = 'The 7z compression algorithm is either unknown or packing is not implemented';
 begin
   // Uncommented, because IsCompressedFolder is part of TDC4FileInfo, not of TDC4Parameters
   //if (AParameters.Dc4FormatVersion < fvDc40) and (AParameters.IsCompressedFolder) then
@@ -1371,13 +1388,6 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
       @CIPHER_PADDINGMODE_NAMES_5
     );
 
-  resourcestring
-    SYes = 'Yes';
-    SNo = 'No';
-    SAuto = 'Auto';
-    SUnknown = 'unknown';
-    SNotAvailable = 'not available';
-
   function YesNo(b: boolean): string; overload;
   begin
     if b then exit(LoadResString(@SYes)) else exit(LoadResString(@SNo));
@@ -1392,34 +1402,6 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
     end;
   end;
 
-resourcestring
-  SFileFormat_S = 'File Format: %s';
-  SSubFormat_S = 'Sub-Format: %s';
-  SDC45EncryptedFile = '(De)Coder 4.x/5.x Encrypted File';
-  SIsCompresseFolder_S = 'Is compressed folder: %s';
-  S7zFormat = '7-Zip format';
-  SZipFormat = 'ZIP format';
-  SAdditionalZLibCompressed_S = 'Data additionally ZLib-compressed: %s';
-  SOriginalFilename_S = 'Original filename: %s';
-  SOriginalFilesize_S = 'Original filesize: %s';
-  SOriginalDatetime_S = 'Original datetime: %s';
-  SPasswordEncrypteedFileName_S = 'Password Encrypted File Name: %s';
-  SKDF_S = 'Key Derivation Algorithm: %s';
-  SPBKDFIterations_D = 'PBKDF Iterations: %d';
-  SHashAlgo_S = 'Hashing Algorithm: %s';
-  SHashDigestSize_D = 'Hash Digest Size: %d';
-  SHashBlockSize_D = 'Hash Block Size: %d';
-  SHashSeedSize_D = 'Hash Seed Size: %d';
-  SEncAlgo_S = 'Encryption Algorithm: %s';
-  SCipherKeySize_D = 'Cipher Key Size: %d';
-  SCipherBlockSize_D = 'Cipher Block Size: %d';
-  SCipherBufferSize_D = 'Cipher Buffer Size: %d';
-  SCipherIvSize_D  = 'Cipher IV Size: %d';
-  SCipherIvFillByte_S = 'Cipher IV Fill Byte: %s';
-  SCipherMode_S = 'Cipher Mode: %s';
-  SCipherPaddingMode_S = 'Cipher Padding Mode: %s';
-  SGcmAuthTagSize_D = 'GCM Auth Tag Size: %d bits';
-  SMAC_S = 'Message Authentication: %s';
 begin
   sl.Add(Format(LoadResString(@SFileFormat_S), [LoadResString(@SDC45EncryptedFile)]));
   sl.Add(Format(LoadResString(@SSubFormat_S), [LoadResString(DC4_SUBFORMAT_VERSION[fi.Parameters.Dc4FormatVersion])]));
@@ -1523,14 +1505,6 @@ const
   // 7.00-7.49    0.73129
   // 7.50-7.99    0.87920
   ShannonEntropyTreshold = 7.5;
-resourcestring
-  SOutputFilenameMustNotBeEmpty = 'Output filename must not be empty';
-  SFileOrFolderNotFound = 'File or folder %s not found';
-  SFolderEncryptionNotAllowed = 'Encryption of folders is not supported. Please pack the file contents using an external tool.';
-  SFilenameTooLong = 'Filename too long';
-  SEncodeStream = 'Encode stream';
-  SCalcHash = 'Calc hash';
-  SCalcHMac = 'Calc HMAC';
 begin
   if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   DeCoder4X_ValidateParameterBlock(AParameters);
@@ -1542,7 +1516,7 @@ begin
   IsZLibCompressed := false;
   IsFolder := DirectoryExists(AFileName);
   if not IsFolder and not FileExists(AFileName) then
-    raise Exception.CreateResFmt(@SFileOrFolderNotFound, [AFileName]);
+    raise Exception.CreateResFmt(@SFileOrFolderSNotFound, [AFileName]);
   outFileDidExist := FileExists(AOutput);
   ATempFileNameZLib := '';
   try
@@ -2042,25 +2016,9 @@ var
   *)
   ATempFileNameZLib: string; // If ZLibCompressed, then =AOutput+.z, otherwise undefined
   ATempFileNameZipOrDirectOutput: string; // If IsFolder, then =AOutput+.7z, else =AOutput
-resourcestring
-  SFileOrFolderNotFound = 'File or folder %s not found';
-  SUnsupportedFileFormatVersion = 'Unsupported file format version. Please try downloading the latest version of (De)Coder';
-  SInvalidFileName = 'Invalid file name';
-  SInvalidPaddingMode = 'Invalid padding mode';
-  SInvalidKdfVersion = 'Invalid KDF version';
-  SEmptyPasswordNotAllowed = 'An empty password is not allowed';
-  SVerifyHMac = 'Verify HMAC';
-  SHMacMismatchPwdWrong = 'HMAC mismatch. The password is probably wrong or the file is corrupt.';
-  SDecodeStream = 'Decode stream';
-  SDecCalcMacMismatch = 'DEC CalcMAC mismatch';
-  SGCMAuthTagMismatch = 'GCM Auth Tag mismatch';
-  SVerifyHash = 'Verify hash';
-  SHMacMismatch = 'HMAC mismatch. Password wrong or file corrupt.';
-  SHashMismatch = 'Hash mismatch. Password wrong or file corrupt.';
-  SFileTerminusWrong = 'File terminus wrong';
 begin
   if not FileExists(AFileName) then
-    raise Exception.CreateResFmt(@SFileOrFolderNotFound, [AFileName]);
+    raise Exception.CreateResFmt(@SFileOrFolderSNotFound, [AFileName]);
   Source := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
   tempstream := nil;
   cipher := nil;
@@ -2418,7 +2376,7 @@ begin
             end));
           Source.Position := Source.Size - ahash.DigestSize - Length(FileTerminus);
           if Source.ReadRawByteString(ahash.DigestSize) <> HashResult2 then
-            raise Exception.CreateRes(@SHMacMismatchPwdWrong);
+            raise Exception.CreateRes(@SHMacMismatch);
           Source.Position := bakSourcePosEncryptedData;
         end;
         {$ENDREGION}
@@ -2740,10 +2698,8 @@ begin
 end;
 
 function DeCoder4X_DecodeFile(const AFileName: string; var AOutput: String; const APassword: string; OnProgressProc: TDcProgressEvent=nil): TDC4FileInfo;
-resourcestring
-  SOutputFilenameEmpty = 'Output filename must not be empty';
 begin
-  if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameEmpty);
+  if AOutput = '' then raise Exception.CreateRes(@SOutputFilenameMustNotBeEmpty);
   result := _DeCoder4X_DecodeFile(AFileName, AOutput, APassword, OnProgressProc);
 end;
 

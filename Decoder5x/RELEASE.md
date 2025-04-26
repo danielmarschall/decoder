@@ -3,9 +3,14 @@
 ## Windows release
 
 - Make sure DecoderConst.pas contains the latest version date
-- In Delphi, compile CoderFMX and CoderCLI in Release mode for Windows x86 and Windows x64
-- Sign it using `AuthentiCode Sign\sign_single.bat`
-- Publish CoderFMX.32.exe, CoderFMX.64.exe, CoderCLI.32.exe, CoderCLI.64.exe in a ZIP file
+- In Delphi, compile both CoderFMX and CoderCLI in Release mode for Windows x86 and Windows x64
+- Open all 4 xlat files in Trnslation using Better Translation Manager, then
+  * Click "Update"
+	* Update translations if required (use Translation Memory to transfer translations between XLAT file)
+	* Build the file ("de" file for German).
+- Sign the EXE and DE files using `AuthentiCode Sign\sign_single.bat`
+- Run Release\MakeReleaseZip.bat to pack the ZIP file
+- Publish Release\WindowsRelease.zip to GitHub and ViaThinkSoft
 
 ## Mac release
 

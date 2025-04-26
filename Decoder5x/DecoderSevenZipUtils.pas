@@ -91,6 +91,13 @@ uses
 {$WARN UNIT_PLATFORM ON}
 {$ENDIF}
 
+resourcestring
+  SFileExtMissingForFolderPack = 'Cannot find compression algorithm given filename %s';
+  SNo7zImplemented = '7zip-Pack/Unpack is not implemented for this Operating System.';
+  SPackFolderTask = '7zip Pack folder';
+  SDllFileNotFound = 'File %s not found. Therefore, cannot compress or uncompress folders.';
+  SUnpackFolderTask = '7zip Unpack folder';
+
 const
   // taken from Winapi.Windows.pas
   E_ABORT = HRESULT($80004004);
@@ -199,8 +206,6 @@ begin
 end;
 
 function SevenZip_GetAlgoFromFilename(const AFilename: string): TGUID;
-resourcestring
-  SFileExtMissingForFolderPack = 'Cannot find compression algorithm given filename %s';
 begin
   // TODO: Extend list of supported algos
   if AFilename.EndsWith('.zip', true) or AFilename.EndsWith('.jar', true) or AFilename.EndsWith('.xpi', true) then
@@ -285,16 +290,17 @@ end;
 
 {$IFDEF MsWindows}
 function SevenZipGetDll: string;
-resourcestring
-  SDllFileNotFound = 'File %s not found. Therefore, cannot compress or uncompress folders.';
 begin
   // Extract 7z.dll from the 32 an 64 bit installer binaries
-  // Do not take the 7za.dll ones from the extra archive
+  // Do NOT take the 7za.dll ones from the extra archive
+  (*
   {$IFDEF Win64}
   result := '7z.64.dll';
   {$ELSE}
   result := '7z.32.dll';
   {$ENDIF}
+  *)
+  result := '7z.dll';
   if not FileExists(Result) then
     raise Exception.CreateResFmt(@SDllFileNotFound, [result]);
 end;
@@ -313,8 +319,6 @@ procedure SevenZipFolder(const AFolderName, AArchFile: string; AAlgo: TGuid; AOn
 var
   Arch: I7zOutArchive;
   ProgressCtx: TSevenZipProgressContext;
-resourcestring
-  SPackFolderTask = '7zip Pack folder';
 begin
   FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
   ProgressCtx.Task := LoadResString(@SPackFolderTask);
@@ -326,8 +330,6 @@ begin
   Arch.SetProgressCallback(@ProgressCtx, SevenZipProgress);
   Arch.SaveToFile(AArchFile);
 {$ELSE}
-resourcestring
-  SNo7zImplemented = '7zip-Pack/Unpack is not implemented for this Operating System.';
 begin
   raise Exception.CreateRes(@SNo7zImplemented);
 {$ENDIF}
@@ -346,8 +348,6 @@ procedure SevenZipExtract(const AArchFile, AFolder: string; AAlgo: TGuid; AOnPro
 var
   Arch: I7zInArchive;
   ProgressCtx: TSevenZipProgressContext;
-resourcestring
-  SUnpackFolderTask = '7zip Unpack folder';
 begin
   FillChar(ProgressCtx, Sizeof(ProgressCtx), 0);
   ProgressCtx.Task := LoadResString(@SUnpackFolderTask);
@@ -357,8 +357,6 @@ begin
   Arch.OpenFile(AArchFile);
   Arch.ExtractTo(AFolder);
 {$ELSE}
-resourcestring
-  SNo7zImplemented = '7zip-Pack/Unpack is not implemented for this Operating System.';
 begin
   raise Exception.CreateRes(@SNo7zImplemented);
 {$ENDIF}

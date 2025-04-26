@@ -19,6 +19,44 @@ uses
   DecoderSevenZipUtils in 'DecoderSevenZipUtils.pas',
   DecoderConst in 'DecoderConst.pas';
 
+resourcestring
+  SFileSNotFound = 'File %s not found';
+  SDirectorySNotFound = 'Directory %s not found';
+  SCautionDeleteFolder = 'Caution! You are about to delete this folder and all of its contents:';
+  SCautionDeleteFolderCountdown_D = 'Press Ctrl+C to cancel or wait to continue ... %d seconds';
+  SProductName = 'ViaThinkSoft (De)Coder 5.1';
+  SVersion_S = 'Version %s';
+  SDevelopedByDanielMarschall = 'Developed by Daniel Marschall';
+  SDMHomepage = 'www.daniel-marschall.de';
+  SLicenseLine = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
+  SEncryptDecryptFilesAndFolders = 'Encrypting and decrypting files or folders';
+  SEncryptDecryptFilesAndFolders_1 = 'Encrypts a file using (De)Coder 5.x';
+  SEncryptDecryptFilesAndFolders_2 = 'Same as %s, but with metadata name+size+date';
+  SEncryptDecryptFilesAndFolders_3 = 'Decrypts a (De)Coder 4.x or 5.x encrypted file';
+  SEncryptDecryptFilesAndFolders_4 = 'Shows details of a (De)Coder 4.x or 5.x encrypted file';
+  SSupportLegacyFormats = 'Support for legacy file formats';
+  SSupportLegacyFormats_1 = 'Encrypts a file using the (De)Coder 1.0 format (INSECURE)';
+  SSupportLegacyFormats_2 = 'Decrypts a file using the (De)Coder 1.0 format (INSECURE)';
+  SSupportLegacyFormats_3 = 'Encrypts a file using the (De)Coder 2.0 format (INSECURE)';
+  SSupportLegacyFormats_4 = 'Decrypts a file using the (De)Coder 2.0 format (INSECURE)';
+  SSupportLegacyFormats_5 = 'Encrypts a file using the (De)Coder 2.1 format (INSECURE)';
+  SSupportLegacyFormats_6 = 'Decrypts a file using the (De)Coder 2.1 format (INSECURE)';
+  SSupportLegacyFormats_7 = 'Encrypts a file using the (De)Coder 2.2 format (INSECURE)';
+  SSupportLegacyFormats_8 = 'Decrypts a file using the (De)Coder 2.2 format (INSECURE)';
+  SSupportLegacyFormats_9 = 'Encrypts a file using the (De)Coder 3.0 format (INSECURE)';
+  SSupportLegacyFormats_10 = 'Decrypts a file using the (De)Coder 3.0 format (INSECURE)';
+  SSupportLegacyFormats_11 = 'Encrypts a file using the (De)Coder 3.2 format (INSECURE)';
+  SSupportLegacyFormats_12 = 'Decrypts a file using the (De)Coder 3.2 format (INSECURE)';
+  SExtras = 'Extras';
+  SExtras_1 = 'Wipes a file from a disk in a secure way';
+  SExtras_2 = 'Wipes a complete folder from a disk in a secure way';
+  SExtras_3 = 'Shows this command listing';
+  SError_S = 'ERROR: %s';
+  SExitCode_D = 'Exit code: %d';
+  SPressAnyKey = 'Press any key to exit ...';
+  SInfoLegacyDecrypt = 'Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
+  SInfoLegacyEncrypt = 'WARNING: Encrypting files with this legacy algorithm is EXTREMELY insecure!';
+
 procedure OnProgressProc(Size, Pos: Int64; const Task: string; State: TDcProgressState);
 begin
   case State of
@@ -29,19 +67,15 @@ begin
 end;
 
 procedure CheckFileExists(const AFileName: string);
-resourcestring
-  SFileNotFound = 'File %s not found';
 begin
   if not FileExists(AFileName) then
-    raise Exception.CreateResFmt(@SFileNotFound, [AFileName]);
+    raise Exception.CreateResFmt(@SFileSNotFound, [AFileName]);
 end;
 
 procedure CheckDirectoryExists(const AFileName: string);
-resourcestring
-  SDirNotFound = 'Directory %s not found';
 begin
   if not DirectoryExists(AFileName) then
-    raise Exception.CreateResFmt(@SDirNotFound, [AFileName]);
+    raise Exception.CreateResFmt(@SDirectorySNotFound, [AFileName]);
 end;
 
 const
@@ -282,42 +316,6 @@ var
   sl: TStringList;
   OutputFile: string;
   OwnName: string;
-
-resourcestring
-  SCautionDeleteFolder = 'Caution! You are about to delete this folder and all of its contents:';
-  SCautionDeleteFolderCountdown_D = 'Press Ctrl+C to cancel or wait to continue ... %d seconds';
-  SProductName = 'ViaThinkSoft (De)Coder 5.1';
-  SVersion_S = 'Version %s';
-  SDevelopedByDanielMarschall = 'Developed by Daniel Marschall';
-  SDMHomepage = 'www.daniel-marschall.de';
-  SLicenseLine = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
-  SEncryptDecryptFilesAndFolders = 'Encrypting and decrypting files or folders';
-  SEncryptDecryptFilesAndFolders_1 = 'Encrypts a file using (De)Coder 5.x';
-  SEncryptDecryptFilesAndFolders_2 = 'Same as %s, but with metadata name+size+date';
-  SEncryptDecryptFilesAndFolders_3 = 'Decrypts a (De)Coder 4.x or 5.x encrypted file';
-  SEncryptDecryptFilesAndFolders_4 = 'Shows details of a (De)Coder 4.x or 5.x encrypted file';
-  SSupportLegacyFormats = 'Support for legacy file formats';
-  SSupportLegacyFormats_1 = 'Encrypts a file using the (De)Coder 1.0 format (INSECURE)';
-  SSupportLegacyFormats_2 = 'Decrypts a file using the (De)Coder 1.0 format (INSECURE)';
-  SSupportLegacyFormats_3 = 'Encrypts a file using the (De)Coder 2.0 format (INSECURE)';
-  SSupportLegacyFormats_4 = 'Decrypts a file using the (De)Coder 2.0 format (INSECURE)';
-  SSupportLegacyFormats_5 = 'Encrypts a file using the (De)Coder 2.1 format (INSECURE)';
-  SSupportLegacyFormats_6 = 'Decrypts a file using the (De)Coder 2.1 format (INSECURE)';
-  SSupportLegacyFormats_7 = 'Encrypts a file using the (De)Coder 2.2 format (INSECURE)';
-  SSupportLegacyFormats_8 = 'Decrypts a file using the (De)Coder 2.2 format (INSECURE)';
-  SSupportLegacyFormats_9 = 'Encrypts a file using the (De)Coder 3.0 format (INSECURE)';
-  SSupportLegacyFormats_10 = 'Decrypts a file using the (De)Coder 3.0 format (INSECURE)';
-  SSupportLegacyFormats_11 = 'Encrypts a file using the (De)Coder 3.2 format (INSECURE)';
-  SSupportLegacyFormats_12 = 'Decrypts a file using the (De)Coder 3.2 format (INSECURE)';
-  SExtras = 'Extras';
-  SExtras_1 = 'Wipes a file from a disk in a secure way';
-  SExtras_2 = 'Wipes a complete folder from a disk in a secure way';
-  SExtras_3 = 'Shows this command listing';
-  SError_S = 'ERROR: %s';
-  SExitCode_D = 'Exit code: %d';
-  SPressAnyKey = 'Press any key to exit ...';
-  SInfoLegacyDecrypt = 'Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
-  SInfoLegacyEncrypt = 'WARNING: Encrypting files with this legacy algorithm is EXTREMELY insecure!';
 
 begin
   try

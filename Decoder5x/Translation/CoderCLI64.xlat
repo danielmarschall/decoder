@@ -1,0 +1,3393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xlat>
+  <meta>
+    <version>3</version>
+    <created>2025-04-26T21:52:33.865+02:00</created>
+    <tool>amTranslationManager</tool>
+    <toolversion>2.3.9199.24584</toolversion>
+  </meta>
+  <options>
+    <stringlisthandling>2</stringlisthandling>
+    <omitdonttranslate>True</omitdonttranslate>
+    <sorted>True</sorted>
+    <omitnewstate>True</omitnewstate>
+  </options>
+  <project sourcefile="..\Output\win64\CoderCLI.exe" stringsymbolfile=".\CoderCLI.drc" language="en-US" properties="412">
+    <targetlanguages>
+      <language language="de-DE" translated="161"/>
+    </targetlanguages>
+    <modules>
+      <module name="resourcestrings" type="strings" properties="412">
+        <items>
+          <item name="CoderCLI_SCautionDeleteFolder">
+            <properties>
+              <property>
+                <value>Caution! You are about to delete this folder and all of its contents:</value>
+                <translations>
+                  <translation language="de-DE">ACHTUNG! Sie sind dabei diesen Ordner und alle seine Inhalte zu löschen:</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SCautionDeleteFolderCountdown_D">
+            <properties>
+              <property>
+                <value>Press Ctrl+C to cancel or wait to continue ... %d seconds</value>
+                <translations>
+                  <translation language="de-DE">Drücken Sie Strg+C zum Abbrechen oder Warten Sie zum Fortfahren ... %d Sekunden verbleibend</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SDevelopedByDanielMarschall">
+            <properties>
+              <property>
+                <value>Developed by Daniel Marschall</value>
+                <translations>
+                  <translation language="de-DE">Entwickelt von Daniel Marschall</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SDirectorySNotFound">
+            <properties>
+              <property>
+                <value>Directory %s not found</value>
+                <translations>
+                  <translation language="de-DE">Verzeichnis %s nicht gefunden</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SDMHomepage">
+            <properties>
+              <property>
+                <value>www.daniel-marschall.de</value>
+                <translations>
+                  <translation language="de-DE">www.daniel-marschall.de</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SEncryptDecryptFilesAndFolders">
+            <properties>
+              <property>
+                <value>Encrypting and decrypting files or folders</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln und Entschlüsseln von Dateien und Ordnern</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SEncryptDecryptFilesAndFolders_1">
+            <properties>
+              <property>
+                <value>Encrypts a file using (De)Coder 5.x</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselt eine Datei mit (De)Coder 5.x</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SEncryptDecryptFilesAndFolders_2">
+            <properties>
+              <property>
+                <value>Same as %s, but with metadata name+size+date</value>
+                <translations>
+                  <translation language="de-DE">Identisch mit %s, aber inkl. Metadaten Dateiname+Größe+Änderungsdatum</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SEncryptDecryptFilesAndFolders_3">
+            <properties>
+              <property>
+                <value>Decrypts a (De)Coder 4.x or 5.x encrypted file</value>
+                <translations>
+                  <translation language="de-DE">Entschlüsselt eine (De)Coder 4.x oder 5.x verschlüsselte Datei</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SEncryptDecryptFilesAndFolders_4">
+            <properties>
+              <property>
+                <value>Shows details of a (De)Coder 4.x or 5.x encrypted file</value>
+                <translations>
+                  <translation language="de-DE">Zeigt Details einer (De)Coder 4.x oder 5.x verschlüsselten Datei</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SError_S">
+            <properties>
+              <property>
+                <value>ERROR: %s</value>
+                <translations>
+                  <translation language="de-DE">FEHLER: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SExitCode_D">
+            <properties>
+              <property>
+                <value>Exit code: %d</value>
+                <translations>
+                  <translation language="de-DE">Antwort-Code: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SExtras">
+            <properties>
+              <property>
+                <value>Extras</value>
+                <translations>
+                  <translation language="de-DE">Extras</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SExtras_1">
+            <properties>
+              <property>
+                <value>Wipes a file from a disk in a secure way</value>
+                <translations>
+                  <translation language="de-DE">Löscht eine Datei unwiederherstellbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SExtras_2">
+            <properties>
+              <property>
+                <value>Wipes a complete folder from a disk in a secure way</value>
+                <translations>
+                  <translation language="de-DE">Löscht einen kompletten Ordner unwiederherstellbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SExtras_3">
+            <properties>
+              <property>
+                <value>Shows this command listing</value>
+                <translations>
+                  <translation language="de-DE">Zeigt diese Befehls-Auflistung</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SFileSNotFound">
+            <properties>
+              <property>
+                <value>File %s not found</value>
+                <translations>
+                  <translation language="de-DE">Datei %s nicht gefunden</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SInfoLegacyDecrypt">
+            <properties>
+              <property>
+                <value>Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)</value>
+                <translations>
+                  <translation language="de-DE">Bitte PRÜFEN Sie die Dateiausgabe. (Mit dieser alten Dateiformatversion ist es nicht möglich, falsche und richtige Passwörter zu unterscheiden)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SInfoLegacyEncrypt">
+            <properties>
+              <property>
+                <value>WARNING: Encrypting files with this legacy algorithm is EXTREMELY insecure!</value>
+                <translations>
+                  <translation language="de-DE">WARNUNG: Verschlüsseln mit diesem alten Algorithmus ist EXTREM unsicher!</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SLicenseLine">
+            <properties>
+              <property>
+                <value>FREEWARE - Licensed under the terms of the Apache 2.0 License</value>
+                <translations>
+                  <translation language="de-DE">FREEWARE - Lizenziert unter der Apache 2.0 Lizenz</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SPressAnyKey">
+            <properties>
+              <property>
+                <value>Press any key to exit ...</value>
+                <translations>
+                  <translation language="de-DE">Beenden mit beliebiger Taste ...</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SProductName">
+            <properties>
+              <property>
+                <value>ViaThinkSoft (De)Coder 5.1</value>
+                <translations>
+                  <translation language="de-DE">ViaThinkSoft (De)Coder 5.1</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats">
+            <properties>
+              <property>
+                <value>Support for legacy file formats</value>
+                <translations>
+                  <translation language="de-DE">Unterstützun für alte Formatversionen</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_1">
+            <properties>
+              <property>
+                <value>Encrypts a file using the (De)Coder 1.0 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln der Datei im (De)Coder 1.0 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_10">
+            <properties>
+              <property>
+                <value>Decrypts a file using the (De)Coder 3.0 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Entschlüsseln der Datei im (De)Coder 3.0 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_11">
+            <properties>
+              <property>
+                <value>Encrypts a file using the (De)Coder 3.2 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln der Datei im (De)Coder 3.2 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_12">
+            <properties>
+              <property>
+                <value>Decrypts a file using the (De)Coder 3.2 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Entschlüsseln der Datei im (De)Coder 3.2 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_2">
+            <properties>
+              <property>
+                <value>Decrypts a file using the (De)Coder 1.0 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Entschlüsseln der Datei im (De)Coder 1.0 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_3">
+            <properties>
+              <property>
+                <value>Encrypts a file using the (De)Coder 2.0 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln der Datei im (De)Coder 2.0 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_4">
+            <properties>
+              <property>
+                <value>Decrypts a file using the (De)Coder 2.0 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Entschlüsseln der Datei im (De)Coder 2.0 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_5">
+            <properties>
+              <property>
+                <value>Encrypts a file using the (De)Coder 2.1 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln der Datei im (De)Coder 2.1 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_6">
+            <properties>
+              <property>
+                <value>Decrypts a file using the (De)Coder 2.1 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Entschlüsseln der Datei im (De)Coder 2.1 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_7">
+            <properties>
+              <property>
+                <value>Encrypts a file using the (De)Coder 2.2 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln der Datei im (De)Coder 2.2 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_8">
+            <properties>
+              <property>
+                <value>Decrypts a file using the (De)Coder 2.2 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Entschlüsseln der Datei im (De)Coder 2.2 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SSupportLegacyFormats_9">
+            <properties>
+              <property>
+                <value>Encrypts a file using the (De)Coder 3.0 format (INSECURE)</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln der Datei im (De)Coder 3.0 Format (UNSICHER)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="CoderCLI_SVersion_S">
+            <properties>
+              <property>
+                <value>Version %s</value>
+                <translations>
+                  <translation language="de-DE">Version %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DECBaseClass_sClassNotRegistered">
+            <properties>
+              <property>
+                <value>Class %s is not registered</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherBase_sAlreadyPadded">
+            <properties>
+              <property>
+                <value>Cipher has already been padded, cannot process message</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherBase_sInvalidMACMode">
+            <properties>
+              <property>
+                <value>Invalid Cipher mode to compute MAC</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherBase_sInvalidState">
+            <properties>
+              <property>
+                <value>Cipher is not in valid state for this action</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherBase_sInvalidUseOfPadding">
+            <properties>
+              <property>
+                <value>No padding for stream cipher allowed</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherBase_sIVMaterialTooLarge">
+            <properties>
+              <property>
+                <value>Initvector is too large for use (Security Issue)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherBase_sKeyMaterialTooLarge">
+            <properties>
+              <property>
+                <value>Keymaterial is too large for use (Security Issue)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherBase_sNoKeyMaterialGiven">
+            <properties>
+              <property>
+                <value>No Keymaterial given (Security Issue)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherFormats_sPaddingModeNotImplemented">
+            <properties>
+              <property>
+                <value>Padding mode %0:s not implemented</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModes_sInvalidAuthenticationValue">
+            <properties>
+              <property>
+                <value>Calculated authentication value does not match given expected value</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModes_sInvalidBlockSize">
+            <properties>
+              <property>
+                <value>Block size must be %0:d bit for selected mode %1:s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModes_sInvalidMessageLength">
+            <properties>
+              <property>
+                <value>Message length for mode %0:s must be a multiple of %1:d bytes</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModes_sInvalidModeForMethod">
+            <properties>
+              <property>
+                <value>Invalid mode for this method. Mode must be %0:s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherPaddings_sInvalidPadding">
+            <properties>
+              <property>
+                <value>Invalid %0:s padding</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherPaddings_sUnsupportedBlockSizeForPadding">
+            <properties>
+              <property>
+                <value>Unsupported block size of %1:d for %0:s padding</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECFormat_sInvalidInputCharacter">
+            <properties>
+              <property>
+                <value>Invalid character (#%d) in input</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECFormat_sInvalidStringFormat">
+            <properties>
+              <property>
+                <value>Input is not an valid %s format</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHash_sCostFactorInvalid">
+            <properties>
+              <property>
+                <value>Specified cost factor must be in the range of %0:d-%1:d</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHash_sHashInitFailure">
+            <properties>
+              <property>
+                <value>Invalid %0:s algorithm initialization parameters specified: %1:s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHash_sHashOutputLength0">
+            <properties>
+              <property>
+                <value>HashSize must not be 0</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHash_sPasswordTooLong">
+            <properties>
+              <property>
+                <value>Password to be hashed is too long. Max. length: %0:d bytes</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHash_sSHA3AbsorbFailure">
+            <properties>
+              <property>
+                <value>Absorb: number of bits mod 8 &lt;&gt; 0 or squeezing active. Bits: %0:d, Squeezing: %1:s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHash_sWrongSaltLength">
+            <properties>
+              <property>
+                <value>Length of specified salt value must be between %0:d and %1:d bytes</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHashAuthentication_sCryptIDNotRegistered">
+            <properties>
+              <property>
+                <value>No class for crypt ID %s registered</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHashAuthentication_sEmptyKDFDataAndSeed">
+            <properties>
+              <property>
+                <value>Size of data and sees may not both be zero</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHashAuthentication_sSaltValueTooLong">
+            <properties>
+              <property>
+                <value>Maximum allowed salt length (%0:d byte) exceeded</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHashAuthentication_sSaltValueTooShort">
+            <properties>
+              <property>
+                <value>Minumum allowed salt length (%0:d byte) exceeded</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHashBase_sHashNotInitialized">
+            <properties>
+              <property>
+                <value>Hash must be initialized</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHashBase_sRaiseHashOverflowError">
+            <properties>
+              <property>
+                <value>Hash Overflow: Too many bits processed</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECHashBitBase_rFinalByteLengthTooBig">
+            <properties>
+              <property>
+                <value>Final byte length too big (%0:d) must be 0..7</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_0">
+            <properties>
+              <property>
+                <value>CTSx = double CBC, with CFS8 padding of truncated final block</value>
+                <translations>
+                  <translation language="de-DE">CTSx = doppeltes CBC, mit CFS8 Padding vom beschnittenen letztem Block</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_1">
+            <properties>
+              <property>
+                <value>CBCx = Cipher Block Chaining, with CFB8 padding of truncated final block</value>
+                <translations>
+                  <translation language="de-DE">CBCx = Cipher Block Chaining, mit CFB8 Padding vom beschnittenen letztem Block</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_2">
+            <properties>
+              <property>
+                <value>CFB8 = 8bit Cipher Feedback mode</value>
+                <translations>
+                  <translation language="de-DE">CFB8 = 8bit Cipher Feedback Modus</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_3">
+            <properties>
+              <property>
+                <value>CFBx = CFB on Blocksize of Cipher</value>
+                <translations>
+                  <translation language="de-DE">CFBx = CFB auf Blockgröße des Chiffre</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_4">
+            <properties>
+              <property>
+                <value>OFB8 = 8bit Output Feedback mode</value>
+                <translations>
+                  <translation language="de-DE">OFB8 = 8bit Output Feedback Modus</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_5">
+            <properties>
+              <property>
+                <value>OFBx = OFB on Blocksize bytes</value>
+                <translations>
+                  <translation language="de-DE">OFBx = OFB auf Blockgröße</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_6">
+            <properties>
+              <property>
+                <value>CFS8 = 8Bit CFS, double CFB</value>
+                <translations>
+                  <translation language="de-DE">CFS8 = 8Bit CFS, doppeltes CFB</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_7">
+            <properties>
+              <property>
+                <value>CFSx = CFS on Blocksize bytes</value>
+                <translations>
+                  <translation language="de-DE">CFSx = CFS auf Blockgröße</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_8">
+            <properties>
+              <property>
+                <value>ECBx = Electronic Code Book</value>
+                <translations>
+                  <translation language="de-DE">ECBx = Electronic Code Book</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_9">
+            <properties>
+              <property>
+                <value>GCM = Galois Counter Mode</value>
+                <translations>
+                  <translation language="de-DE">GCM = Galois Counter Modus</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_PADDINGMODE_NAMES_0">
+            <properties>
+              <property>
+                <value>None</value>
+                <translations>
+                  <translation language="de-DE">Keine</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_PADDINGMODE_NAMES_1">
+            <properties>
+              <property>
+                <value>PKCS#5</value>
+                <translations>
+                  <translation language="de-DE">PKCS#5</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_PADDINGMODE_NAMES_2">
+            <properties>
+              <property>
+                <value>PKCS#7</value>
+                <translations>
+                  <translation language="de-DE">PKCS#7</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_PADDINGMODE_NAMES_3">
+            <properties>
+              <property>
+                <value>ANSI X9.23</value>
+                <translations>
+                  <translation language="de-DE">ANSI X9.23</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_PADDINGMODE_NAMES_4">
+            <properties>
+              <property>
+                <value>ISO 10126</value>
+                <translations>
+                  <translation language="de-DE">ISO 10126</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_PADDINGMODE_NAMES_5">
+            <properties>
+              <property>
+                <value>ISO 7816</value>
+                <translations>
+                  <translation language="de-DE">ISO 7816</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_DC4_SUBFORMAT_VERSION_0">
+            <properties>
+              <property>
+                <value>Hagen Reddmann Example File</value>
+                <translations>
+                  <translation language="de-DE">Hagen Reddmann Beispiel-Datei</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_DC4_SUBFORMAT_VERSION_1">
+            <properties>
+              <property>
+                <value>(De)Coder 4.0</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 4.0</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_DC4_SUBFORMAT_VERSION_2">
+            <properties>
+              <property>
+                <value>(De)Coder 4.1 Beta</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 4.1 Beta</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_DC4_SUBFORMAT_VERSION_3">
+            <properties>
+              <property>
+                <value>(De)Coder 4.1 Final (Cancelled)</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 4.1 Final (Abgebrochen)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_DC4_SUBFORMAT_VERSION_4">
+            <properties>
+              <property>
+                <value>(De)Coder 5.0</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 5.0</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_DC4_SUBFORMAT_VERSION_5">
+            <properties>
+              <property>
+                <value>(De)Coder 5.1</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 5.1</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_INTEGRITY_CHECK_INFO_DecCalcMac">
+            <properties>
+              <property>
+                <value>DEC CalcMac</value>
+                <translations>
+                  <translation language="de-DE">DEC CalcMac</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_INTEGRITY_CHECK_INFO_EncryptThenMac">
+            <properties>
+              <property>
+                <value>Encrypt-then-HMAC</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsseln-Dann-HMAC</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_INTEGRITY_CHECK_INFO_NestedHash">
+            <properties>
+              <property>
+                <value>Nested Hash of source data with password</value>
+                <translations>
+                  <translation language="de-DE">Verschachtelter Hash der Quelldaten mit Passwort</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_INTEGRITY_CHECK_INFO_SourceHash">
+            <properties>
+              <property>
+                <value>Hash of source data</value>
+                <translations>
+                  <translation language="de-DE">Hash der Quelldaten</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_KDF_VERSION_NAMES_0">
+            <properties>
+              <property>
+                <value>Unknown</value>
+                <translations>
+                  <translation language="de-DE">Unbekannt</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_KDF_VERSION_NAMES_1">
+            <properties>
+              <property>
+                <value>KDF1</value>
+                <translations>
+                  <translation language="de-DE">KDF1</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_KDF_VERSION_NAMES_2">
+            <properties>
+              <property>
+                <value>KDF2</value>
+                <translations>
+                  <translation language="de-DE">KDF2</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_KDF_VERSION_NAMES_3">
+            <properties>
+              <property>
+                <value>KDF3</value>
+                <translations>
+                  <translation language="de-DE">KDF3</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_KDF_VERSION_NAMES_4">
+            <properties>
+              <property>
+                <value>KDFx</value>
+                <translations>
+                  <translation language="de-DE">KDFx</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_KDF_VERSION_NAMES_5">
+            <properties>
+              <property>
+                <value>PBKDF2</value>
+                <translations>
+                  <translation language="de-DE">PBKDF2</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_S7zFormat">
+            <properties>
+              <property>
+                <value>7-Zip format</value>
+                <translations>
+                  <translation language="de-DE">7zip-Format</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SAdditionalZLibCompressed_S">
+            <properties>
+              <property>
+                <value>Data additionally ZLib-compressed: %s</value>
+                <translations>
+                  <translation language="de-DE">Daten zusätzlich ZLib-Komprimiert: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCalcHash">
+            <properties>
+              <property>
+                <value>Calc hash</value>
+                <translations>
+                  <translation language="de-DE">Hash berechnen</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCalcHMac">
+            <properties>
+              <property>
+                <value>Calc HMAC</value>
+                <translations>
+                  <translation language="de-DE">HMAC berechnen</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherBlockSize_D">
+            <properties>
+              <property>
+                <value>Cipher Block Size: %d</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselung Blockgröße: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherBufferSize_D">
+            <properties>
+              <property>
+                <value>Cipher Buffer Size: %d</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselung Puffergröße: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherId_DD_NotFound">
+            <properties>
+              <property>
+                <value>Cipher ID 0x%.8x with base 0x%.8x not found</value>
+                <translations>
+                  <translation language="de-DE">Cipher ID 0x%.8x mit Basis 0x%.8x nicht gefunden</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherIvFillByte_S">
+            <properties>
+              <property>
+                <value>Cipher IV Fill Byte: %s</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselung Initial-Vektor Füll-Byte: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherIvSize_D">
+            <properties>
+              <property>
+                <value>Cipher IV Size: %d</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselung Initial-Vektor Länge: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherKeySize_D">
+            <properties>
+              <property>
+                <value>Cipher Key Size: %d</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselung Schlüssellänge: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherMode_S">
+            <properties>
+              <property>
+                <value>Cipher Mode: %s</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselungsmodus: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SCipherPaddingMode_S">
+            <properties>
+              <property>
+                <value>Cipher Padding Mode: %s</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselung Padding-Modus: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDC1Decode">
+            <properties>
+              <property>
+                <value>(De)Coder 1.0 decoding</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 1.0 Entschlüsselung</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDC1Encode">
+            <properties>
+              <property>
+                <value>(De)Coder 1.0 encoding</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 1.0 Verschlüsselung</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDc40CipherModeNotAccepted">
+            <properties>
+              <property>
+                <value>CiperMode not accepted in DC40 version</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselungsmodus in DC40 Dateiformat nicht anwendbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDc40CipherNotAccepted">
+            <properties>
+              <property>
+                <value>Cipher not accepted in DC40 version</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselungsalgorithmus in DC40 Dateiformat nicht anwendbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDc40HashNotAccepted">
+            <properties>
+              <property>
+                <value>Hash not accepted in DC40 version</value>
+                <translations>
+                  <translation language="de-DE">Hashalgorithmus in DC40 Dateiformat nicht anwendbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDc40KdfVersionNotAccepted">
+            <properties>
+              <property>
+                <value>KDF version not accepted in DC40 version</value>
+                <translations>
+                  <translation language="de-DE">KDF-Version auf DC40 Dateiformat nicht anwendbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDc40SeedSizeNotAccepted">
+            <properties>
+              <property>
+                <value>Seed size not accepted in DC40 version</value>
+                <translations>
+                  <translation language="de-DE">Seed-Größe auf DC40 Dateiformat nicht anwendbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDC45EncryptedFile">
+            <properties>
+              <property>
+                <value>(De)Coder 4.x/5.x Encrypted File</value>
+                <translations>
+                  <translation language="de-DE">(De)Coder 4.x/5.x verschlüsselte Datei</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDecCalcMacMismatch">
+            <properties>
+              <property>
+                <value>DEC CalcMAC mismatch</value>
+                <translations>
+                  <translation language="de-DE">DEC CalcMAC stimmt nicht</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SDecodeStream">
+            <properties>
+              <property>
+                <value>Decode stream</value>
+                <translations>
+                  <translation language="de-DE">Stream entschlüsseln</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SEmptyPasswordNotAllowed">
+            <properties>
+              <property>
+                <value>An empty password is not allowed</value>
+                <translations>
+                  <translation language="de-DE">Ein leeres Passwort ist nicht erlaubt</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SEncAlgo_S">
+            <properties>
+              <property>
+                <value>Encryption Algorithm: %s</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselungs-Algorithmus: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SEncFileNameOnlyVerDc41Final">
+            <properties>
+              <property>
+                <value>Encrypted Filename only accepted in DC41Final version</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselter Dateiname nur auf DC41Final Dateiformat anwendbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SEncodeStream">
+            <properties>
+              <property>
+                <value>Encode stream</value>
+                <translations>
+                  <translation language="de-DE">Stream verschlüsseln</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SFileFormat_S">
+            <properties>
+              <property>
+                <value>File Format: %s</value>
+                <translations>
+                  <translation language="de-DE">Dateiformat: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SFilenameTooLong">
+            <properties>
+              <property>
+                <value>Filename too long</value>
+                <translations>
+                  <translation language="de-DE">Dateiname zu lang</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SFileOrFolderSNotFound">
+            <properties>
+              <property>
+                <value>File or folder %s not found</value>
+                <translations>
+                  <translation language="de-DE">Datei oder Ordner %s nicht gefunden</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SFileTerminusWrong">
+            <properties>
+              <property>
+                <value>File terminus wrong</value>
+                <translations>
+                  <translation language="de-DE">Dateiende falsch</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SFolderEncryptionNotAllowed">
+            <properties>
+              <property>
+                <value>Encryption of folders is not supported. Please pack the file contents using an external tool.</value>
+                <translations>
+                  <translation language="de-DE">Verschlüsselung  von Ordnern wird nicht unterstützt. Bitte packen Sie die Inhalte zuerst mit einem externen Tool.</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SGCMAuthTagMismatch">
+            <properties>
+              <property>
+                <value>GCM Auth Tag mismatch</value>
+                <translations>
+                  <translation language="de-DE">GCM Auth Tag passt nicht</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SGcmAuthTagOnlyForGcm">
+            <properties>
+              <property>
+                <value>GCM Auth Tag only allowed for cipher mode GCM</value>
+                <translations>
+                  <translation language="de-DE">GCM Auth Tag nur im Verschlüsselungsmodus GCM möglich</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SGcmAuthTagRequired">
+            <properties>
+              <property>
+                <value>GCM Auth Tag required for cipher mode GCM</value>
+                <translations>
+                  <translation language="de-DE">GCM Auth Tag erforderlich für Verschlüsselungsmodus GCM</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SGcmAuthTagSize_D">
+            <properties>
+              <property>
+                <value>GCM Auth Tag Size: %d bits</value>
+                <translations>
+                  <translation language="de-DE">GCM Auth Tag Größe: %d Bits</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SGcmAuthTagTooLarge">
+            <properties>
+              <property>
+                <value>GCM Auth Tag too large (max 128 bits = 16 bytes)</value>
+                <translations>
+                  <translation language="de-DE">GCM Auth Tag zu groß (max. 128 Bits = 16 Bytes)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SGcmAuthTagTooSmall">
+            <properties>
+              <property>
+                <value>GCM Auth Tag too small (choose at least 32 bits = 4 bytes)</value>
+                <translations>
+                  <translation language="de-DE">GCM Auth Tag zu klein (min. 32 Bits = 4 Bytes)</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SHashAlgo_S">
+            <properties>
+              <property>
+                <value>Hashing Algorithm: %s</value>
+                <translations>
+                  <translation language="de-DE">Hash-Algorithmus: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SHashBlockSize_D">
+            <properties>
+              <property>
+                <value>Hash Block Size: %d</value>
+                <translations>
+                  <translation language="de-DE">Hash Blockgröße: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SHashDigestSize_D">
+            <properties>
+              <property>
+                <value>Hash Digest Size: %d</value>
+                <translations>
+                  <translation language="de-DE">Hash Digest-Größe: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SHashId_DD_NotFound">
+            <properties>
+              <property>
+                <value>Hash ID 0x%.8x with base 0x%.8x not found</value>
+                <translations>
+                  <translation language="de-DE">Hash ID 0x%.8x mit Basis 0x%.8x nicht gefunden</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SHashMismatch">
+            <properties>
+              <property>
+                <value>Hash mismatch. Password wrong or file corrupt.</value>
+                <translations>
+                  <translation language="de-DE">Hash passt nicht. Passwort falsch oder Datei beschädigt.</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SHashSeedSize_D">
+            <properties>
+              <property>
+                <value>Hash Seed Size: %d</value>
+                <translations>
+                  <translation language="de-DE">Hash Seed-Größe: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SHMacMismatch">
+            <properties>
+              <property>
+                <value>HMAC mismatch. Password wrong or file corrupt.</value>
+                <translations>
+                  <translation language="de-DE">HMAC passt nicht; Passwort ist falsch oder Datei ist beschädigt.</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SIndivFillByteOnlyVer4plus">
+            <properties>
+              <property>
+                <value>Indiv IvFillByte only accepted in format version 4+</value>
+                <translations>
+                  <translation language="de-DE">Individuelles IvFillByte nur in Formatversion 4+ möglich</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SIndivIvOnlyVer4plus">
+            <properties>
+              <property>
+                <value>Indiv IV only accepted in format version 4+</value>
+                <translations>
+                  <translation language="de-DE">Individuelles IV nur in Formatversion 4+ möglich</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SIndivKdfOnlyVer4plus">
+            <properties>
+              <property>
+                <value>Indiv KDF only accepted in format version 4+</value>
+                <translations>
+                  <translation language="de-DE">Individuelles KDF nur in Formatversion 4+ möglich</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SInvalidFileName">
+            <properties>
+              <property>
+                <value>Invalid file name</value>
+                <translations>
+                  <translation language="de-DE">Ungültiger Dateiname</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SInvalidKdfVersion">
+            <properties>
+              <property>
+                <value>Invalid KDF version</value>
+                <translations>
+                  <translation language="de-DE">Ungültige KDF-Version</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SInvalidPaddingMode">
+            <properties>
+              <property>
+                <value>Invalid padding mode</value>
+                <translations>
+                  <translation language="de-DE">Ungültiger Padding-Modus</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SIsCompresseFolder_S">
+            <properties>
+              <property>
+                <value>Is compressed folder: %s</value>
+                <translations>
+                  <translation language="de-DE">Ist gepackter Ordner: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SKDF_S">
+            <properties>
+              <property>
+                <value>Key Derivation Algorithm: %s</value>
+                <translations>
+                  <translation language="de-DE">Key Derivation Algorithmus: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SMAC_S">
+            <properties>
+              <property>
+                <value>Message Authentication: %s</value>
+                <translations>
+                  <translation language="de-DE">Nachrichten-Authentifizierung: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SNo">
+            <properties>
+              <property>
+                <value>No</value>
+                <translations>
+                  <translation language="de-DE">Nein</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SNoDc10File">
+            <properties>
+              <property>
+                <value>This file was not encrypted with (De)Coder 1.0</value>
+                <translations>
+                  <translation language="de-DE">Diese Datei wurde mit (De)Coder 1.0 verschlüsselt</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SNotAvailable">
+            <properties>
+              <property>
+                <value>not available</value>
+                <translations>
+                  <translation language="de-DE">nicht verfügbar</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOnlyAsciiFilesAllowed">
+            <properties>
+              <property>
+                <value>Only ASCII text files can be encrypted with (De)Coder 1.0</value>
+                <translations>
+                  <translation language="de-DE">Nur ASCII-Textdateien können mit (De)Coder 1.0 verschlüsselt werden</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOrigFileDateOnlyAvailableInVer4">
+            <properties>
+              <property>
+                <value>Orig FileDate only available in format version 4</value>
+                <translations>
+                  <translation language="de-DE">Originales Dateidatum nur möglich in Dateiformat Version 4</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOrigFileNameOnlyHiddenInVer4">
+            <properties>
+              <property>
+                <value>Orig File Name can only be hidden in format version 4</value>
+                <translations>
+                  <translation language="de-DE">Originaler Dateiname kann nur in Dateiformat Version 4 versteckt werden</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOrigFileSizeOnlyAvailableInVer4">
+            <properties>
+              <property>
+                <value>Orig FileSize only available in format version 4</value>
+                <translations>
+                  <translation language="de-DE">Original Dateigröße nur verfügbar in Dateiformat Version 4</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOriginalDatetime_S">
+            <properties>
+              <property>
+                <value>Original datetime: %s</value>
+                <translations>
+                  <translation language="de-DE">Original Änderungsdatum: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOriginalFilename_S">
+            <properties>
+              <property>
+                <value>Original filename: %s</value>
+                <translations>
+                  <translation language="de-DE">Original Dateiname: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOriginalFilesize_S">
+            <properties>
+              <property>
+                <value>Original filesize: %s</value>
+                <translations>
+                  <translation language="de-DE">Original Dateigröße: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SOutputFilenameMustNotBeEmpty">
+            <properties>
+              <property>
+                <value>Output filename must not be empty</value>
+                <translations>
+                  <translation language="de-DE">Ausgabe-Dateiname darf nicht leer sein</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SPasswordEncrypteedFileName_S">
+            <properties>
+              <property>
+                <value>Password Encrypted File Name: %s</value>
+                <translations>
+                  <translation language="de-DE">Passwort-Verschlüsselter Dateiname: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SPBKDFIterations_D">
+            <properties>
+              <property>
+                <value>PBKDF Iterations: %d</value>
+                <translations>
+                  <translation language="de-DE">PBKDF-Iterationen: %d</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SPbkdfIterationsMayNotBe0">
+            <properties>
+              <property>
+                <value>PBKDF Iterations must be &gt;0</value>
+                <translations>
+                  <translation language="de-DE">PBKDF-Iterationen müssen &gt;0</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SPbkdfIterationsMustBe0">
+            <properties>
+              <property>
+                <value>PBKDF Iterations must be =0</value>
+                <translations>
+                  <translation language="de-DE">PBKDF-Iterationen muss =0</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SSevenZipAlgoMustBe7zip">
+            <properties>
+              <property>
+                <value>For this format version, the 7z compression algorithm must be 7ZIP</value>
+                <translations>
+                  <translation language="de-DE">Für diese Formatversion, der 7z-Komprimierungsalgorithmus muss 7ZIP sein</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SSevenZipAlgoMustBeNull">
+            <properties>
+              <property>
+                <value>For this format version, the 7z compression algorithm must be NULL</value>
+                <translations>
+                  <translation language="de-DE">Für diese Formatversion, der 7z-Komprimierungsalgorithmus muss NULL sein</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SSevenZipAlgoMustBeZip">
+            <properties>
+              <property>
+                <value>For this format version, the 7z compression algorithm must be ZIP</value>
+                <translations>
+                  <translation language="de-DE">Für diese Formatversion, der 7z-Komprimierungsalgorithmus muss ZIP sein</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SSevenZipAlgoPackingNotImplemented">
+            <properties>
+              <property>
+                <value>The 7z compression algorithm is either unknown or packing is not implemented</value>
+                <translations>
+                  <translation language="de-DE">Der 7z-Komprimierungsalgorithmus ist entweder unbekannt oder das Packen wird nicht unterstützt</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SSubFormat_S">
+            <properties>
+              <property>
+                <value>Sub-Format: %s</value>
+                <translations>
+                  <translation language="de-DE">Unter-Format: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SUnknown">
+            <properties>
+              <property>
+                <value>unknown</value>
+                <translations>
+                  <translation language="de-DE">unbekannt</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SUnsupportedFileFormatVersion">
+            <properties>
+              <property>
+                <value>Unsupported file format version. Please try downloading the latest version of (De)Coder</value>
+                <translations>
+                  <translation language="de-DE">Dateiformat-Version wird nicht unterstützt. Bitte probieren es mit der neusten Version von (De)Coder erneut</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SVerifyHash">
+            <properties>
+              <property>
+                <value>Verify hash</value>
+                <translations>
+                  <translation language="de-DE">Hash verifizieren</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SVerifyHMac">
+            <properties>
+              <property>
+                <value>Verify HMAC</value>
+                <translations>
+                  <translation language="de-DE">HMAC verifizieren</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SYes">
+            <properties>
+              <property>
+                <value>Yes</value>
+                <translations>
+                  <translation language="de-DE">Ja</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SZipFormat">
+            <properties>
+              <property>
+                <value>ZIP format</value>
+                <translations>
+                  <translation language="de-DE">ZIP-Format</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_SZlibRequiresDc41beta">
+            <properties>
+              <property>
+                <value>ZLib requires DC41beta+ version</value>
+                <translations>
+                  <translation language="de-DE">ZLib erfordert DC41beta Version oder neuer</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SDeleteFile_S">
+            <properties>
+              <property>
+                <value>Delete file: %s</value>
+                <translations>
+                  <translation language="de-DE">Lösche Datei: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SDoneDeletingFolder_S">
+            <properties>
+              <property>
+                <value>DONE Deleting folder: %s</value>
+                <translations>
+                  <translation language="de-DE">FERTIG Ordner löschen: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SErrorDeletingEmptyFolder_S">
+            <properties>
+              <property>
+                <value>ERROR Deleting empty folder: %s</value>
+                <translations>
+                  <translation language="de-DE">FEHLER beim Löschen von leerem Ordner: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SErrorDeletingFolderContents_S">
+            <properties>
+              <property>
+                <value>ERROR Deleting folder contents: %s</value>
+                <translations>
+                  <translation language="de-DE">FEHLER beim Löschen von Ordner-Inhalten: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SNoNuke">
+            <properties>
+              <property>
+                <value>Sorry, but this program will not destroy your computer.</value>
+                <translations>
+                  <translation language="de-DE">Entschuldigen Sie, aber das Programm wird Ihren Computer nicht zerstören.</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SProgrTaskCompress">
+            <properties>
+              <property>
+                <value>ZLib compress</value>
+                <translations>
+                  <translation language="de-DE">ZLib-Komprimieren</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SProgrTaskDecompress">
+            <properties>
+              <property>
+                <value>ZLib decompress</value>
+                <translations>
+                  <translation language="de-DE">ZLib-Dekomprimieren</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SProgrTaskShannon">
+            <properties>
+              <property>
+                <value>Calc shannon entropy</value>
+                <translations>
+                  <translation language="de-DE">Shannon-Entropie berechnen</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderFuncs_SStartDeleteFolder_S">
+            <properties>
+              <property>
+                <value>START Delete folder: %s</value>
+                <translations>
+                  <translation language="de-DE">START Ordner löschen: %s</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderOldCiphers_SInvalidDc2122Key">
+            <properties>
+              <property>
+                <value>Key must be a number between %d and %d</value>
+                <translations>
+                  <translation language="de-DE">Schlüssel muss eine Zahl zwischen %d und %d sein</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderSevenZipUtils_SDllFileNotFound">
+            <properties>
+              <property>
+                <value>File %s not found. Therefore, cannot compress or uncompress folders.</value>
+                <translations>
+                  <translation language="de-DE">Datei %s nicht gefunden. Deswegen können Ordner nicht gepackt oder entpackt werden.</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderSevenZipUtils_SPackFolderTask">
+            <properties>
+              <property>
+                <value>7zip Pack folder</value>
+                <translations>
+                  <translation language="de-DE">7zip Ordner packen</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderSevenZipUtils_SUnpackFolderTask">
+            <properties>
+              <property>
+                <value>7zip Unpack folder</value>
+                <translations>
+                  <translation language="de-DE">7zip Ordner entpacken</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DECTypes_sAbstractError">
+            <properties>
+              <property>
+                <value>Abstract Error: %s is not implemented</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SAncestorNotFound">
+            <properties>
+              <property>
+                <value>Vorfahr für '%s' nicht gefunden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sArgumentInvalid">
+            <properties>
+              <property>
+                <value>Ungültiges Argument</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SArgumentNil">
+            <properties>
+              <property>
+                <value>Argument darf nicht nil sein</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SArgumentOutOfRange">
+            <properties>
+              <property>
+                <value>Argument außerhalb des Bereichs</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SAssignError">
+            <properties>
+              <property>
+                <value>%s kann nicht zu %s zugewiesen werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sBeginInvokeDestroying">
+            <properties>
+              <property>
+                <value>BeginInvoke kann bei der Freigabe für TComponent nicht aufgerufen werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SByRefArgMismatch">
+            <properties>
+              <property>
+                <value>VAR- und OUT-Argumente müssen exakt mit dem Parametertyp übereinstimmen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sCannotNegateTimespan">
+            <properties>
+              <property>
+                <value>Negation des Minimalwertes einer Zeitspanne ist ungültig</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SCheckSynchronizeError">
+            <properties>
+              <property>
+                <value>CheckSynchronize wurde vom Thread $%x aufgerufen, der NICHT der Haupt-Thread ist.</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SClassNotFound">
+            <properties>
+              <property>
+                <value>Klasse %s nicht gefunden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SDriveNotFound">
+            <properties>
+              <property>
+                <value>Das Laufwerk wurde nicht gefunden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SDuplicateClass">
+            <properties>
+              <property>
+                <value>Klasse mit der Bezeichnung %s existiert bereits</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SDuplicateItem">
+            <properties>
+              <property>
+                <value>Liste gestattet keine doppelten Einträge ($0%x)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SDuplicateName">
+            <properties>
+              <property>
+                <value>Komponente mit der Bezeichnung %s existiert bereits</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SDuplicateString">
+            <properties>
+              <property>
+                <value>In der String-Liste sind Duplikate nicht zulässig</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SEmptyPath">
+            <properties>
+              <property>
+                <value>Pfad ist leer</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SFCreateErrorEx">
+            <properties>
+              <property>
+                <value>Datei "%s" kann nicht erstellt werden. %s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SFOpenErrorEx">
+            <properties>
+              <property>
+                <value>Datei %s kann nicht geöffnet werden. %s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SGenericDuplicateItem">
+            <properties>
+              <property>
+                <value>Duplikate nicht zulässig</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SGenericItemNotFound">
+            <properties>
+              <property>
+                <value>Eintrag nicht gefunden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInputBufferExceed">
+            <properties>
+              <property>
+                <value>Eingabepuffer für %s = %d, %s = %d überschritten</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInsufficientRtti">
+            <properties>
+              <property>
+                <value>Unzureichende RTTI zur Unterstützung dieser Operation verfügbar</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidCharsInPath">
+            <properties>
+              <property>
+                <value>Ungültige Zeichen im Pfad</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidImage">
+            <properties>
+              <property>
+                <value>Ungültiges Stream-Format</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidMask">
+            <properties>
+              <property>
+                <value>'%s' ist eine ungültige Maske für (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidName">
+            <properties>
+              <property>
+                <value>''%s'' ist kein gültiger Komponentenname</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidProperty">
+            <properties>
+              <property>
+                <value>Ungültiger Eigenschaftswert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidPropertyPath">
+            <properties>
+              <property>
+                <value>Ungültiger Pfad für Eigenschaft</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidPropertyValue">
+            <properties>
+              <property>
+                <value>Ungültiger Eigenschaftswert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SInvalidRttiDestroy">
+            <properties>
+              <property>
+                <value>RTTI-Objekte können nicht manuell vom Anwendungscode freigegeben werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sInvalidStringAndObjectArrays">
+            <properties>
+              <property>
+                <value>Die Länge von String- und Objekt-Arrays muss gleich sein</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sInvalidTimeoutValue">
+            <properties>
+              <property>
+                <value>Ungültiger Wert für Zeitüberschreitung: %s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sInvalidTimespanDuration">
+            <properties>
+              <property>
+                <value>Die Dauer kann nicht zurückgegeben werden, weil der absolute Wert den Wert von TTimeSpan.MaxValue überschreitet</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sInvalidTimespanFormat">
+            <properties>
+              <property>
+                <value>Ungültiges TimeSpan-Format</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SListCapacityError">
+            <properties>
+              <property>
+                <value>Kapazität der Liste ist erschöpft (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SListCountError">
+            <properties>
+              <property>
+                <value>Zu viele Einträge in der Liste (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SListIndexError">
+            <properties>
+              <property>
+                <value>Listenindex außerhalb des gültigen Bereichs (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SListIndexErrorEmptyReason">
+            <properties>
+              <property>
+                <value>. %s ist leer</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SListIndexErrorRangeReason">
+            <properties>
+              <property>
+                <value>. %s-Bereich ist 0..%d</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SLocalTimeInvalid">
+            <properties>
+              <property>
+                <value>Die angegebene "%s" lokale Uhrzeit ist ungültig (befindet sich im fehlenden Zeitraum vor der Sommerzeit).</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SMemoryStreamError">
+            <properties>
+              <property>
+                <value>Expandieren des Speicher-Stream wegen Speichermangel nicht möglich</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sMustWaitOnOneEvent">
+            <properties>
+              <property>
+                <value>Es muss auf mindestens ein Ereignis gewartet werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SNoComSupport">
+            <properties>
+              <property>
+                <value>%s wurde nicht als COM-Klasse registriert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sNoConstruct">
+            <properties>
+              <property>
+                <value>Klasse %s soll nicht erzeugt werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SNonPublicType">
+            <properties>
+              <property>
+                <value>Typ '%s' ist im interface-Abschnitt einer Unit nicht deklariert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sObserverMultipleSingleCast">
+            <properties>
+              <property>
+                <value>Der Observer-Kollektion können nicht mehrere Einfach-Typumwandlungs-Observer hinzugefügt werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sObserverNoInterface">
+            <properties>
+              <property>
+                <value>Das Objekt implementiert das Observer-Interface nicht</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sObserverNoMulticastFound">
+            <properties>
+              <property>
+                <value>Der Observer-Kollektion wurde kein Mehrfach-Typumwandlungs-Observer mit der ID %d hinzugefügt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sObserverNoSinglecastFound">
+            <properties>
+              <property>
+                <value>Der Observer-Kollektion wurde kein Einfach-Typumwandlungs-Observer mit der ID %d hinzugefügt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sObserverUnsupported">
+            <properties>
+              <property>
+                <value>Observer wird nicht unterstützt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SParameterCountExceeded">
+            <properties>
+              <property>
+                <value>Parameteranzahl überschritten</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SParameterCountMismatch">
+            <properties>
+              <property>
+                <value>Parameteranzahl stimmt nicht überein</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SParamIsNegative">
+            <properties>
+              <property>
+                <value>Parameter %s darf kein negativer Wert sein</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SPathFormatNotSupported">
+            <properties>
+              <property>
+                <value>Das Pfadformat wird nicht unterstützt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SPathNotFound">
+            <properties>
+              <property>
+                <value>Der angegebene Pfad wurde nicht gefunden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SPathTooLong">
+            <properties>
+              <property>
+                <value>Der angegebene Pfad ist zu lang</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SPropertyException">
+            <properties>
+              <property>
+                <value>Fehler beim Lesen von %s%s%s: %s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SPropIsReadOnly">
+            <properties>
+              <property>
+                <value>Eigenschaft '%s' ist schreibgeschützt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SPropIsWriteOnly">
+            <properties>
+              <property>
+                <value>Eigenschaft '%s' kann nur geschrieben werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SReadError">
+            <properties>
+              <property>
+                <value>Stream-Lesefehler</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SReadOnlyProperty">
+            <properties>
+              <property>
+                <value>Eigenschaft kann nur gelesen werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sSameArrays">
+            <properties>
+              <property>
+                <value>Quell- und Ziel-Arrays dürfen nicht gleich sein</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SSeekNotImplemented">
+            <properties>
+              <property>
+                <value>%s.Seek nicht implementiert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SSortedListError">
+            <properties>
+              <property>
+                <value>Operation für sortierte Listen nicht zulässig</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SSpecifiedFileNotFound">
+            <properties>
+              <property>
+                <value>Die angegebene Datei wurde nicht gefunden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sSpinCountOutOfRange">
+            <properties>
+              <property>
+                <value>SpinCount außerhalb des Bereichs. Muss zwischen 0 und %d liegen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SSPVersionStr">
+            <properties>
+              <property>
+                <value>%s Service Pack %4:d (Version %1:d.%2:d, Build %3:d, %5:s)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SThreadCreateError">
+            <properties>
+              <property>
+                <value>Fehler beim Erzeugen des Thread: %s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SThreadError">
+            <properties>
+              <property>
+                <value>Thread-Fehler: %s (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SThreadExternalCheckTerminated">
+            <properties>
+              <property>
+                <value>CheckTerminated kann nicht für einen extern erstellten Thread aufgerufen werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SThreadExternalSetReturnValue">
+            <properties>
+              <property>
+                <value>SetReturnValue kann nicht für einen extern erstellten Thread aufgerufen werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SThreadExternalTerminate">
+            <properties>
+              <property>
+                <value>Ein extern erstellter Thread kann nicht beendet werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SThreadExternalWait">
+            <properties>
+              <property>
+                <value>Auf einen extern erstellten Thread kann nicht gewartet werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SThreadStartError">
+            <properties>
+              <property>
+                <value>Start kann für einen laufenden oder unterbrochenen Thread nicht aufgerufen werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sTimespanElementTooLong">
+            <properties>
+              <property>
+                <value>TimeSpan-Element zu lang</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sTimespanTooLong">
+            <properties>
+              <property>
+                <value>TimeSpan zu lang</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_sTimespanValueCannotBeNan">
+            <properties>
+              <property>
+                <value>Wert darf nicht NaN</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SUnknownGroup">
+            <properties>
+              <property>
+                <value>%s befindet sich nicht in einer Gruppe für Klassenregistrierungen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SUnknownProperty">
+            <properties>
+              <property>
+                <value>Eigenschaft %s existiert nicht</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SVersion32">
+            <properties>
+              <property>
+                <value>32-Bit-Edition</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SVersion64">
+            <properties>
+              <property>
+                <value>64-Bit-Edition</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SVersionStr">
+            <properties>
+              <property>
+                <value>%s (Version %d.%d, Build %d, %5:s)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindows">
+            <properties>
+              <property>
+                <value>Windows</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindows10">
+            <properties>
+              <property>
+                <value>Windows 10</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindows11">
+            <properties>
+              <property>
+                <value>Windows 11</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindows2000">
+            <properties>
+              <property>
+                <value>Windows 2000</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindows7">
+            <properties>
+              <property>
+                <value>Windows 7</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindows8">
+            <properties>
+              <property>
+                <value>Windows 8</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindows8Point1">
+            <properties>
+              <property>
+                <value>Windows 8.1</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2003">
+            <properties>
+              <property>
+                <value>Windows Server 2003</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2003R2">
+            <properties>
+              <property>
+                <value>Windows Server 2003 R2</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2008">
+            <properties>
+              <property>
+                <value>Windows Server 2008</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2008R2">
+            <properties>
+              <property>
+                <value>Windows Server 2008 R2</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2012">
+            <properties>
+              <property>
+                <value>Windows Server 2012</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2012R2">
+            <properties>
+              <property>
+                <value>Windows Server 2012 R2</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2016">
+            <properties>
+              <property>
+                <value>Windows Server 2016</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2019">
+            <properties>
+              <property>
+                <value>Windows Server 2019</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsServer2022">
+            <properties>
+              <property>
+                <value>Windows Server 2022</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsVista">
+            <properties>
+              <property>
+                <value>Windows Vista</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWindowsXP">
+            <properties>
+              <property>
+                <value>Windows XP</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_RTLConsts_SWriteError">
+            <properties>
+              <property>
+                <value>Stream-Schreibfehler</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SAbstractError">
+            <properties>
+              <property>
+                <value>Abstrakter Fehler</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SAccessDenied">
+            <properties>
+              <property>
+                <value>Dateizugriff verweigert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SAccessViolationArg3">
+            <properties>
+              <property>
+                <value>Zugriffsverletzung bei Adresse %p. %s von Adresse %p</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SAccessViolationNoArg">
+            <properties>
+              <property>
+                <value>Zugriffsverletzung</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SArgumentMissing">
+            <properties>
+              <property>
+                <value>Kein Argument für Format '%s'</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SAssertError">
+            <properties>
+              <property>
+                <value>%s (%s, Zeile %d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SAssertionFailed">
+            <properties>
+              <property>
+                <value>Auswertung von assert fehlgeschlagen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SByteIndexOutOfBounds">
+            <properties>
+              <property>
+                <value>Startindex außerhalb des gültigen Bereichs (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SCannotCreateDir">
+            <properties>
+              <property>
+                <value>Verzeichnis kann nicht erstellt werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SCharIndexOutOfBounds">
+            <properties>
+              <property>
+                <value>Zeichenindex außerhalb des gültigen Bereichs (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SControlC">
+            <properties>
+              <property>
+                <value>Strg+C gedrückt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SDateEncodeError">
+            <properties>
+              <property>
+                <value>Ungültiges Argument zum Codieren des Datums</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SDiskFull">
+            <properties>
+              <property>
+                <value>Zu wenig Speicherplatz</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SDispatchError">
+            <properties>
+              <property>
+                <value>Variant-Methodenaufruf nicht unterstützt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SDivByZero">
+            <properties>
+              <property>
+                <value>Division durch Null</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SEndOfFile">
+            <properties>
+              <property>
+                <value>Versuch hinter dem Dateiende zu lesen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SException">
+            <properties>
+              <property>
+                <value>Exception %s in Modul %s bei %p.&amp;#13;&amp;#10;%s%s&amp;#13;&amp;#10;</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SExceptTitle">
+            <properties>
+              <property>
+                <value>Anwendungsfehler</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SExecuteAccess">
+            <properties>
+              <property>
+                <value>Ausführung</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SExternalException">
+            <properties>
+              <property>
+                <value>Externe Exception %x</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SFileNotFound">
+            <properties>
+              <property>
+                <value>Datei nicht gefunden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SFormatTooLong">
+            <properties>
+              <property>
+                <value>Format-String zu lang</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInOutError">
+            <properties>
+              <property>
+                <value>E/A-Fehler %d</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SIntfCastError">
+            <properties>
+              <property>
+                <value>Interface nicht unterstützt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SIntOverflow">
+            <properties>
+              <property>
+                <value>Integerüberlauf</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidAccess">
+            <properties>
+              <property>
+                <value>Ungültiger Zugriff</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidCast">
+            <properties>
+              <property>
+                <value>Ungültige Typumwandlung</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidCharCount">
+            <properties>
+              <property>
+                <value>Ungültige Anzahl (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidCodePage">
+            <properties>
+              <property>
+                <value>Ungültige Codeseite</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidDestinationArray">
+            <properties>
+              <property>
+                <value>Ungültiges Ziel-Array</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidDestinationIndex">
+            <properties>
+              <property>
+                <value>Ungültiger Zielindex (%d)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidEncodingName">
+            <properties>
+              <property>
+                <value>Ungültiger Codierungsname</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidFormat">
+            <properties>
+              <property>
+                <value>Format '%s' ungültig oder nicht kompatibel mit Argument</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidInput">
+            <properties>
+              <property>
+                <value>Ungültige numerische Eingabe</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidInteger">
+            <properties>
+              <property>
+                <value>'%s' ist kein gültiger Integerwert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidOp">
+            <properties>
+              <property>
+                <value>Ungültige Gleitkommaoperation</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidPointer">
+            <properties>
+              <property>
+                <value>Ungültige Zeigeroperation</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidSourceArray">
+            <properties>
+              <property>
+                <value>Ungültiges Quell-Array</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidStringBaseIndex">
+            <properties>
+              <property>
+                <value>Ungültiger StringBaseIndex</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidTimeStamp">
+            <properties>
+              <property>
+                <value>'%d.%d' ist kein gültiger Zeitstempel</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidUnknownFilename">
+            <properties>
+              <property>
+                <value>Ungültiger Dateiname</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidVarCast">
+            <properties>
+              <property>
+                <value>Ungültige Varianten-Typumwandlung</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidVarNullOp">
+            <properties>
+              <property>
+                <value>Ungültige NULL-Variantenoperation</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidVarOp">
+            <properties>
+              <property>
+                <value>Ungültige Variantenoperation</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SInvalidVarOpWithHResultWithPrefix">
+            <properties>
+              <property>
+                <value>Ungültige Variantenoperation (%s%.8x)&amp;#10;%s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongDayNameFri">
+            <properties>
+              <property>
+                <value>Freitag</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongDayNameMon">
+            <properties>
+              <property>
+                <value>Montag</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongDayNameSat">
+            <properties>
+              <property>
+                <value>Samstag</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongDayNameSun">
+            <properties>
+              <property>
+                <value>Sonntag</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongDayNameThu">
+            <properties>
+              <property>
+                <value>Donnerstag</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongDayNameTue">
+            <properties>
+              <property>
+                <value>Dienstag</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongDayNameWed">
+            <properties>
+              <property>
+                <value>Mittwoch</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameApr">
+            <properties>
+              <property>
+                <value>April</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameAug">
+            <properties>
+              <property>
+                <value>August</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameDec">
+            <properties>
+              <property>
+                <value>Dezember</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameFeb">
+            <properties>
+              <property>
+                <value>Februar</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameJan">
+            <properties>
+              <property>
+                <value>Januar</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameJul">
+            <properties>
+              <property>
+                <value>Juli</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameJun">
+            <properties>
+              <property>
+                <value>Juni</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameMar">
+            <properties>
+              <property>
+                <value>März</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameMay">
+            <properties>
+              <property>
+                <value>Mai</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameNov">
+            <properties>
+              <property>
+                <value>November</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameOct">
+            <properties>
+              <property>
+                <value>Oktober</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SLongMonthNameSep">
+            <properties>
+              <property>
+                <value>September</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SModuleAccessViolation">
+            <properties>
+              <property>
+                <value>Zugriffsverletzung bei Adresse %p in Modul '%s' (Offset %x). %s von Adresse %p</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SMonitorLockException">
+            <properties>
+              <property>
+                <value>Kein Eigentümer der Objektsperre</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SNoMappingForUnicodeCharacter">
+            <properties>
+              <property>
+                <value>Keine Zuordnung für Unicode-Zeichen in der Multibyte-Zielcodeseite vorhanden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SNoMonitorSupportException">
+            <properties>
+              <property>
+                <value>Unterstützungsfunktion für Monitor nicht initialisiert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SNotImplemented">
+            <properties>
+              <property>
+                <value>Feature nicht implementiert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SObjectDisposed">
+            <properties>
+              <property>
+                <value>Methode für freigegebenes Objekt aufgerufen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SOperationAborted">
+            <properties>
+              <property>
+                <value>Operation abgebrochen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SOSError">
+            <properties>
+              <property>
+                <value>Systemfehler.  Code: %d.&amp;#13;&amp;#10;%s%s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SOutOfMemory">
+            <properties>
+              <property>
+                <value>Zu wenig Arbeitsspeicher</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SOverflow">
+            <properties>
+              <property>
+                <value>Gleitkommaüberlauf</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SPrivilege">
+            <properties>
+              <property>
+                <value>Privilegierte Anweisung</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SRangeError">
+            <properties>
+              <property>
+                <value>Fehler bei Bereichsprüfung</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SReadAccess">
+            <properties>
+              <property>
+                <value>Lesen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SSafecallException">
+            <properties>
+              <property>
+                <value>Exception in safecall-Methode</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortDayNameFri">
+            <properties>
+              <property>
+                <value>Fr</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortDayNameMon">
+            <properties>
+              <property>
+                <value>Mo</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortDayNameSat">
+            <properties>
+              <property>
+                <value>Sa</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortDayNameSun">
+            <properties>
+              <property>
+                <value>So</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortDayNameThu">
+            <properties>
+              <property>
+                <value>Do</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortDayNameTue">
+            <properties>
+              <property>
+                <value>Di</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortDayNameWed">
+            <properties>
+              <property>
+                <value>Mi</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameApr">
+            <properties>
+              <property>
+                <value>Apr</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameAug">
+            <properties>
+              <property>
+                <value>Aug</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameDec">
+            <properties>
+              <property>
+                <value>Dez</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameFeb">
+            <properties>
+              <property>
+                <value>Feb</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameJan">
+            <properties>
+              <property>
+                <value>Jan</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameJul">
+            <properties>
+              <property>
+                <value>Jul</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameJun">
+            <properties>
+              <property>
+                <value>Jun</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameMar">
+            <properties>
+              <property>
+                <value>Mär</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameMay">
+            <properties>
+              <property>
+                <value>Mai</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameNov">
+            <properties>
+              <property>
+                <value>Nov</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameOct">
+            <properties>
+              <property>
+                <value>Okt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SShortMonthNameSep">
+            <properties>
+              <property>
+                <value>Sep</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SStackOverflow">
+            <properties>
+              <property>
+                <value>Stack-Überlauf</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_STimeEncodeError">
+            <properties>
+              <property>
+                <value>Ungültiges Argument zum Codieren der Uhrzeit</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_STooManyOpenFiles">
+            <properties>
+              <property>
+                <value>Zu viele geöffnete Dateien</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SUnderflow">
+            <properties>
+              <property>
+                <value>Gleitkommaunterlauf</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SUnknown">
+            <properties>
+              <property>
+                <value>&lt;unbekannt&gt;</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SUnkOSError">
+            <properties>
+              <property>
+                <value>Ein Aufruf einer Betriebssystemfunktion ist fehlgeschlagen</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarArrayBounds">
+            <properties>
+              <property>
+                <value>Variante oder sicheres Array-Index außerhalb des gültigen Bereichs</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarArrayCreate">
+            <properties>
+              <property>
+                <value>Fehler beim Erzeugen von Variante oder sicherem Array</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarArrayLocked">
+            <properties>
+              <property>
+                <value>Variante oder sicheres Array ist gesperrt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarBadType">
+            <properties>
+              <property>
+                <value>Ungültiger Variant-Typ</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarInvalid">
+            <properties>
+              <property>
+                <value>Ungültiges Argument</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarNotImplemented">
+            <properties>
+              <property>
+                <value>Operation nicht unterstützt</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarOverflow">
+            <properties>
+              <property>
+                <value>Variant-Überlauf</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarTypeAlreadyUsedWithPrefix">
+            <properties>
+              <property>
+                <value>Benutzerdefinierter Variant-Typ (%s%.4x) bereits benutzt von %s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarTypeConvertOverflow">
+            <properties>
+              <property>
+                <value>Überlauf bei der Konvertierung einer Variante vom Typ (%s) in Typ (%s)</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarTypeCouldNotConvert">
+            <properties>
+              <property>
+                <value>Variante des Typs (%s) konnte nicht in Typ (%s) konvertiert werden</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarTypeNotUsableWithPrefix">
+            <properties>
+              <property>
+                <value>Benutzerdefinierter Variant-Typ (%s%.4x) nicht brauchbar</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarTypeOutOfRangeWithPrefix">
+            <properties>
+              <property>
+                <value>Benutzerdefinierter Variant-Typ (%s%.4x) außerhalb des gültigen Bereichs</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarTypeTooManyCustom">
+            <properties>
+              <property>
+                <value>Es wurden zu viele benutzerdefinierte Variant-Typen registriert</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SVarUnexpected">
+            <properties>
+              <property>
+                <value>Unerwarteter Variant-Fehler</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SWriteAccess">
+            <properties>
+              <property>
+                <value>Schreiben</value>
+              </property>
+            </properties>
+          </item>
+          <item name="System_SysConst_SZeroDivide">
+            <properties>
+              <property>
+                <value>Gleitkommadivision durch Null</value>
+              </property>
+            </properties>
+          </item>
+        </items>
+      </module>
+    </modules>
+  </project>
+</xlat>

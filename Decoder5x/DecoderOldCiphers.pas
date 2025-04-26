@@ -76,6 +76,9 @@ implementation
 uses
   DECUtil;
 
+resourcestring
+  SInvalidDc2122Key = 'Key must be a number between %d and %d';
+
 { TCipher_RepeatingXorSequence }
 
 class function TCipher_RepeatingXorSequence.Context: TCipherContext;
@@ -166,13 +169,11 @@ var
 const
   GuiLimMin = 1;
   GuiLimMax = 255;
-resourcestring
-  SInvalidDc21Key = 'Key must be a number between %d and %d';
 begin
   SetLength(KeyStr, Size);
   Move(Key, KeyStr[Low(KeyStr)], Size);
   if not TryStrToInt(string(KeyStr), iKey) or (iKey<GuiLimMin) or (iKey>GuiLimMax) then
-    raise EDECException.CreateResFmt(@SInvalidDc21Key, [GuiLimMin, GuiLimMax]);
+    raise EDECException.CreateResFmt(@SInvalidDc2122Key, [GuiLimMin, GuiLimMax]);
   SetLength(b, 256);
   try
     for i := $00 to $FF do b[i] := (i + iKey) mod 256;
@@ -194,13 +195,11 @@ var
 const
   GuiLimMin = 1;
   GuiLimMax = 256;
-resourcestring
-  SInvalidDc22Key = 'Key must be a number between %d and %d';
 begin
   SetLength(KeyStr, Size);
   Move(Key, KeyStr[Low(KeyStr)], Size);
   if not TryStrToInt(string(KeyStr), iKey) or (iKey<GuiLimMin) or (iKey>GuiLimMax) then
-    raise EDECException.CreateResFmt(@SInvalidDc22Key, [GuiLimMin, GuiLimMax]);
+    raise EDECException.CreateResFmt(@SInvalidDc2122Key, [GuiLimMin, GuiLimMax]);
   SetLength(b, 256);
   try
     for i := $00 to $FF do b[i] := (i + iKey) mod 256;

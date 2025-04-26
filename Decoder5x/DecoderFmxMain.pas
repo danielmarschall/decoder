@@ -59,6 +59,55 @@ implementation
 uses
   DecoderFuncs, DECTypes, System.Rtti, System.IniFiles, System.TypInfo, System.SysConst;
 
+resourcestring
+  S_IntroLine_0_S = 'Version %s';
+  S_IntroLine_1 = 'Developed by Daniel Marschall - www.daniel-marschall.de';
+  S_IntroLine_2 = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
+  S_IntroLine_3 = '';
+  S_IntroLine_4 = 'Source code and latest version available at';
+  S_IntroLine_5 = 'www.github.com/danielmarschall/decoder';
+  S_IntroLine_6 = '';
+  S_IntroLine_7 = '';
+  S_IntroLine_8 = 'Please use this tool at your own risk! Files can only be decrypted with the';
+  S_IntroLine_9 = 'correct passwords, and they must be 100% free of any damage!';
+  S_IntroLine_10 = '';
+  S_IntroLine_11 = '';
+  SAllFiles = 'All files';
+  SEncryptedFiles = 'DC4/5 Encrypted files';
+  SFileOrFolderSNotFound = 'File or folder %s not found!';
+  STextFiles = 'Text files';
+  SPleaseRepeatPassword = 'Please repeat the password for encryption';
+  SPasswordsDoNotMatch = 'Passwords do not match!';
+  SDestroyComplete = 'Successfully shredded!';
+  SInfoLegacyDecrypt = 'Decryption process done. Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
+  SDecryptDone = 'Decryption process done';
+  SEncryptDone = 'Encryption process done';
+  STryAgain = 'Please try again.';
+  SPleaseChooseOnlyOneFile = 'Please choose only one file!';
+  SProductTitle = 'ViaThinkSoft (De)Coder 5.1';
+  SFileName_S = 'File name: %s';
+  SFolderName_S = 'Folder name: %s';
+  SLocation_S = 'Location: %s';
+  SEncryptedDc10 = 'This file was encrypted using (De)Coder 1.0';
+  SDoYouWantDecrypt = 'Do you want to decrypt it now?';
+  SDecrypt = 'Decrypt';
+  SEncryptedDc50 = 'This file was encrypted using (De)Coder 5.x';
+  SEncryptedDc41Beta = 'This file was encrypted using (De)Coder 4.1 Beta';
+  SEncryptedDc40 = 'This file was encrypted using (De)Coder 4.0';
+  SNoValidDc45File = 'This is not a valid (De)Coder 4.x/5.x file! (%s)';
+  SThisIsAFolder = 'This is a folder which you can pack and encrypt using (De)Coder.';
+  SThisIsAnUnencryptedFile = 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.';
+  SDoYouWantPackAndEncrypt = 'Do you want to pack + encrypt it now?';
+  SDoYouWantEncrypt = 'Do you want to encrypt it now?';
+  SEncrypt = 'Encrypt';
+  SFileType_S = 'File type: %s';
+  SFileSize_S = 'File size: %s';
+  SModTime_S = 'Modification time: %s';
+  SInfoLegacyDC_S = 'Here you can decrypt a file that was encrypted with (De)Coder %s';
+  SShredderInfo = 'THIS FILE OR FOLDER WILL BE DESTROYED WITHOUT POSSIBILITY OF RECOVERY!';
+  SShredderButton = 'DESTROY';
+  SWarnLegacyDecrypt = 'Note that there is no detection if the password is correct; so check the output file if the decrypted contents are valid.';
+
 const
   // ComboBox1.ItemIndex
   CB1_IDX_DC45 = 0;
@@ -113,18 +162,6 @@ var
   RepeatedPassword: string;
   iKey: integer;
   ButtonTag: integer;
-resourcestring
-  STextFiles = 'Text files';
-  SAllFiles = 'All files';
-  SEncryptedFiles = 'DC4/5 Encrypted files';
-  SPleaseRepeatPassword = 'Please repeat the password for encryption';
-  SPasswordsDoNotMatch = 'Passwords do not match!';
-  SFileOrFolderNotFound = 'File or folder not found!';
-  SDestroyComplete = 'Successfully shredded!';
-  SInfoLegacyDecrypt = 'Decryption process done. Please CHECK if the output file is what you expect. (With this legacy file format version, there is no possibility for (De)Coder to check if algorithm or password was okay.)';
-  SDecryptDone = 'Decryption process done';
-  SEncryptDone = 'Encryption process done';
-  STryAgain = 'Please try again.';
 begin
   if FChosenFile = '' then exit;
   try
@@ -432,7 +469,7 @@ begin
         else if DirectoryExists(FChosenFile) then
           SecureDeleteFolder(FChosenFile, TextCallback)
         else
-          raise Exception.CreateRes(@SFileOrFolderNotFound);
+          raise Exception.CreateResFmt(@SFileOrFolderSNotFound, [FChosenFile]);
         FChosenFile := '';
         GuiShowChosenFile;
         OpenedFileLabel.Text := LoadResString(@SDestroyComplete);
@@ -456,9 +493,6 @@ begin
 end;
 
 procedure TDecoderMainForm.DropTarget1Click(Sender: TObject);
-resourcestring
-  SAllFiles = 'All files';
-  SEncryptedFiles = 'DC4/5 Encrypted files';
 begin
   {$IFDEF MsWindows}
   OpenDialog1.Filter := LoadResString(@SAllFiles)+' (*.*)|*.*|'+LoadResString(@SEncryptedFiles)+' (*.dc4;*.dc5)|*.dc4;*.dc5';
@@ -473,10 +507,8 @@ end;
 
 procedure TDecoderMainForm.DropTarget1Dropped(Sender: TObject; const Data: TDragObject;
   const Point: TPointF);
-resourcestring
-  SOnlyOneFileAllowed = 'Please only choose one file!';
 begin
-  if Length(Data.Files) > 1 then raise Exception.CreateRes(@SOnlyOneFileAllowed);
+  if Length(Data.Files) > 1 then raise Exception.CreateRes(@SPleaseChooseOnlyOneFile);
   try
     OpenFile(Data.Files[0]);
   except
@@ -540,20 +572,6 @@ begin
 end;
 
 procedure TDecoderMainForm.InitView;
-resourcestring
-  S_IntroLine_0_S = 'Version %s';
-  S_IntroLine_1 = 'Developed by Daniel Marschall - www.daniel-marschall.de';
-  S_IntroLine_2 = 'FREEWARE - Licensed under the terms of the Apache 2.0 License';
-  S_IntroLine_3 = '';
-  S_IntroLine_4 = 'Source code and latest version available at';
-  S_IntroLine_5 = 'www.github.com/danielmarschall/decoder';
-  S_IntroLine_6 = '';
-  S_IntroLine_7 = '';
-  S_IntroLine_8 = 'Please use this tool at your own risk! Files can only be decrypted with the';
-  S_IntroLine_9 = 'correct passwords, and they must be 100% free of any damage!';
-  S_IntroLine_10 = '';
-  S_IntroLine_11 = '';
-  SProductTitle = 'ViaThinkSoft (De)Coder 5.1';
 begin
   Caption := LoadResString(@SProductTitle);
   OpenedFileLabel.Text := LoadResString(@SProductTitle);
@@ -576,8 +594,6 @@ begin
 end;
 
 procedure TDecoderMainForm.FormShow(Sender: TObject);
-resourcestring
-  SPleaseChooseOnlyOneFile = 'Please only choose one file!';
 begin
   ComboBox1.ItemIndex := CB1_IDX_DC45;
   try
@@ -600,33 +616,9 @@ end;
 procedure TDecoderMainForm.OpenFile(const AFileName: string);
 var
   fp: TDC4Parameters;
-resourcestring
-  SFileOrFolderNotExisting = 'File or folder %s does not exist!';
-  SFileName_S = 'File name: %s';
-  SFolderName_S = 'Folder name: %s';
-  SLocation_S = 'Location: %s';
-  SEncryptedDc10 = 'This file was encrypted using (De)Coder 1.0';
-  SDoYouWantDecrypt = 'Do you want to decrypt it now?';
-  SDecrypt = 'Decrypt';
-  SEncryptedDc50 = 'This file was encrypted using (De)Coder 5.x';
-  SEncryptedDc41Beta = 'This file was encrypted using (De)Coder 4.1 Beta';
-  SEncryptedDc40 = 'This file was encrypted using (De)Coder 4.0';
-  SNoValidDc45File = 'This is not a valid (De)Coder 4.x/5.x file! (%s)';
-  SThisIsAFolder = 'This is a folder which you can pack and encrypt using (De)Coder.';
-  SThisIsAnUnencryptedFile = 'This file is not encrypted using (De)Coder 1.x/4.x/5.x.';
-  SDoYouWantPackAndEncrypt = 'Do you want to pack + encrypt it now?';
-  SDoYouWantEncrypt = 'Do you want to encrypt it now?';
-  SEncrypt = 'Encrypt';
-  SFileType_S = 'File type: %s';
-  SFileSize_S = 'File size: %s';
-  SModTime_S = 'Modification time: %s';
-  SInfoLegacyDC_S = 'Here you can decrypt a file that was encrypted with (De)Coder %s';
-  SInfoLegacyDecrypt = 'Note that there is no detection if the password is correct; so check the output file if the decrypted contents are valid.';
-  SShredderInfo = 'THIS FILE OR FOLDER WILL BE DESTROYED WITHOUT POSSIBILITY OF RECOVERY!';
-  SShredderButton = 'DESTROY';
 begin
   if not FileExists(AFileName) and not DirectoryExists(AFileName) then
-    raise Exception.CreateResFmt(@SFileOrFolderNotExisting, [AFileName]);
+    raise Exception.CreateResFmt(@SFileOrFolderSNotFound, [AFileName]);
 
   EncryptDecryptButton.Tag := 0;
 
@@ -644,7 +636,7 @@ begin
       {$REGION '(De)Coder 1.0 decrypt'}
       if DeCoder10_DetectFile(AFileName) then
       begin
-        ShortInfoLabel.Text := LoadResString(@SEncryptedDc10) + #13#10 + LoadResString(@SDoYouWantDecrypt) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
+        ShortInfoLabel.Text := LoadResString(@SEncryptedDc10) + #13#10 + LoadResString(@SDoYouWantDecrypt) + #13#10#13#10 + LoadResString(@SWarnLegacyDecrypt);
         EncryptDecryptButton.Tag := TAG_DC10_DECRYPT;
         EncryptDecryptButton.Text := LoadResString(@SDecrypt);
         GuiShowElements([geStartButton]);
@@ -712,7 +704,7 @@ begin
     {$REGION '(De)Coder 3.2 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC32_DECRYPT;
     EncryptDecryptButton.Text := LoadResString(@SDecrypt);
-    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['3.2']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['3.2']) + #13#10#13#10 + LoadResString(@SWarnLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -723,7 +715,7 @@ begin
     {$REGION '(De)Coder 3.0 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC30_DECRYPT;
     EncryptDecryptButton.Text := LoadResString(@SDecrypt);
-    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['3.0']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['3.0']) + #13#10#13#10 + LoadResString(@SWarnLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -734,7 +726,7 @@ begin
     {$REGION '(De)Coder 2.2 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC22_DECRYPT;
     EncryptDecryptButton.Text := LoadResString(@SDecrypt);
-    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.2']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.2']) + #13#10#13#10 + LoadResString(@SWarnLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -745,7 +737,7 @@ begin
     {$REGION '(De)Coder 2.1 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC21_DECRYPT;
     EncryptDecryptButton.Text := LoadResString(@SDecrypt);
-    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.1']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.1']) + #13#10#13#10 + LoadResString(@SWarnLegacyDecrypt);
     GuiShowElements([gePassword, geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;
@@ -756,7 +748,7 @@ begin
     {$REGION '(De)Coder 2.0 decrypt'}
     EncryptDecryptButton.Tag := TAG_DC20_DECRYPT;
     EncryptDecryptButton.Text := LoadResString(@SDecrypt);
-    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.0']) + #13#10#13#10 + LoadResString(@SInfoLegacyDecrypt);
+    ShortInfoLabel.Text := Format(LoadResString(@SInfoLegacyDC_S), ['2.0']) + #13#10#13#10 + LoadResString(@SWarnLegacyDecrypt);
     GuiShowElements([geStartButton, geInfos]);
     FChosenFile := AFileName;
     GuiShowChosenFile;

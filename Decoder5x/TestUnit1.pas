@@ -175,16 +175,16 @@ end;
 
 procedure TDecoderTestObject.Test_DeCoder10_Encode;
 begin
-  DeCoder10_EncodeFile('..\TestData\dc10_example_in.txt', '..\TestData\dc10_example_out.tmp', True, OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc10_example_out.tmp', '..\TestData\dc10_example_out.txt'));
-  DeleteFile('..\TestData\dc10_example_out.tmp');
+  DeCoder10_EncodeFile('..\..\TestData\dc10_example_in.txt', '..\..\TestData\dc10_example_out.tmp', True, OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc10_example_out.tmp', '..\..\TestData\dc10_example_out.txt'));
+  DeleteFile('..\..\TestData\dc10_example_out.tmp');
 end;
 
 procedure TDecoderTestObject.Test_DeCoder10_Decode;
 begin
-  DeCoder10_DecodeFile('..\TestData\dc10_example_out.txt', '..\TestData\dc10_example_in.tmp', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc10_example_in.tmp', '..\TestData\dc10_example_in.txt'));
-  DeleteFile('..\TestData\dc10_example_in.tmp');
+  DeCoder10_DecodeFile('..\..\TestData\dc10_example_out.txt', '..\..\TestData\dc10_example_in.tmp', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc10_example_in.tmp', '..\..\TestData\dc10_example_in.txt'));
+  DeleteFile('..\..\TestData\dc10_example_in.tmp');
 end;
 
 {$ENDREGION}
@@ -193,12 +193,12 @@ end;
 
 procedure TDecoderTestObject.Test_DeCoder20_Encode;
 begin
-  DeCoder20_EncodeFile('..\TestData\dc20_256zero_in.txt', '..\TestData\dc20_256zero_out.tmp', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc20_256zero_out.txt', '..\TestData\dc20_256zero_out.tmp'));
-  DeleteFile('..\TestData\dc20_256zero_out.tmp');
-  DeCoder20_EncodeFile('..\TestData\dc20_test_in.txt', '..\TestData\dc20_test_out.tmp', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc20_test_out.txt', '..\TestData\dc20_test_out.tmp'));
-  DeleteFile('..\TestData\dc20_test_out.tmp');
+  DeCoder20_EncodeFile('..\..\TestData\dc20_256zero_in.txt', '..\..\TestData\dc20_256zero_out.tmp', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc20_256zero_out.txt', '..\..\TestData\dc20_256zero_out.tmp'));
+  DeleteFile('..\..\TestData\dc20_256zero_out.tmp');
+  DeCoder20_EncodeFile('..\..\TestData\dc20_test_in.txt', '..\..\TestData\dc20_test_out.tmp', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc20_test_out.txt', '..\..\TestData\dc20_test_out.tmp'));
+  DeleteFile('..\..\TestData\dc20_test_out.tmp');
 end;
 
 procedure TDecoderTestObject.Test_DeCoder20_Decode;
@@ -212,12 +212,12 @@ end;
 
 procedure TDecoderTestObject.Test_DeCoder22_Encode;
 begin
-  DeCoder22_EncodeFile('..\TestData\dc22_256zero_in.txt', '..\TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc22_256zero_out_61.txt', '..\TestData\dc22_256zero_out_61.tmp'));
-  DeleteFile('..\TestData\dc22_256zero_out_61.tmp');
-  DeCoder22_EncodeFile('..\TestData\dc22_test_in.txt', '..\TestData\dc22_test_out_61.tmp', 61, OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc22_test_out_61.txt', '..\TestData\dc22_test_out_61.tmp'));
-  DeleteFile('..\TestData\dc22_test_out_61.tmp');
+  DeCoder22_EncodeFile('..\..\TestData\dc22_256zero_in.txt', '..\..\TestData\dc22_256zero_out_61.tmp', 61, OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc22_256zero_out_61.txt', '..\..\TestData\dc22_256zero_out_61.tmp'));
+  DeleteFile('..\..\TestData\dc22_256zero_out_61.tmp');
+  DeCoder22_EncodeFile('..\..\TestData\dc22_test_in.txt', '..\..\TestData\dc22_test_out_61.tmp', 61, OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc22_test_out_61.txt', '..\..\TestData\dc22_test_out_61.tmp'));
+  DeleteFile('..\..\TestData\dc22_test_out_61.tmp');
 end;
 
 procedure TDecoderTestObject.Test_DeCoder22_Decode;
@@ -231,12 +231,12 @@ end;
 
 procedure TDecoderTestObject.Test_DeCoder30_Encode;
 begin
-  DeCoder30_EncodeFile('..\TestData\dc30_256zero_in.txt', '..\TestData\dc30_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc30_256zero_out_foobar.txt', '..\TestData\dc30_256zero_out_foobar.tmp'));
-  DeleteFile('..\TestData\dc30_256zero_out_foobar.tmp');
-  DeCoder30_EncodeFile('..\TestData\dc30_test_in.txt', '..\TestData\dc30_test_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc30_test_out_foobar.txt', '..\TestData\dc30_test_out_foobar.tmp'));
-  DeleteFile('..\TestData\dc30_test_out_foobar.tmp');
+  DeCoder30_EncodeFile('..\..\TestData\dc30_256zero_in.txt', '..\..\TestData\dc30_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc30_256zero_out_foobar.txt', '..\..\TestData\dc30_256zero_out_foobar.tmp'));
+  DeleteFile('..\..\TestData\dc30_256zero_out_foobar.tmp');
+  DeCoder30_EncodeFile('..\..\TestData\dc30_test_in.txt', '..\..\TestData\dc30_test_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc30_test_out_foobar.txt', '..\..\TestData\dc30_test_out_foobar.tmp'));
+  DeleteFile('..\..\TestData\dc30_test_out_foobar.tmp');
 end;
 
 procedure TDecoderTestObject.Test_DeCoder30_Decode;
@@ -250,15 +250,15 @@ end;
 
 procedure TDecoderTestObject.Test_DeCoder32_Encode;
 begin
-  DeCoder32_EncodeFile('..\TestData\dc32_256zero_in.txt', '..\TestData\dc32_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc32_256zero_out_foobar.txt', '..\TestData\dc32_256zero_out_foobar.tmp'));
-  DeleteFile('..\TestData\dc32_256zero_out_foobar.tmp');
-  DeCoder32_EncodeFile('..\TestData\dc32_256zero_in.txt', '..\TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc32_256zero_out_abcdefg.txt', '..\TestData\dc32_256zero_out_abcdefg.tmp'));
-  DeleteFile('..\TestData\dc32_256zero_out_abcdefg.tmp');
-  DeCoder32_EncodeFile('..\TestData\dc32_test_in.txt', '..\TestData\dc32_test_out_foobar.tmp', 'foobar', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('..\TestData\dc32_test_out_foobar.txt', '..\TestData\dc32_test_out_foobar.tmp'));
-  DeleteFile('..\TestData\dc32_test_out_foobar.tmp');
+  DeCoder32_EncodeFile('..\..\TestData\dc32_256zero_in.txt', '..\..\TestData\dc32_256zero_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc32_256zero_out_foobar.txt', '..\..\TestData\dc32_256zero_out_foobar.tmp'));
+  DeleteFile('..\..\TestData\dc32_256zero_out_foobar.tmp');
+  DeCoder32_EncodeFile('..\..\TestData\dc32_256zero_in.txt', '..\..\TestData\dc32_256zero_out_abcdefg.tmp', 'abcdefg', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc32_256zero_out_abcdefg.txt', '..\..\TestData\dc32_256zero_out_abcdefg.tmp'));
+  DeleteFile('..\..\TestData\dc32_256zero_out_abcdefg.tmp');
+  DeCoder32_EncodeFile('..\..\TestData\dc32_test_in.txt', '..\..\TestData\dc32_test_out_foobar.tmp', 'foobar', OnProgressProc);
+  Assert.IsTrue(Are2FilesEqual('..\..\TestData\dc32_test_out_foobar.txt', '..\..\TestData\dc32_test_out_foobar.tmp'));
+  DeleteFile('..\..\TestData\dc32_test_out_foobar.tmp');
 end;
 
 procedure TDecoderTestObject.Test_DeCoder32_Decode;
@@ -308,7 +308,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc40_ver0_out.dc4', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc40_ver0_out.dc4', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -328,10 +328,10 @@ begin
 
   // Since an encrypted output file contains random parts, we cannot encode and compare with an already encoded file. We need to Encode+Decode+Compare
   // (requires that the Decode procedure is OK)
-  DeCoder4X_EncodeFile('..\TestData\dc40_ver0_in.bmp', 'encode.tmp', 'test', DeCoder4X_GetDefaultParameters(fvHagenReddmannExample), OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc40_ver0_in.bmp', 'encode.tmp', 'test', DeCoder4X_GetDefaultParameters(fvHagenReddmannExample), OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc40_ver0_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc40_ver0_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -343,8 +343,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc40_ver0_out.dc4', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc40_ver0_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc40_ver0_out.dc4', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc40_ver0_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -361,7 +361,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc40_ver1_out.dc4', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc40_ver1_out.dc4', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -381,10 +381,10 @@ begin
 
   // Since an encrypted output file contains random parts, we cannot encode and compare with an already encoded file. We need to Encode+Decode+Compare
   // (requires that the Decode procedure is OK)
-  DeCoder4X_EncodeFile('..\TestData\dc40_ver1_in.bmp', 'encode.tmp', 'test', DeCoder4X_GetDefaultParameters(fvDc40), OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc40_ver1_in.bmp', 'encode.tmp', 'test', DeCoder4X_GetDefaultParameters(fvDc40), OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc40_ver1_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc40_ver1_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -396,8 +396,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc40_ver1_out.dc4', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc40_ver1_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc40_ver1_out.dc4', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc40_ver1_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -414,7 +414,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc41_ver2_out.dc4', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc41_ver2_out.dc4', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -434,10 +434,10 @@ begin
 
   // Since an encrypted output file contains random parts, we cannot encode and compare with an already encoded file. We need to Encode+Decode+Compare
   // (requires that the Decode procedure is OK)
-  DeCoder4X_EncodeFile('..\TestData\dc41_ver2_in.bmp', 'encode.tmp', 'test', DeCoder4X_GetDefaultParameters(fvDc41Beta), OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc41_ver2_in.bmp', 'encode.tmp', 'test', DeCoder4X_GetDefaultParameters(fvDc41Beta), OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc41_ver2_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc41_ver2_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -449,8 +449,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc41_ver2_out.dc4', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc41_ver2_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc41_ver2_out.dc4', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc41_ver2_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -467,7 +467,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc41_ver3_exp_out.dc4', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc41_ver3_exp_out.dc4', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -490,10 +490,10 @@ begin
   // (requires that the Decode procedure is OK)
   fp := DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled);
   fp.ContainFileOrigName := fpEncryptWithUserKey;
-  DeCoder4X_EncodeFile('..\TestData\dc41_ver3_exp_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc41_ver3_exp_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc41_ver3_exp_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc41_ver3_exp_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -505,8 +505,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc41_ver3_exp_out.dc4', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc41_ver3_exp_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc41_ver3_exp_out.dc4', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc41_ver3_exp_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -523,7 +523,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc41_ver3_enc_out.dc4', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc41_ver3_enc_out.dc4', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -546,10 +546,10 @@ begin
   // (requires that the Decode procedure is OK)
   fp := DeCoder4X_GetDefaultParameters(fvDc41FinalCancelled);
   fp.ContainFileOrigName := fpEncryptWithUserKey;
-  DeCoder4X_EncodeFile('..\TestData\dc41_ver3_enc_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc41_ver3_enc_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc41_ver3_enc_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc41_ver3_enc_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -561,8 +561,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc41_ver3_enc_out.dc4', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc41_ver3_enc_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc41_ver3_enc_out.dc4', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc41_ver3_enc_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -579,7 +579,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc50_ver4_hid_aes_ctsx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc50_ver4_hid_aes_ctsx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -604,10 +604,10 @@ begin
   fp.ContainFileOrigName := fpHide;
   fp.ContainFileOrigSize := false;
   fp.ContainFileOrigDate := false;
-  DeCoder4X_EncodeFile('..\TestData\dc50_ver4_hid_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc50_ver4_hid_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_hid_aes_ctsx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_hid_aes_ctsx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -619,8 +619,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc50_ver4_hid_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_hid_aes_ctsx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc50_ver4_hid_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_hid_aes_ctsx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -637,7 +637,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc50_ver4_exp_aes_ctsx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc50_ver4_exp_aes_ctsx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -662,10 +662,10 @@ begin
   fp.ContainFileOrigName := fpExpose;
   fp.ContainFileOrigSize := true;
   fp.ContainFileOrigDate := true;
-  DeCoder4X_EncodeFile('..\TestData\dc50_ver4_exp_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc50_ver4_exp_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_aes_ctsx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_aes_ctsx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -677,8 +677,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc50_ver4_exp_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_aes_ctsx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc50_ver4_exp_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_aes_ctsx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -695,7 +695,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc50_ver4_exp_aes128_gcm_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc50_ver4_exp_aes128_gcm_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -720,10 +720,10 @@ begin
   fp.CipherClass := TCipher_AES128;
   fp.CipherMode := cmGCM;
   fp.GCMAuthTagSizeInBytes := 16;
-  DeCoder4X_EncodeFile('..\TestData\dc50_ver4_exp_aes128_gcm_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc50_ver4_exp_aes128_gcm_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_aes128_gcm_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_aes128_gcm_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -735,8 +735,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc50_ver4_exp_aes128_gcm_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_aes128_gcm_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc50_ver4_exp_aes128_gcm_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_aes128_gcm_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -753,7 +753,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc50_ver4_exp_blowfish_ctsx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc50_ver4_exp_blowfish_ctsx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -777,10 +777,10 @@ begin
   fp := DeCoder4X_GetDefaultParameters(fvDc50);
   fp.CipherClass := TCipher_Blowfish;
   fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
-  DeCoder4X_EncodeFile('..\TestData\dc50_ver4_exp_blowfish_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc50_ver4_exp_blowfish_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_blowfish_ctsx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_blowfish_ctsx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -792,8 +792,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc50_ver4_exp_blowfish_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_blowfish_ctsx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc50_ver4_exp_blowfish_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_blowfish_ctsx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -810,7 +810,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc50_ver4_exp_blowfish_ecbx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc50_ver4_exp_blowfish_ecbx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -835,10 +835,10 @@ begin
   fp.CipherClass := TCipher_Blowfish;
   fp.CipherMode := cmECBx;
   fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
-  DeCoder4X_EncodeFile('..\TestData\dc50_ver4_exp_blowfish_ecbx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc50_ver4_exp_blowfish_ecbx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_blowfish_ecbx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_blowfish_ecbx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -850,8 +850,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc50_ver4_exp_blowfish_ecbx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc50_ver4_exp_blowfish_ecbx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc50_ver4_exp_blowfish_ecbx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc50_ver4_exp_blowfish_ecbx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -868,7 +868,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc51_ver5_hid_aes_ctsx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc51_ver5_hid_aes_ctsx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -893,10 +893,10 @@ begin
   fp.ContainFileOrigName := fpHide;
   fp.ContainFileOrigSize := false;
   fp.ContainFileOrigDate := false;
-  DeCoder4X_EncodeFile('..\TestData\dc51_ver5_hid_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc51_ver5_hid_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_hid_aes_ctsx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_hid_aes_ctsx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -908,8 +908,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc51_ver5_hid_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_hid_aes_ctsx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc51_ver5_hid_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_hid_aes_ctsx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -926,7 +926,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc51_ver5_exp_aes_ctsx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc51_ver5_exp_aes_ctsx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -951,10 +951,10 @@ begin
   fp.ContainFileOrigName := fpExpose;
   fp.ContainFileOrigSize := true;
   fp.ContainFileOrigDate := true;
-  DeCoder4X_EncodeFile('..\TestData\dc51_ver5_exp_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc51_ver5_exp_aes_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_aes_ctsx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_aes_ctsx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -966,8 +966,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc51_ver5_exp_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_aes_ctsx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc51_ver5_exp_aes_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_aes_ctsx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -984,7 +984,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc51_ver5_exp_aes128_gcm_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc51_ver5_exp_aes128_gcm_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -1009,10 +1009,10 @@ begin
   fp.CipherClass := TCipher_AES128;
   fp.CipherMode := cmGCM;
   fp.GCMAuthTagSizeInBytes := 16;
-  DeCoder4X_EncodeFile('..\TestData\dc51_ver5_exp_aes128_gcm_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc51_ver5_exp_aes128_gcm_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_aes128_gcm_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_aes128_gcm_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -1024,8 +1024,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc51_ver5_exp_aes128_gcm_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_aes128_gcm_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc51_ver5_exp_aes128_gcm_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_aes128_gcm_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -1042,7 +1042,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc51_ver5_exp_blowfish_ctsx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc51_ver5_exp_blowfish_ctsx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -1066,10 +1066,10 @@ begin
   fp := DeCoder4X_GetDefaultParameters(fvDc51);
   fp.CipherClass := TCipher_Blowfish;
   fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
-  DeCoder4X_EncodeFile('..\TestData\dc51_ver5_exp_blowfish_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc51_ver5_exp_blowfish_ctsx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_blowfish_ctsx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_blowfish_ctsx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -1081,8 +1081,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc51_ver5_exp_blowfish_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_blowfish_ctsx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc51_ver5_exp_blowfish_ctsx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_blowfish_ctsx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;
@@ -1099,7 +1099,7 @@ var
 begin
   sl := TStringList.Create;
   try
-    fi := DeCoder4X_FileInfo('..\TestData\dc51_ver5_exp_blowfish_ecbx_out.dc5', '', OnProgressProc);
+    fi := DeCoder4X_FileInfo('..\..\TestData\dc51_ver5_exp_blowfish_ecbx_out.dc5', '', OnProgressProc);
     DeCoder4X_PrintFileInfo(fi, sl); // Note: This currently just checks for a crash
     Log(sl.Text);
   finally
@@ -1124,10 +1124,10 @@ begin
   fp.CipherClass := TCipher_Blowfish;
   fp.CipherMode := cmECBx;
   fp.IVSizeInBytes := fp.CipherClass.Context.BufferSize;
-  DeCoder4X_EncodeFile('..\TestData\dc51_ver5_exp_blowfish_ecbx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
+  DeCoder4X_EncodeFile('..\..\TestData\dc51_ver5_exp_blowfish_ecbx_in.bmp', 'encode.tmp', 'test', fp, OnProgressProc);
   OutputFile := 'decode.tmp';
   DeCoder4X_DecodeFile('encode.tmp', OutputFile, 'test', OnProgressProc);
-  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_blowfish_ecbx_in.bmp'));
+  Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_blowfish_ecbx_in.bmp'));
 
   DeleteFile('encode.tmp');
   DeleteFile('decode.tmp');
@@ -1139,8 +1139,8 @@ var
 begin
   try
     OutputFile := 'decode.tmp';
-    DeCoder4X_DecodeFile('..\TestData\dc51_ver5_exp_blowfish_ecbx_out.dc5', OutputFile, 'test', OnProgressProc);
-    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\TestData\dc51_ver5_exp_blowfish_ecbx_in.bmp'));
+    DeCoder4X_DecodeFile('..\..\TestData\dc51_ver5_exp_blowfish_ecbx_out.dc5', OutputFile, 'test', OnProgressProc);
+    Assert.IsTrue(Are2FilesEqual('decode.tmp', '..\..\TestData\dc51_ver5_exp_blowfish_ecbx_in.bmp'));
   finally
     DeleteFile('decode.tmp');
   end;

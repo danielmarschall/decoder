@@ -71,6 +71,19 @@ uses
   Posix.SysStatVFS
   {$ENDIF};
 
+resourcestring
+  SNoNuke = 'Sorry, but this program will not destroy your computer.';
+  SStartDeleteFolder_S = 'START Delete folder: %s';
+  SErrorDeletingEmptyFolder_S = 'ERROR Deleting empty folder: %s';
+  SDoneDeletingFolder_S = 'DONE Deleting folder: %s';
+  SErrorDeletingFolderContents_S = 'ERROR Deleting folder contents: %s';
+  SProgrTaskCompress = 'ZLib compress';
+  SProgrTaskDecompress = 'ZLib decompress';
+  SDeleteFile_S = 'Delete file: %s';
+  SProgrTaskShannon = 'Calc shannon entropy';
+  SSFile = '%s-File';
+  SUnknown = 'Unknown';
+
 {$IFDEF Console}
 procedure CountDown(const msg: string; timer: integer);
 const
@@ -95,19 +108,17 @@ var
   rbs: RawByteString;
 const
   ChunkSize = $100000; // value from System.Classes
-resourcestring
-  SProgrTask = 'ZLib compress';
 begin
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, LoadResString(@SProgrTask), TDcProgressState.Started);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, LoadResString(@SProgrTaskCompress), TDcProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       CompressionStream:=TCompressionStream.Create(clMax, CompressOutputStream);
       try
         if Assigned(OnProgressProc) then
         begin
-          OnProgressProc(CompressInputStream.Size, CompressInputStream.Position, LoadResString(@SProgrTask), TDcProgressState.Processing);
+          OnProgressProc(CompressInputStream.Size, CompressInputStream.Position, LoadResString(@SProgrTaskCompress), TDcProgressState.Processing);
           rbs := CompressInputStream.ReadRawByteString(Min(ChunkSize,CompressInputStream.Size-CompressInputStream.Position));
           CompressionStream.WriteRawByteString(rbs);
         end
@@ -121,7 +132,7 @@ begin
     finally
       FreeAndNil(CompressOutputStream);
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, LoadResString(@SProgrTask), TDcProgressState.Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, LoadResString(@SProgrTaskCompress), TDcProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
@@ -135,19 +146,17 @@ var
   rbs: RawByteString;
 const
   ChunkSize = $100000; // value from System.Classes
-resourcestring
-  SProgrTask = 'ZLib decompress';
 begin
   CompressInputStream:=TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, LoadResString(@SProgrTask), TDcProgressState.Started);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, 0, LoadResString(@SProgrTaskDecompress), TDcProgressState.Started);
     CompressOutputStream:=TFileStream.Create(OutputFileName, fmCreate);
     try
       DecompressionStream := TDecompressionStream.Create(CompressInputStream);
       try
         if Assigned(OnProgressProc) then
         begin
-          OnProgressProc(DecompressionStream.Size, DecompressionStream.Position, LoadResString(@SProgrTask), TDcProgressState.Processing);
+          OnProgressProc(DecompressionStream.Size, DecompressionStream.Position, LoadResString(@SProgrTaskDecompress), TDcProgressState.Processing);
           rbs := DecompressionStream.ReadRawByteString(Min(ChunkSize,DecompressionStream.Size-DecompressionStream.Position));
           CompressOutputStream.WriteRawByteString(rbs);
         end
@@ -161,7 +170,7 @@ begin
     finally
       FreeAndNil(CompressOutputStream);
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, LoadResString(@SProgrTask), TDcProgressState.Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(CompressInputStream.Size, CompressInputStream.Size, LoadResString(@SProgrTaskDecompress), TDcProgressState.Finished);
   finally
     FreeAndNil(CompressInputStream);
   end;
@@ -232,8 +241,6 @@ var
   AFileNameParent: string;
   AFileNameRenamed: string;
   ClusterSize: integer;
-resourcestring
-  SDeleteFile_S = 'Delete file: %s';
 begin
   if not FileExists(AFileName) then Exit(False);
 
@@ -341,12 +348,6 @@ var
   ADirNameRenamed: string;
   ADirNameAbs: string;
   IsDriveOrShareRoot: boolean;
-resourcestring
-  SNoNuke = 'Sorry, but this program will not destroy your computer.';
-  SStartDeleteFolder_S = 'START Delete folder: %s';
-  SErrorDeletingEmptyFolder_S = 'ERROR Deleting empty folder: %s';
-  SDoneDeletingFolder_S = 'DONE Deleting folder: %s';
-  SErrorDeletingFolderContents_S = 'ERROR Deleting folder contents: %s';
 begin
   if SameText(ADirName, 'C:\') or
      SameText(ADirName, 'C:/') or
@@ -543,8 +544,6 @@ var
   ProgrSize, ProgrPos: Int64;
 const
   chunksize = 4096; // bigger = faster
-resourcestring
-  SProgrTask = 'Calc shannon entropy';
 begin
   for i := Low(counts) to High(counts) do
     Counts[i] := 0;
@@ -554,20 +553,20 @@ begin
     filesize := fs.Size;
     ProgrPos := 0;
     ProgrSize := Filesize div chunksize;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, LoadResString(@SProgrTask), Started);
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, LoadResString(@SProgrTaskShannon), Started);
     while fs.Position < fs.Size do
     begin
       rbs := fs.ReadRawByteString(Min(chunksize,fs.Size-fs.Position));
       for i := Low(rbs) to High(rbs) do
         Inc(counts[Ord(rbs[i])]);
       Inc(ProgrPos);
-      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, LoadResString(@SProgrTask), Processing);
+      if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrPos, LoadResString(@SProgrTaskShannon), Processing);
       {$IFNDEF Console}
       Application.ProcessMessages;
       if Application.Terminated then Abort;
       {$ENDIF}
     end;
-    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, LoadResString(@SProgrTask), Finished);
+    if Assigned(OnProgressProc) then OnProgressProc(ProgrSize, ProgrSize, LoadResString(@SProgrTaskShannon), Finished);
 
     // Shannon's entropy
     // https://stackoverflow.com/questions/990477/how-to-calculate-the-entropy-of-a-file
@@ -610,9 +609,6 @@ begin
   else
     Result := '';
 {$ELSE}
-resourcestring
-  SSFile = '%s-File';
-  SUnknown = 'Unknown';
 var
   tmp: string;
 begin
