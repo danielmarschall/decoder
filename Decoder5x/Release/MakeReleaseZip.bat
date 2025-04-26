@@ -92,17 +92,25 @@ copy ..\..\LICENSE LICENSE.txt
 
 if exist Windows_32Bit rmdir /s /q Windows_32Bit
 mkdir Windows_32Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win32\CoderCLI.exe
 copy ..\Output\win32\CoderCLI.exe Windows_32Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win32\CoderCLI.de
 copy ..\Output\win32\CoderCLI.de Windows_32Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win32\CoderFMX.exe
 copy ..\Output\win32\CoderFMX.exe Windows_32Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win32\CoderFMX.de
 copy ..\Output\win32\CoderFMX.de Windows_32Bit
 copy ..\Output\win32\7z.dll Windows_32Bit
 
 if exist Windows_64Bit rmdir /s /q Windows_64Bit
 mkdir Windows_64Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win64\CoderCLI.exe
 copy ..\Output\win64\CoderCLI.exe Windows_64Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win64\CoderCLI.de
 copy ..\Output\win64\CoderCLI.de Windows_64Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win64\CoderFMX.exe
 copy ..\Output\win64\CoderFMX.exe Windows_64Bit
+call "..\AuthentiCode Sign\sign_single.bat" ..\Output\win64\CoderFMX.de
 copy ..\Output\win64\CoderFMX.de Windows_64Bit
 copy ..\Output\win64\7z.dll Windows_64Bit
 
