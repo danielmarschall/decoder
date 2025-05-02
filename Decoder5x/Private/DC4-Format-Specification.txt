@@ -754,7 +754,7 @@ Offset	Type	Size		Content/Description
 == [APPENDIX A] Links to websites ==
 
   Latest version of this specification:
-  https://github.com/danielmarschall/decoder/blob/master/Decoder50/Private/DC4-Format-Specification.txt
+  https://github.com/danielmarschall/decoder/blob/master/Decoder5x/Private/DC4-Format-Specification.txt
 
   Source code and program "(De)Coder" at GitHub:
   https://github.com/danielmarschall/decoder/
