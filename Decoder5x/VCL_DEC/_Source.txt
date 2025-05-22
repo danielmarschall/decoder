@@ -4,7 +4,3 @@ https://github.com/MHumm/DelphiEncryptionCompendium/
 "Source" directory only
 
 Line endings as exported using GitHub Desktop clone
-
-Currently commit
-https://github.com/MHumm/DelphiEncryptionCompendium/commit/e31afa5284a4b29f10e7c7cac29b3d2a8e0fbf4e
-2 April 2025

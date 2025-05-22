@@ -108,12 +108,7 @@ const
 
 procedure Debug_ListAlgos;
 var
-  fp: TDC4Parameters;
-  fi: TDC4FileInfo;
   sl: TStringList;
-  OutputFile: string;
-  v: TDc4FormatVersion;
-
 begin
   sl := TStringList.Create;
 
