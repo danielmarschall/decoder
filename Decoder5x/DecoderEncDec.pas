@@ -1357,6 +1357,7 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
     CIPHER_MODE_NAMES_7 = 'CFSx = CFS on Blocksize bytes';
     CIPHER_MODE_NAMES_8 = 'ECBx = Electronic Code Book';
     CIPHER_MODE_NAMES_9 = 'GCM = Galois Counter Mode';
+    CIPHER_MODE_NAMES_10 = 'CCM = Counter with CBC-MAC Mode';
   const
     CIPHER_MODE_NAMES: array[Low(TCipherMode)..High(TCipherMode)] of PResStringRec = (
       @CIPHER_MODE_NAMES_0,
@@ -1368,7 +1369,8 @@ procedure DeCoder4X_PrintFileInfo(fi: TDC4FileInfo; sl: TStrings);
       @CIPHER_MODE_NAMES_6,
       @CIPHER_MODE_NAMES_7,
       @CIPHER_MODE_NAMES_8,
-      @CIPHER_MODE_NAMES_9
+      @CIPHER_MODE_NAMES_9,
+      @CIPHER_MODE_NAMES_10
     );
 
   resourcestring

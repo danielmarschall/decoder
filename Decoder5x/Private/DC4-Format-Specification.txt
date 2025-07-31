@@ -9,7 +9,7 @@ Used by:    ViaThinkSoft (De)Coder 4.0
             ViaThinkSoft (De)Coder 5.0
             ViaThinkSoft (De)Coder 5.1
 Author:     Daniel Marschall, ViaThinkSoft
-Revision:   23 February 2025
+Revision:   30 July 2025
 
 
 CONTENTS
@@ -663,7 +663,8 @@ Offset	Type	Size		Content/Description
 					0x07	CFSx	CFS on Blocksize bytes
 					0x08	ECBx	Electronic Code Book
 					0x09	GCM	Galois Counter Mode
-					0x0A	CTS3	double CBC, with less secure padding of truncated final block (deprecated)
+					0x0A	CCM	Counter with CBC-MAC Mode
+					0x0B	CTS3	double CBC, with less secure padding of truncated final block (deprecated)
 					Note: According to tests, all cipher modes can handle truncated final blocks, except ECB,
 					      this requires an input file with a size which is a multiple of 16 bytes.
 	Int32BE	4		10. DEC 6.5 Hash idendity, big endian. Identify is calculated by DEC 6.5 with identity base 0x1259D82A:

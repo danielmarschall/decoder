@@ -2,7 +2,7 @@
 <xlat>
   <meta>
     <version>3</version>
-    <created>2025-04-26T21:51:21.888+02:00</created>
+    <created>2025-07-31T14:31:48.065+02:00</created>
     <tool>amTranslationManager</tool>
     <toolversion>2.3.9199.24584</toolversion>
   </meta>
@@ -12,12 +12,12 @@
     <sorted>True</sorted>
     <omitnewstate>True</omitnewstate>
   </options>
-  <project sourcefile="..\Output\win32\CoderFMX.exe" stringsymbolfile=".\CoderFMX.drc" language="en-US" properties="646">
+  <project sourcefile="..\Output\win32\CoderFMX.exe" stringsymbolfile=".\CoderFMX.drc" language="en-US" properties="651">
     <targetlanguages>
-      <language language="de-DE" translated="181"/>
+      <language language="de-DE" translated="182"/>
     </targetlanguages>
     <modules>
-      <module name="resourcestrings" type="strings" properties="633">
+      <module name="resourcestrings" type="strings" properties="638">
         <items>
           <item name="DECBaseClass_sClassNotRegistered">
             <properties>
@@ -107,6 +107,34 @@
             <properties>
               <property>
                 <value>Invalid mode for this method. Mode must be %0:s</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModesCCM_sInvalidSourcePointer">
+            <properties>
+              <property>
+                <value>No source data pointer passed</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModesCCM_sWrongCCMAuthLength">
+            <properties>
+              <property>
+                <value>CCM authentication tag needs to have a length of 4, 6, 8, 10, 12, 14 or 16 byte</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModesCCM_sWrongNonceLength">
+            <properties>
+              <property>
+                <value>Wrong nonce/IV length. Must be between 7 and 13</value>
+              </property>
+            </properties>
+          </item>
+          <item name="DECCipherModesCCM_sWrongNonceLengthDetailed">
+            <properties>
+              <property>
+                <value>Nonce longer than 15 byte. Act. length: %0:d</value>
               </property>
             </properties>
           </item>
@@ -245,6 +273,16 @@
                 <value>CBCx = Cipher Block Chaining, with CFB8 padding of truncated final block</value>
                 <translations>
                   <translation language="de-DE">CBCx = Cipher Block Chaining, mit CFB8 Padding vom beschnittenen letztem Block</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="DecoderEncDec_CIPHER_MODE_NAMES_10">
+            <properties>
+              <property>
+                <value>CCM = Counter with CBC-MAC Mode</value>
+                <translations>
+                  <translation language="de-DE">CCM = Counter with CBC-MAC Modus</translation>
                 </translations>
               </property>
             </properties>
